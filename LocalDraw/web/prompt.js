@@ -19,6 +19,7 @@ window.renderPromptStudio = async function(root, project) {
   root.replaceChildren(node("h2", "直接输入提示词画图"),
     node("p", "输入画面描述，选择角色并填写外观。可先整理 / 转换英文提示词，核对后出图；多人可指定位置并分区绘制外观。"));
   const modelDescription = root.children[1];
+  let jsonEditor;
   const positive = labeledInput(root, "正向提示词（想画什么）", true, saved.text || "");
   positive.rows = 12; positive.dataset.editKey = "prompt-positive";
   positive.placeholder = "例如：1girl, red hair, black jacket, city street, clean lineart";
@@ -106,6 +107,7 @@ window.renderPromptStudio = async function(root, project) {
     loraPicker.refresh();
   }
   function refreshCharacters() {
+    jsonEditor?.refresh();
     const selected = characterRows.filter(r => r.check.checked);
     for (const row of characterRows) {
       row.details.hidden = !row.check.checked;
@@ -236,12 +238,13 @@ window.renderPromptStudio = async function(root, project) {
   });
   undoConversion.hidden = true;
   const convert = button("整理 / 转换英文提示词 · Flash Next", async () => {
+    if(!jsonEditor.valid()) throw Error("请先修正本格 JSON。");
     const selected = characterRows.filter(r => r.check.checked);
     if (!positive.value.trim()) throw Error("请先填写正向提示词");
     if (!data.prompt_translate) throw Error("后台尚未更新，暂不能转换提示词。当前输入已保留。");
     const original = {positive:positive.value, negative:negative.value,
       characters:new Map(selected.map(r=>[r.card.id,r.prompt.value]))};
-    const controls = [positive, negative, start, clearInputs, undoConversion, ...characterBox.querySelectorAll("input, textarea, button")];
+    const controls = [jsonEditor.group, positive, negative, start, clearInputs, undoConversion, ...characterBox.querySelectorAll("input, textarea, button")];
     const disabled = controls.map(c=>c.disabled);
     controls.forEach(c=>c.disabled=true); convert.disabled=true;
     try {
@@ -369,6 +372,7 @@ window.renderPromptStudio = async function(root, project) {
   modelCompatibility();
   window.refreshPromptControls=()=>{refreshCharacters();refreshLoras();};
   async function submitPrompt(queued=false) {
+    if(!jsonEditor.valid()) throw Error("请先修正本格 JSON。");
     if(queued && window.studioQueueAvailable===false)throw Error("夜间列表需要新版后台。当前生成结束后更新工作室即可使用，已填内容保留。");
     if (!positive.value.trim()) throw Error("请先填写正向提示词");
     if (!model.value || model.selectedOptions[0]?.disabled) throw Error("请选择已下载完整的模型");
@@ -549,6 +553,9 @@ window.renderPromptStudio = async function(root, project) {
   const inputPane = node("section", undefined, "prompt-input workspace-pane");
   const introduction = root.children[1];
   inputPane.append(root.firstElementChild, introduction, positive.parentElement, negative.parentElement, languageNotice);
+  jsonEditor=promptJsonEditor(positive,negative,"P001-K01",{...saved.json_editor},()=>{
+    refreshCharacters();window.savePromptDraft?.();
+  });
   const conversionTools = node("div", undefined, "compact-actions");
   let clearedInputs=null;
   const undoClear=button("撤销清空",()=>{
@@ -588,7 +595,7 @@ window.renderPromptStudio = async function(root, project) {
   queuedReceipt.append(queuedReceiptText,button("查看列表 / 安排开始",()=>window.openStudioQueue()));submitActions.append(queuedReceipt);
   const submitSummary=node("small");submitActions.prepend(submitSummary);
   const updateSubmitSummary=()=>{
-    const missingModel=!model.value||!!model.selectedOptions[0]?.disabled,emptyPrompt=!positive.value.trim();
+    const missingModel=!model.value||!!model.selectedOptions[0]?.disabled,emptyPrompt=!positive.value.trim()||!jsonEditor.valid();
     let sizeText,invalidSize=false;try{sizeText=imageSize.summary();}catch(error){sizeText=error.message;invalidSize=true;}
     submitSummary.textContent=`${model.selectedOptions[0]?.textContent||"请选择模型"} · ${count.value} 张 · ${sizeText}`+(missingModel?" · 请选择已下载完整的模型":emptyPrompt?" · 先写下想画的画面":"");
     start.dataset.unavailable=enqueue.dataset.unavailable=String(missingModel||emptyPrompt||invalidSize);
@@ -602,7 +609,7 @@ window.renderPromptStudio = async function(root, project) {
   characterBox.classList.add("workspace-pane"); loraBox.classList.add("workspace-pane", "prompt-loras");
   libraryPane.append(characterBox, loraBox);
   root.replaceChildren(inputPane, libraryPane, gallery);
-  const draftInput=()=>({text:positive.value,negative:negative.value,checkpoint:model.value,count:Number(count.value),...imageSize.draft(),
+  const draftInput=()=>({text:positive.value,negative:negative.value,json_editor:jsonEditor.state,checkpoint:model.value,count:Number(count.value),...imageSize.draft(),
       task_name:taskName.value,regional_characters:regional.checked,reference_weight:strength.value,hand_detail:hand.checked,consistency_lora:consistency.checked,delta_matte_skin:matte.checked,
       characters:characterRows.filter(r=>r.check.checked||r.prompt.value!==r.defaultPrompt||r.region.value!=="null"||(!animaActive&&!r.useReference.checked)).map(r=>({name:r.card.name,revision:r.card.revision,selected:r.check.checked,prompt:r.prompt.value,
         region:JSON.parse(r.region.value),use_reference:r.useReference.checked})),

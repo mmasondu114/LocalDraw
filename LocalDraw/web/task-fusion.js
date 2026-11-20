@@ -91,7 +91,8 @@ async function openTaskFusion(queueDialog) {
       persist();review(true);
     }
     const ok = button("通过并继续", () => {
-      if (!positive.value.trim()) {positive.setCustomValidity("请先填写正面提示词");positive.reportValidity();return;}
+      if(!editor.valid()){editor.group.querySelector("textarea").reportValidity();return;}
+      if (!positive.value.trim()) {status.textContent="请先填写正面提示词";return;}
       panel.approved=true; panel.skipped=false; nextPending();
     }, "primary");
     const skip = button(panel.skipped?"恢复此格":"跳过此格", () => {
@@ -126,7 +127,17 @@ async function openTaskFusion(queueDialog) {
     }
     body.append(button("返回调整顺序",()=>{order();persist();}),title,counter);
     if(panel.summary) body.append(node("p",panel.summary,"fusion-summary"));
-    const positive=field("positive","正面提示词");field("negative","负面提示词");
+    const positive=field("positive","正面提示词"),negative=field("negative","负面提示词");
+    const jsonState={enabled:draft.jsonMode || panel.jsonRaw!==undefined, raw:panel.jsonRaw};
+    const jsonId=/^P\d+-K\d+$/.test(panel.panel_id)?panel.panel_id:"P001-K01";
+    const editor=promptJsonEditor(positive,negative,jsonId,jsonState,(edited)=>{
+      draft.jsonMode=jsonState.enabled;panel.jsonRaw=jsonState.raw;
+      if(edited) {
+        panel.positive=positive.value;panel.negative=negative.value;panel.approved=false;panel.skipped=false;
+        update();
+      }
+      persist();
+    },true);
     const nav=node("div",undefined,"fusion-actions");
     for (const [text,delta] of [["上一格",-1],["下一格",1]]) {
       const b=button(text,()=>{draft.cursor+=delta;persist();review(true);});

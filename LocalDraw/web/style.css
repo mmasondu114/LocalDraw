@@ -1751,6 +1751,14 @@ dialog.import-setup[open] {
 .fusion-order small {margin-inline-start:12px;color:var(--muted)}
 .fusion-actions {display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
 .fusion-dialog p[role=status]:empty {margin:0}
+.prompt-json-editor {min-width:0;padding:0;border:0;margin:10px 0}
+.prompt-json-tools {display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.prompt-json-editor .prompt-json-tools label {display:inline-flex;align-items:center;gap:7px;margin:0}
+.prompt-json-tools input[type=checkbox] {width:17px;height:17px;margin:0}
+.prompt-json-editor textarea {width:100%;box-sizing:border-box;font-family:monospace;resize:vertical}
+.prompt-json-editor small {display:block;color:var(--muted)}
+.prompt-json-editor small:empty {display:none}
+.clipboard-fallback {position:fixed;opacity:0;pointer-events:none}
 .setup-libraries {display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
 .setup-section {min-width:0;padding:20px;border-radius:12px;border:1px solid var(--line);background:var(--panel)}
 .setup-section h2 {margin:0;font-size:20px}

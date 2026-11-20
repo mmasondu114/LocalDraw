@@ -1073,6 +1073,7 @@ def make_handler(app):
                     "/story-import.js": "story-import.js",
                     "/model-downloads.js": "model-downloads.js",
                     "/direct-imports.js": "direct-imports.js",
+                    "/prompt-json.js": "prompt-json.js",
                     "/task-fusion.js": "task-fusion.js",
                     "/imported-setup.js": "imported-setup.js",
                     "/loras.js": "loras.js",

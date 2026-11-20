@@ -40,6 +40,12 @@ async function openDirectImport(kind, initialProject, initialText = "") {
     const files = node("details");
     files.append(node("summary", "从文件导入"), fileLabel);
     dialog.append(pasteLabel, files);
+    const copyFormat=button("复制给 AI 的 JSON 格式",async()=>{
+      const sample=JSON.stringify([panelJson("P001-K01","第1页第1格的正面提示词原文","第1页第1格的负面提示词原文")],null,2);
+      await copyPromptText("按漫画阅读顺序输出 JSON 数组，每格一项。id 用 P001-K01 表示第1页第1格，下一页从 P002-K01 开始。逐字保留我的正面和负面提示词，缺少负面时填空字符串。只输出 JSON。\n\n"+sample);
+      status.textContent="已复制给 AI 的格式要求和示例。";
+    });
+    dialog.append(copyFormat);
   }
   let promptRows = [];
   if (story) {

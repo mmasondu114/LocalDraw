@@ -151,7 +151,16 @@ async function openImportedSetup(project, bundle, rows) {
     line.append(node("strong",label),node("p",row.positive),n,negativeLabel); entries.append(line);
   }
   count.oninput=()=>{for(const n of entries.querySelectorAll("input"))n.placeholder=count.value;remember();};
-  quantities.append(node("h2","逐格设置"),commonLabel,node("p","生成时，通用负面提示词会追加到每一格的负面提示词末尾。"),defaultLabel,details);
+  const copyAll=button("复制全部画格 JSON",async()=>{
+    const ids=rows.map(row=>/^P\d+-K\d+$/.test(row.source)?row.source:row.panel_id);
+    const unique=new Set(ids).size===rows.length;
+    const output=rows.map((row,i)=>panelJson(unique?ids[i]:row.panel_id,row.positive,
+      [negativeEdits.get(row.panel_id) ?? row.negative,commonNegative.value].filter(Boolean).join("\n")));
+    const tooLong=output.find(row=>Array.from(row.negative).length>20000);
+    if(tooLong){status.textContent=tooLong.id+" 合并后的负面提示词超过 20000 字，请缩短后再复制。";return;}
+    await copyPromptText(JSON.stringify(output,null,2));status.textContent="已复制 "+output.length+" 格提示词（含通用负面词）。";
+  });
+  quantities.append(node("h2","逐格设置"),commonLabel,node("p","生成时，通用负面提示词会追加到每一格的负面提示词末尾。"),defaultLabel,details,copyAll);
   body.append(chainLabel,libraries,quantities);
   const start = button("开始生成", async () => {
     if (submitting) return;
