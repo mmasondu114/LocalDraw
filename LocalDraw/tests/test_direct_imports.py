@@ -115,7 +115,7 @@ class DirectImportsTest(unittest.TestCase):
         self.assertEqual(e.read(ws), state)
 
     def test_standalone_generates_each_grid_by_count_without_story(self):
-        rows = [{"id": "P003-K02", "visual_prompt": "  rainy window  ", "negative": "blur",
+        rows = [{"id": "P003-K02", "visual_prompt": "  rainy window  ", "negative_prompt": "blur",
                  "dialogue": "Listen.", "sound_effect": "Tap"},
                 {"panel_id": "P004-K01", "positive": "sunlit desk"}]
         args = {"project": "", "document": rows}
@@ -171,3 +171,22 @@ class DirectImportsTest(unittest.TestCase):
         options["counts"]["P001-K02"] = 0
         with self.assertRaisesRegex(ValueError, "张数"):
             prompt_exchange.prepare_request(self.repo, self.pid, request)
+
+    def test_negative_edits_preserve_import_and_survive_job_reload(self):
+        ids = ["P001-K01", "P001-K02"]
+        saved = self.save_prompts([{"panel_id": k, "positive": "rain", "negative": "  blur  "} for k in ids])
+        setup = {"common_negative": "watermark\ntext", "negative_by_panel": {ids[1]: ""}}
+        request = {**saved, "candidate_count": 1, "checkpoint": "test", "import_setup": setup}
+        for edited in ("", "  extra hands  "):
+            setup["negative_by_panel"][ids[1]] = edited
+            frozen = json.loads(json.dumps(prompt_exchange.prepare_request(self.repo, self.pid, request)))
+            with patch.object(prompt_exchange.comfyui, "run_batch", return_value={"id": "demo"}) as draw:
+                prompt_exchange.draw_imported(Mock(repo=self.repo), self.pid, frozen, lambda _: None, "run")
+            negatives = [call.kwargs["prompt_override"]["negative"] for call in draw.call_args_list]
+            self.assertEqual(negatives, ["  blur  \nwatermark\ntext", (edited + "\n" if edited else "") + "watermark\ntext"])
+        original = prompt_exchange.load_import(self.repo, self.pid, saved["bundle"])
+        self.assertEqual([row["negative"] for row in original["panels"]], ["  blur  "] * 2)
+        for invalid in ({"common_negative": "x" * 20000}, {"negative_by_panel": {"unknown": ""}},
+                        {"negative_by_panel": {ids[0]: None}}):
+            with self.assertRaisesRegex(ValueError, "负面提示词"):
+                prompt_exchange.prepare_request(self.repo, self.pid, {**request, "import_setup": invalid})

@@ -75,6 +75,8 @@ def storyboard(repo, request):
 
 
 def prompt_row(row):
+    if "negative_prompt" in row and "negative" not in row:
+        row = {**row, "negative": row["negative_prompt"]}
     if "visual_prompt" not in row:
         return row
     return {**row, "panel_id": row.get("panel_id", row.get("id")),

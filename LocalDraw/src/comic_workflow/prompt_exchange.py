@@ -147,6 +147,12 @@ def current_import(repo, pid):
             **with_render_plan(repo, pid, project, bundle["panels"])}
 
 
+def effective_negative(row, settings):
+    panel = settings.get("negative_by_panel", {}).get(row["panel_id"], row["negative"])
+    common = settings.get("common_negative", "")
+    return "\n".join(part for part in (panel, common) if part)
+
+
 def prepare_import_settings(repo, settings, model, targets, bundle):
     from .characters import CharacterLibrary
     from .character_prompt_cleanup import default_visual_prompt
@@ -169,15 +175,24 @@ def prepare_import_settings(repo, settings, model, targets, bundle):
     counts = settings.get("counts", {})
     e.need(isinstance(counts, dict) and counts.keys() <= set(targets) and
            all(type(n) is int and 1 <= n <= 16 for n in counts.values()), "每格张数须为 1–16")
+    common = settings.get("common_negative", "")
+    edits = settings.get("negative_by_panel", {})
+    e.need(isinstance(common, str) and len(common) <= 20000, "通用负面提示词最多 20000 字")
+    e.need(isinstance(edits, dict) and edits.keys() <= set(targets) and
+           all(isinstance(v, str) and len(v) <= 20000 for v in edits.values()), "逐格负面提示词无效")
     suffixes = {}
     for row in bundle["panels"]:
-        if selected and row["panel_id"] in targets:
+        if row["panel_id"] not in targets:
+            continue
+        e.need(len(effective_negative(row, settings)) <= 20000, row["panel_id"] + " 合并后的负面提示词最多 20000 字")
+        if selected:
             looks = resolve_selections(row["positive"], selected, cards)
             suffix = ", ".join(s["prompt"] for s in looks if s["prompt"])
             e.need(len(row["positive"]) + len(suffix) + 1 <= 20000, row["panel_id"] + " 加入角色后提示词过长")
             suffixes[row["panel_id"]] = suffix
     return (selected_loras(settings.get("loras", []), model),
             {"selected_characters": selected, "character_suffixes": suffixes,
+             "common_negative": common, "negative_by_panel": dict(edits),
              "candidate_slots_by_panel": {key: list(range(n)) for key, n in counts.items()}})
 
 
@@ -287,6 +302,7 @@ def draw_imported(app, pid, request, update, jid):
                 recovered = recover_batch(repo, pid, pending)
                 e.need(recovered["status"] not in {"running", "uncertain"}, "之前的出图尚未确认结束，暂不提交新的图片")
         for row in rows:
+            row = {**row, "negative": effective_negative(row, request)}
             suffix = request.get("character_suffixes", {}).get(row["panel_id"])
             if suffix:
                 row = {**row, "positive": row["positive"] + "\n" + suffix}

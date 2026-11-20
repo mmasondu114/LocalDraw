@@ -1758,6 +1758,8 @@ dialog.import-setup[open] {
 .setup-chip input[type=number],.setup-panels input[type=number],.setup-quantities label input {width:74px}
 .setup-quantities {margin-top:16px}
 .setup-quantities > label {display:flex;align-items:center;gap:12px;margin:12px 0}
+.setup-quantities label.setup-negative {display:grid;gap:5px;grid-column:1/-1}
+.setup-negative textarea {width:100%;min-width:0;box-sizing:border-box;resize:vertical}
 .setup-panels {max-height:40vh;overflow:auto}
 .setup-panels > div {display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;align-items:center;padding:8px 0;border-top:1px solid var(--line)}
 .setup-panels p {margin:0;overflow-wrap:anywhere;white-space:pre-wrap}

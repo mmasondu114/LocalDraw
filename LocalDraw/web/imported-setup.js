@@ -25,13 +25,21 @@ async function openImportedSetup(project, bundle, rows) {
   const count = node("input");
   count.type = "number"; count.min = "1"; count.max = "16"; count.required = true;
   count.value = draft.count ?? 2;
+  const commonNegative = node("textarea"), negativeEdits = new Map();
+  commonNegative.rows = 2;
+  commonNegative.maxLength = 20000;
+  commonNegative.value = draft.common_negative ?? "";
+  commonNegative.placeholder = "例如：水印、多余文字";
+  commonNegative.oninput = remember;
   let submitting = false, started = false;
   function quantity() {
     return rows.reduce((sum, row) => sum + Number(counts.get(row.panel_id) || count.value), 0);
   }
   function remember() {
-    cacheLocal(draftKey, JSON.stringify({count:count.value, counts:Object.fromEntries(counts),
+    const saved = cacheLocal(draftKey, JSON.stringify({count:count.value, counts:Object.fromEntries(counts),
+      common_negative:commonNegative.value, negative_by_panel:Object.fromEntries(negativeEdits),
       roles:[...cast.keys()], weights:Object.fromEntries(weights)}));
+    if (!saved) status.textContent = "本机未能保存设置草稿，关闭前请复制编辑过的提示词。";
     const valid = count.checkValidity() && [...counts.values()].every(n => Number.isInteger(Number(n)) && +n >= 1 && +n <= 16);
     total.textContent = valid ? rows.length + " 格 · 共 " + quantity() + " 张" : "每格请输入 1–16 张";
   }
@@ -103,9 +111,11 @@ async function openImportedSetup(project, bundle, rows) {
     5, f=>data.lora_labels?.[f]?.weight ?? 0.7);
 
   const quantities = node("section",undefined,"setup-section setup-quantities");
+  const commonLabel = node("label","通用负面提示词", "setup-negative");
+  commonLabel.append(commonNegative);
   const defaultLabel = node("label","默认每格张数"); defaultLabel.append(count);
   const details = node("details"), entries = node("div",undefined,"setup-panels");
-  details.append(node("summary","逐格查看提示词和调整张数"),entries);
+  details.append(node("summary","逐格编辑负面提示词和张数"),entries);
   for (const row of rows) {
     const id = row.panel_id, label = row.source || id;
     if (draft.counts?.[id]) counts.set(id, draft.counts[id]);
@@ -113,10 +123,22 @@ async function openImportedSetup(project, bundle, rows) {
     n.type="number"; n.min="1"; n.max="16"; n.placeholder=count.value; n.value=counts.get(id) || "";
     n.setAttribute("aria-label",label+" 生成张数");
     n.oninput=()=>{if(n.value)counts.set(id,n.value);else counts.delete(id);remember();};
-    line.append(node("strong",label),node("p",row.positive),n); entries.append(line);
+    const negative = node("textarea"), negativeLabel = node("label","本格负面提示词","setup-negative");
+    negative.rows = 2; negative.maxLength = 20000;
+    negative.setAttribute("aria-label",label+" 负面提示词");
+    const original = row.negative ?? "";
+    if (Object.hasOwn(draft.negative_by_panel || {}, id)) negativeEdits.set(id, draft.negative_by_panel[id]);
+    negative.value = negativeEdits.get(id) ?? original;
+    negative.oninput = () => {
+      if (negative.value === original) negativeEdits.delete(id);
+      else negativeEdits.set(id, negative.value);
+      remember();
+    };
+    negativeLabel.append(negative);
+    line.append(node("strong",label),node("p",row.positive),n,negativeLabel); entries.append(line);
   }
   count.oninput=()=>{for(const n of entries.querySelectorAll("input"))n.placeholder=count.value;remember();};
-  quantities.append(node("h2","生成数量"),defaultLabel,details);
+  quantities.append(node("h2","逐格设置"),commonLabel,node("p","生成时，通用负面提示词会追加到每一格的负面提示词末尾。"),defaultLabel,details);
   body.append(libraries,quantities);
   const start = button("开始生成", async () => {
     if (submitting) return;
@@ -129,6 +151,7 @@ async function openImportedSetup(project, bundle, rows) {
         candidate_count:Number(count.value),import_setup:{
           characters:[...cast.values()].map(c=>({name:c.name,revision:c.revision})),
           loras:[...weights].map(([file,weight])=>({file,weight:Number(weight)})),
+          common_negative:commonNegative.value, negative_by_panel:Object.fromEntries(negativeEdits),
           counts:Object.fromEntries([...counts].map(([k,v])=>[k,Number(v)]))
         }});
     } catch(error) {status.textContent=error.message;return;}

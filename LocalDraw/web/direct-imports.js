@@ -31,7 +31,7 @@ async function openDirectImport(kind, initialProject, initialText = "") {
   input.accept = base.accept = ".json,application/json";
   if (!story) input.accept = ".txt,.json,text/plain,application/json";
   paste.rows = 4;
-  paste.placeholder = story ? "粘贴分镜 JSON" : '[{"id":"P001-K01","visual_prompt":"雨夜街口，远景"}]';
+  paste.placeholder = story ? "粘贴分镜 JSON" : '[{"id":"P001-K01","visual_prompt":"雨夜街口，远景","negative":"水印，多余文字"}]';
   const fileLabel = node("label", story ? "选择 JSON 文件" : "选择提示词文件（TXT / JSON）"), pasteLabel = node("label", story ? "或粘贴 JSON" : "粘贴逐格 JSON，或每行一条提示词");
   fileLabel.append(input);
   pasteLabel.append(paste);
