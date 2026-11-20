@@ -15,7 +15,7 @@ async function copyPromptText(text) {
   } finally {field.remove();previous?.focus({preventScroll:true});}
 }
 
-function promptJsonEditor(positive, negative, id, state, change, fixedId=false) {
+function promptJsonEditor(positive, negative, id, state, change, fixedId=false, boardMode=false) {
   const group=node("fieldset",undefined,"prompt-json-editor"), tools=node("div",undefined,"prompt-json-tools");
   group.setAttribute("aria-label","提示词格式");
   const mode=node("input"), modeLabel=node("label"), fieldLabel=node("label","本格 JSON"), field=node("textarea");
@@ -28,7 +28,9 @@ function promptJsonEditor(positive, negative, id, state, change, fixedId=false) 
   function read() {
     let data;
     try { data=JSON.parse(field.value); } catch {throw Error("JSON 格式有误，请检查引号、逗号或括号。");}
-    const row=Array.isArray(data) && data.length===1 ? data[0] : data;
+    let row=Array.isArray(data) && data.length===1 ? data[0] : data;
+    if(boardMode && row && !Array.isArray(row))row={id:boardPanelId(row.id || row.panel_id),
+      visual_prompt:row.visual_prompt ?? row.positive ?? row.prompt,negative:row.negative ?? row.negative_prompt ?? ""};
     if (!row || typeof row.id!=="string" || !/^P\d+-K\d+$/.test(row.id) || (fixedId && row.id!==id))
       throw Error(fixedId ? "请保留本格编号 "+id+"。" : "请填写一格，编号如 P001-K01。");
     if (typeof row.visual_prompt!=="string" || typeof row.negative!=="string")
@@ -75,6 +77,7 @@ function promptJsonEditor(positive, negative, id, state, change, fixedId=false) 
     (mode.checked?field:positive).focus();
   };
   return {group,state,
+    setId:value=>{state.id=value;resetText();},
     valid:()=>!mode.checked || field.validity.valid,
     refresh:()=>{if(positive.value!==lastPositive || negative.value!==lastNegative)resetText();}
   };

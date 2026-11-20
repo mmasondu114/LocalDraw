@@ -1,5 +1,5 @@
 // Keep pixel rounding and defaults aligned with image_size.py.
-window.createImageSizeControls = function(root, saved = {}, {comic = false, onChange = () => {}} = {}) {
+window.createImageSizeControls = function(root, saved = {}, {comic = false, storyboard = comic, onChange = () => {}} = {}) {
   let alignment=8;
   const presets = [["3:2", "横图 3:2"], ["2:3", "竖图 2:3"], ["1:1", "方图 1:1"],
     ["16:9", "宽图 16:9"], ["9:16", "长图 9:16"]];
@@ -12,10 +12,10 @@ window.createImageSizeControls = function(root, saved = {}, {comic = false, onCh
   };
   const option = (select, value, text) => {const item=element("option",text);item.value=value;select.append(item);};
   const ratio=element("select");field("纵横比",ratio,"ratio");
-  if(comic)option(ratio,"storyboard","按各格分镜比例");
+  if(storyboard)option(ratio,"storyboard","按各格分镜比例");
   presets.forEach(([value,label])=>option(ratio,value,label));
   if(!comic)option(ratio,"custom","自定义比例");
-  const initial=saved.aspect_ratio||(comic?"storyboard":"3:2");
+  const initial=saved.aspect_ratio||(storyboard?"storyboard":"3:2");
   ratio.value=[...ratio.options].some(o=>o.value===initial)?initial:(comic?"storyboard":"custom");
   const custom=element("div");custom.className="image-size-custom";root.append(custom);
   const initialParts=initial.split(":");

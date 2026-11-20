@@ -6,7 +6,8 @@ window.renderPromptStudio = async function(root, project) {
   ]);
   if (root.dataset.renderToken !== renderToken) return;
   const clothingPolicy = createClothingPolicy(initialCharacters.clothing_policy);
-  const draftKey="studio-prompt-draft-"+(project?.quick_sample&&!project.transient&&pid&&!pid.startsWith("tmp-")?pid:"new");
+  const board=!!project?.prompt_board;
+  const draftKey="studio-prompt-draft-"+(board || (project?.quick_sample&&!project.transient&&pid&&!pid.startsWith("tmp-"))?pid:"new");
   window.promptStudioDrafts ||= new Map();
   let draft=window.promptStudioDrafts.get(draftKey);
   try{const stored=JSON.parse(localStorage.getItem(draftKey)||"null");if(stored?.version===1&&(stored.updated||0)>(draft?.updated||0))draft=stored;}catch{}
@@ -14,9 +15,16 @@ window.renderPromptStudio = async function(root, project) {
   const saved = draft?.input || (project?.quick_sample ? project.prompt_input : {}) || {};
   const isDiffusion = name => !!data.diffusion_models?.[name];
   let animaActive = isDiffusion(saved.checkpoint || data.preloaded_checkpoint || data.comfy.configured);
-  const thisProject = project?.quick_sample ? pid : null;
+  const thisProject = board || project?.quick_sample ? pid : null;
+  const panelChoice=node("select"), panelHint=node("small"), panelLabel=node("label","当前画格");
+  panelChoice.setAttribute("aria-label","当前画格");
+  const panels=board ? Object.values(project.pages).flatMap(page=>page.panels) : [];
+  for(const panel of panels)panelChoice.add(new Option(panel.id+" · "+panel.aspect_ratio,panel.id));
+  if(panels.some(p=>p.id===saved.board_target))panelChoice.value=saved.board_target;
+  function describePanel(){const selected=panels.find(p=>p.id===panelChoice.value);panelHint.textContent=selected?.drawing_description || "提示词编号在本作品的分镜中不存在。";}
+  panelLabel.append(panelChoice,panelHint);describePanel();
   root.className = "prompt-studio";
-  root.replaceChildren(node("h2", "直接输入提示词画图"),
+  root.replaceChildren(node("h2", board ? project.brief.title : "直接输入提示词画图"),
     node("p", "输入画面描述，选择角色并填写外观。可先整理 / 转换英文提示词，核对后出图；多人可指定位置并分区绘制外观。"));
   const modelDescription = root.children[1];
   let jsonEditor;
@@ -46,6 +54,7 @@ window.renderPromptStudio = async function(root, project) {
         }
         if (!text) return notify("剪贴板中没有可粘贴的文字。", true);
         if (input.value !== before) throw Error("提示词已发生变化，请重新点击粘贴。");
+        if(board && useBoardPaste(text))return;
         input.setRangeText(text, start, end, "end");
         input.dispatchEvent(new Event("input", {bubbles:true}));
         input.focus();
@@ -58,6 +67,18 @@ window.renderPromptStudio = async function(root, project) {
     caption.append(tools); label.prepend(caption);
   }
   addCopy(positive, "正向提示词"); addCopy(negative, "负面提示词");
+  function useBoardPaste(text){
+    const row=pastedBoardPrompt(text);if(!row)return false;
+    if(!panels.some(p=>p.id===row.id))throw Error("分镜中没有 "+row.id+"，请核对编号。");
+    panelChoice.value=row.id;describePanel();
+    positive.value=row.positive;if(row.negative!==undefined)negative.value=row.negative;
+    jsonEditor.setId(row.id);positive.dispatchEvent(new Event("input",{bubbles:true}));window.savePromptDraft?.();
+    return true;
+  }
+  if(board)positive.addEventListener("paste",event=>{
+    try{if(useBoardPaste(event.clipboardData.getData("text/plain")))event.preventDefault();}
+    catch(error){event.preventDefault();notify(error.message,true);}
+  });
   const characterBox = node("section", undefined, "candidate prompt-characters");
   characterBox.append(node("h3", "角色 · 最多 4 个"));
   characterBox.append(node("small", "衣着由提示词决定；未提到衣着时才补入角色默认服装。可在下方最终预览核对。"));
@@ -295,7 +316,7 @@ window.renderPromptStudio = async function(root, project) {
   const taskNameLabel=node("label","排队任务名称（可选）"),taskName=node("input");taskName.maxLength=80;taskName.placeholder="例如：城市夜景 · 第二批";taskName.setAttribute("aria-label","排队任务名称");taskNameLabel.append(taskName);taskNameLabel.dataset.queueNameField="true";taskNameLabel.hidden=!window.lastStudioStatus?.queue?.can_rename;
   taskName.value=saved.task_name||"";
   const sizeFields=node("div",undefined,"image-size-fields");fields.append(sizeFields);
-  const imageSize = createImageSizeControls(sizeFields, saved);
+  const imageSize = createImageSizeControls(sizeFields, saved, {storyboard:board});
   const handLabel = node("label"), hand = node("input");
   hand.type = "checkbox"; hand.checked = saved.hand_detail ?? data.hand_detail?.enabled ?? false;
   hand.dataset.editKey = "prompt-hand-detail";
@@ -394,7 +415,10 @@ window.renderPromptStudio = async function(root, project) {
     if (characters.length && !data.prompt_characters) throw Error("请更新工作室后台后使用角色选择。当前输入已保留。");
     await loraPicker.flush();
     await preserve();
-    const created = await act(queued?"queue_prompt":"create_quick_sample", {text:positive.value, negative:negative.value,task_name:queued?taskName.value:undefined,
+    if(board && !panelChoice.value)throw Error("请核对提示词的页格编号。");
+    const action=board?(queued?"queue_board_panel":"draw_board_panel"):(queued?"queue_prompt":"create_quick_sample");
+    const created = await act(action, {text:positive.value, negative:negative.value,task_name:queued?taskName.value:undefined,
+      ...(board?{target:panelChoice.value,project:thisProject}:{}),
       checkpoint:model.value, count:Number(count.value), ...imageSize.read(), loras,
       characters, regional_characters:regional.checked && !regional.disabled,
       hand_detail:hand.checked,
@@ -407,8 +431,10 @@ window.renderPromptStudio = async function(root, project) {
       queuedReceipt.hidden=false;queuedReceiptText.textContent=`已加入：${count.value} 张 · ${positive.value.trim().slice(0,32)}。修改上方内容可继续添加。`;
       notify("已加入任务列表，结果会自动保存。可以修改提示词继续添加下一项。");await refreshStatus();await window.afterQueuedTask?.(created);return;
     }
-    await openProject(created.project);
-    await act("prompt_batch", {base_hash:snap.hash});
+    if(!board){
+      await openProject(created.project);
+      await act("prompt_batch", {base_hash:snap.hash});
+    }
     notify("已开始出图，进度在上方显示；完成后图片会出现在右侧。");
   }
   const start = button("开始画图",()=>submitPrompt(),"primary");
@@ -419,6 +445,7 @@ window.renderPromptStudio = async function(root, project) {
   root.append(fields, handLabel, handNote, consistencyLabel, consistencyNote, loraBox, node("small", "一次 1–16 张。LoRA 不自动改写原提示词；需要触发词请填写在对应角色的外观提示词中。角色参考图按勾选启用，不自动审核，中文不会自动翻译。"), start);
   const gallery = node("section", undefined, "prompt-gallery workspace-pane"); root.append(gallery);
   let activeImage = 0;
+  let seenImages=0;
   let galleryRevision = 0;
   const refresh = async () => {
     if (!gallery.isConnected) return;
@@ -450,7 +477,9 @@ window.renderPromptStudio = async function(root, project) {
     copyAll.setAttribute("aria-label", "复制所有图片");
     copyAll.title = "复制本次已生成的所有原图，可粘贴到文件夹或支持多图粘贴的软件";
     copyCurrent.disabled = copyAll.disabled = true;
-    copyTools.append(copyCurrent, copyAll, clearImages); gallery.append(copyTools);
+    copyTools.append(copyCurrent, copyAll);if(!board)copyTools.append(clearImages);
+    if(board)copyTools.append(button("整图修改",async()=>{await preserve();stage="finished";target="";await renderStage();}));
+    gallery.append(copyTools);
     async function copyImages(all) {
       if (!images.length) throw Error("还没有可复制的图片");
       const selected = all ? [...images] : [images[activeImage]];
@@ -480,9 +509,11 @@ window.renderPromptStudio = async function(root, project) {
     const result = await api("/api/images?id=" + encodeURIComponent(thisProject));
     if (!gallery.isConnected || revision !== galleryRevision) return;
     images = result.images.batches.flatMap(b => b.images.map(image => ({...image, batch:b})));
+    if(board && images.length>seenImages)activeImage=images.length-1;
+    seenImages=images.length;
     if (!images.length) {gallery.append(node("div", window.activeStudioJob
       ? "等待图片生成…\n生成进度显示在顶部"
-      : project?.transient===false?"这项排队作品还没有图片\n打开「任务列表」查看等待或执行状态":"暂无生成图片\n点击“开始画图”生成新图片", "gallery-empty"));return;}
+      : board?"生成候选图后，在图片下方点「采用」选入对应画格。":project?.transient===false?"这项排队作品还没有图片\n打开「任务列表」查看等待或执行状态":"暂无生成图片\n点击“开始画图”生成新图片", "gallery-empty"));return;}
     clearImages.dataset.unavailable = "false";
     clearImages.disabled = !!window.activeStudioJob;
     copyCurrent.disabled = copyAll.disabled = false;
@@ -509,6 +540,20 @@ window.renderPromptStudio = async function(root, project) {
       const info = node("details", undefined, "gallery-info");
       info.append(node("summary", "生成详情"), node("p",`模型：${image.batch.checkpoint} · 种子：${image.seed}`));
       card.append(link,open);
+      if(board){
+        const key=image.batch.panel_id, selected=result.images.selections[key]?.image.id===image.id;
+        if(selected){open.download=key+".png";open.textContent="下载 "+key+" 原图";}
+        const tools=node("div",undefined,"compact-actions");
+        const adopt=button(selected?"已采用 · "+key:"采用到 "+key,async()=>{
+          await api("/api/action",{action:"select_image",project:thisProject,target:key,image:image.id,compact:true});
+          await refresh();
+        },"primary");
+        adopt.disabled=selected;tools.append(adopt);
+        if(selected)tools.append(button("取消采用",async()=>{
+          await api("/api/action",{action:"unselect_board_image",project:thisProject,target:key,image:image.id});await refresh();
+        }));
+        card.append(tools);
+      }
       const panel = Object.values(project?.pages || {}).flatMap(page => page.panels)
         .find(p => p.id === image.batch.panel_id);
       if (panel && image.review?.verdict !== "pending") card.append(button("框选错误区域修复", () =>
@@ -553,9 +598,16 @@ window.renderPromptStudio = async function(root, project) {
   const inputPane = node("section", undefined, "prompt-input workspace-pane");
   const introduction = root.children[1];
   inputPane.append(root.firstElementChild, introduction, positive.parentElement, negative.parentElement, languageNotice);
-  jsonEditor=promptJsonEditor(positive,negative,"P001-K01",{...saved.json_editor},()=>{
+  jsonEditor=promptJsonEditor(positive,negative,board?panelChoice.value:"P001-K01",{...saved.json_editor},()=>{
+    if(board && jsonEditor.state.enabled && jsonEditor.valid()){panelChoice.value=boardPanelId(jsonEditor.state.id || panelChoice.value);describePanel();}
     refreshCharacters();window.savePromptDraft?.();
-  });
+  },false,board);
+  if(board){
+    if(jsonEditor.state.enabled && jsonEditor.state.id)panelChoice.value=boardPanelId(jsonEditor.state.id);
+    describePanel();
+    inputPane.insertBefore(panelLabel,jsonEditor.group);
+    panelChoice.onchange=()=>{describePanel();jsonEditor.setId(panelChoice.value);window.savePromptDraft?.();};
+  }
   const conversionTools = node("div", undefined, "compact-actions");
   let clearedInputs=null;
   const undoClear=button("撤销清空",()=>{
@@ -577,7 +629,7 @@ window.renderPromptStudio = async function(root, project) {
   clearInputs.title = "清空正向、负面提示词，并取消本次全部角色和 LoRA 勾选";
   conversionTools.append(convert, undoConversion);
   const topActions = node("div", undefined, "prompt-top-actions");
-  topActions.append(clearInputs,undoClear, node("small", project?.quick_sample && !project.transient ? "已保存的排队作品 · 图片可随时回来查看" : "直接出图为临时预览；加入任务列表会自动保存作品和结果"));
+  topActions.append(clearInputs,undoClear, node("small", board?"粘贴带页格编号的提示词可自动定位。候选图保存在此作品中。":project?.quick_sample && !project.transient ? "已保存的排队作品 · 图片可随时回来查看" : "直接出图为临时预览；加入任务列表会自动保存作品和结果"));
   const draftStatus=node("small",draft?.persisted===false?"已恢复本页暂存；浏览器存储不可用，关闭或刷新前请复制提示词。":draft?"已恢复上次输入 · 草稿保存在当前浏览器":"提示词和设置会自动保存在当前浏览器","prompt-draft-status");
   draftStatus.classList.toggle("warning",draft?.persisted===false);
   draftStatus.setAttribute("role","status");topActions.append(draftStatus);
@@ -595,7 +647,7 @@ window.renderPromptStudio = async function(root, project) {
   queuedReceipt.append(queuedReceiptText,button("查看列表 / 安排开始",()=>window.openStudioQueue()));submitActions.append(queuedReceipt);
   const submitSummary=node("small");submitActions.prepend(submitSummary);
   const updateSubmitSummary=()=>{
-    const missingModel=!model.value||!!model.selectedOptions[0]?.disabled,emptyPrompt=!positive.value.trim()||!jsonEditor.valid();
+    const missingModel=!model.value||!!model.selectedOptions[0]?.disabled,emptyPrompt=!positive.value.trim()||!jsonEditor.valid()||(board&&!panelChoice.value);
     let sizeText,invalidSize=false;try{sizeText=imageSize.summary();}catch(error){sizeText=error.message;invalidSize=true;}
     submitSummary.textContent=`${model.selectedOptions[0]?.textContent||"请选择模型"} · ${count.value} 张 · ${sizeText}`+(missingModel?" · 请选择已下载完整的模型":emptyPrompt?" · 先写下想画的画面":"");
     start.dataset.unavailable=enqueue.dataset.unavailable=String(missingModel||emptyPrompt||invalidSize);
@@ -609,7 +661,7 @@ window.renderPromptStudio = async function(root, project) {
   characterBox.classList.add("workspace-pane"); loraBox.classList.add("workspace-pane", "prompt-loras");
   libraryPane.append(characterBox, loraBox);
   root.replaceChildren(inputPane, libraryPane, gallery);
-  const draftInput=()=>({text:positive.value,negative:negative.value,json_editor:jsonEditor.state,checkpoint:model.value,count:Number(count.value),...imageSize.draft(),
+  const draftInput=()=>({text:positive.value,negative:negative.value,json_editor:jsonEditor.state,board_target:board?panelChoice.value:undefined,checkpoint:model.value,count:Number(count.value),...imageSize.draft(),
       task_name:taskName.value,regional_characters:regional.checked,reference_weight:strength.value,hand_detail:hand.checked,consistency_lora:consistency.checked,delta_matte_skin:matte.checked,
       characters:characterRows.filter(r=>r.check.checked||r.prompt.value!==r.defaultPrompt||r.region.value!=="null"||(!animaActive&&!r.useReference.checked)).map(r=>({name:r.card.name,revision:r.card.revision,selected:r.check.checked,prompt:r.prompt.value,
         region:JSON.parse(r.region.value),use_reference:r.useReference.checked})),

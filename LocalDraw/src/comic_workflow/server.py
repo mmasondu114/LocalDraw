@@ -146,6 +146,15 @@ class Application:
     def action(self, a):
         action = a["action"]
         pid = a.get("project")
+        if action in {"create_prompt_board", "draw_board_panel", "queue_board_panel", "unselect_board_image", "compose_board_page"}:
+            from . import prompt_board
+            if action == "create_prompt_board":
+                return prompt_board.create(self, a)
+            if action == "unselect_board_image":
+                return prompt_board.unselect(self.repo, pid, a.get("target"), a.get("image"))
+            if action == "compose_board_page":
+                return prompt_board.compose(self.repo, pid, a)
+            return prompt_board.submit(self, pid, a, action == "queue_board_panel")
         if action in {"fusion_source", "save_prompt_fusion"}:
             from . import task_fusion
             if action == "fusion_source":
@@ -973,6 +982,10 @@ def make_handler(app):
                         },
                     )
                     return
+                if url.path == "/api/board-layout":
+                    from .prompt_board import page_state
+                    self.send(200, page_state(app.repo, query["id"][0]))
+                    return
                 if url.path == "/api/status":
                     self.send(
                         200, {"model": app.model.status(), "jobs": app.jobs.listing(),
@@ -1093,6 +1106,7 @@ def make_handler(app):
                     "/story-import.js": "story-import.js",
                     "/model-downloads.js": "model-downloads.js",
                     "/drawing-model.js": "drawing-model.js",
+                    "/prompt-board.js": "prompt-board.js",
                     "/direct-imports.js": "direct-imports.js",
                     "/prompt-json.js": "prompt-json.js",
                     "/task-fusion.js": "task-fusion.js",

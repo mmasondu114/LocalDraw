@@ -20,7 +20,7 @@ def copy_images(repo, pid, image_ids):
     try:
         with LOCK:
             project = repo.get(pid)
-            e.need(project.get("quick_sample"), "请从提示词出图的图片预览中复制")
+            e.need(project.get("quick_sample") or project.get("prompt_board"), "请从提示词出图的图片预览中复制")
             image_root = (repo.folder(pid) / "images").resolve()
             index = e.read(image_root / "index.json")
             available = {image["id"]: image for batch in index.get("batches", [])

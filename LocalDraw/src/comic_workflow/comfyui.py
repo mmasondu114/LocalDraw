@@ -433,6 +433,7 @@ def run_batch(
     review_required=False,
     render_options=None,
     prompt_override=None,
+    board_sample=None,
 ):
     from .task_control import checkpoint as task_checkpoint, TaskCancelled
     task_checkpoint()
@@ -448,7 +449,14 @@ def run_batch(
         None,
     )
     e.need(panel, "请先确认文字分镜")
+    storyboard_hash = e.digest(panel)
     prompt = p.get("drawing_prompts", {}).get(target)
+    if board_sample is not None:
+        e.need(p.get("prompt_board") and board_sample["board_target"] == target
+               and board_sample["board_panel_hash"] == storyboard_hash, "这格分镜已更改，请重新提交")
+        p = board_sample
+        panel = p["pages"]["P001"]["panels"][0]
+        prompt = p["drawing_prompts"]["P001-K01"]
     if prompt_override is not None:
         from .character_binding import identity_hash
         e.need((render_options or {}).get("external_prompt") is True and mode == "seeds", "导入提示词只支持按原文出图")
@@ -682,7 +690,7 @@ def run_batch(
     batch = {
         "id": bid,
         "panel_id": target,
-        "panel_hash": e.digest(panel),
+        "panel_hash": storyboard_hash,
         "prompt_hash": e.digest(prompt),
         "identity_hash": identity_hash(p, panel),
         "checkpoint": checkpoint,

@@ -101,10 +101,11 @@ class NightQueue:
             item = copy.deepcopy(item)
         request = item["request"]
         if request["action"] == "prompt_batch":
-            project = self.app.repo.get(item["project"])
+            from .prompt_board import sample_input
+            project = sample_input(self.app.repo, item["project"], request)
             spec = project["prompt_input"]
             payload = project["drawing_prompts"]["P001-K01"]["payload"]
-            rows = [{"panel_id": "单幅出图", "positive": payload["positive"],
+            rows = [{"panel_id": project.get("board_target", "单幅出图"), "positive": payload["positive"],
                      "negative": payload["negative"], "loras": spec.get("loras", []),
                      "options": {key: spec.get(key) for key in ("aspect_ratio", "consistency_lora", "hand_detail")}}]
             checkpoint, count = spec["checkpoint"], spec["count"]

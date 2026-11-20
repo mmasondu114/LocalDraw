@@ -177,7 +177,17 @@ window.ensureDrawingTools = function() {
 const workspaceProject = () => newMode ? "new" : pid;
 const workspaceKey = () => `${stage}:${target}`;
 function saveWorkspace() {
-  if (stage === "prompt") {window.savePromptDraft?.();return;}
+  if (stage === "prompt") {
+    window.savePromptDraft?.();
+    if(snap?.project.prompt_board && pid && workspaceState.stage !== stage){
+      Object.assign(workspaceState,{stage,target:"",updated:Date.now()});
+      cacheLocal("studio-workspace-"+pid,JSON.stringify(workspaceState));
+      clearTimeout(workspaceTimer);
+      const project=pid,state=structuredClone(workspaceState);
+      workspaceTimer=setTimeout(()=>api("/api/action",{action:"save_workspace",project,state}).catch(()=>{}),450);
+    }
+    return;
+  }
   if (pid?.startsWith("tmp-")) return;
   if ((!newMode && (!pid || !snap)) || restoringWorkspace) return;
   const fields={};
@@ -1057,8 +1067,9 @@ async function openProject(id, refreshProjects = !boot.projects.some(p=>p.id===i
   newMode = false;
   snap = snapshot;
   if (switching) {
-    stage=snap.project.quick_sample?"prompt":initialStage;
+    stage=snap.project.quick_sample || snap.project.prompt_board ? "prompt" : initialStage;
     applyWorkspace(workspace);
+    if(snap.project.prompt_board && !["prompt","finished"].includes(stage))stage="prompt";
   }
   const listed = boot.projects.find(project=>project.id===id);
   if (listed) Object.assign(listed, {title:snap.project.brief.title, version:snap.project.version, pages:Object.keys(snap.project.pages).length});
@@ -1106,12 +1117,12 @@ async function renderStage() {
   names.script = "剧本与角色";
   names.problems = "问题格子";
   help.problems = "集中填写问题，交给 GPT 或本地 LLM 理解，再按每格数量统一重画。";
-  names.finished = "成品查看";
-  help.finished = "按页阅读已选图片与对白组成的漫画，检查后下载成品。";
+  names.finished = p?.prompt_board ? "整图修改" : "成品查看";
+  help.finished = p?.prompt_board ? "核对缺格，选择版式并下载漫画整页。" : "按页阅读已选图片与对白组成的漫画，检查后下载成品。";
   names.prompt = "提示词出图";
   help.prompt = "输入提示词，选择模型和张数，直接画图。";
   $("workflow-note").textContent = stage === "prompt"
-    ? "提示词 → 出图 → 查看 / 保存原图。本入口不自动审核或补画。"
+    ? (p?.prompt_board ? "按分镜出图，采用图片后进入整图修改。" : "提示词 → 出图 → 查看 / 保存原图。本入口不自动审核或补画。")
     : "01 剧本 → 02 分镜 → 03 绘图与选图 → 04 问题格子 → 05 成品查看。选好后查看整页与对白，再下载成品。";
   help.script = "粘贴故事、选择角色，然后直接生成文字分镜。";
   $("heading").textContent = names[stage];
@@ -1123,7 +1134,7 @@ async function renderStage() {
     ? "从创作需求开始"
     : p?.provenance || "人工编排结构测试样例；不是本地模型输出";
   $("stages").replaceChildren();
-  (p?.quick_sample || (newMode && stage==="prompt") ? ["prompt"] : ["script", "page", "drawing", "problems", "finished"]).forEach((s, i) => {
+  (p?.prompt_board ? ["prompt","finished"] : p?.quick_sample || (newMode && stage==="prompt") ? ["prompt"] : ["script", "page", "drawing", "problems", "finished"]).forEach((s, i) => {
     const b = button(
       `${String(i + 1).padStart(2, "0")}　${names[s]}`,
       async () => {
@@ -1169,6 +1180,10 @@ async function renderStage() {
     dirty = false;
     saveWorkspace();
     try {
+      if (p?.prompt_board) {
+        await renderBoardLayout($("extras"), projectId);
+        return;
+      }
       await window.renderFinishedComic($("extras"), {
         projectId, api, node, button,
         layoutFields: structuredClone(workspaceState.views?.["drawing:"]?.fields || {}),
@@ -1776,13 +1791,17 @@ $("new-project").onclick = safe(async () => {
   } finally {$("new-project").disabled = false;}
 });
 $("import-prompts").onclick = safe(() => window.openDirectPromptImport());
+function enterPromptBoard() {
+  if(typeof openPromptBoard==="function")return openPromptBoard();
+  notify("请先保存临时图片，然后重启工作室后台以使用分镜出图。",true);
+}
 $("import-story").onclick = safe(() => window.openStoryImport());
 $("prompt-entry").onclick = safe(async () => {
   await preserve();
   clearTimeout(workspaceTimer);
   // The task timeline is an overlay. Reuse its underlying prompt editor so
   // adding the next card keeps the user's latest text and LoRA selections.
-  if(stage === "prompt" && $("extras").querySelector('[data-edit-key="prompt-positive"]'))return;
+  if(!snap?.project.prompt_board) {enterPromptBoard();return;}
   stage = "prompt"; target = "";
   await renderStage();
 });

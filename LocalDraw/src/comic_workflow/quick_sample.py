@@ -212,7 +212,7 @@ def prompt_panel(text, ratio, cast, page="P001", number=1):
              "transition_out": "独立单幅画面", "state_after": {}, "drawing_description": text}
 
 
-def create(repo, request, *, persistent=False):
+def prepare_sample(repo, request):
     text = request.get("text", "")
     e.need(isinstance(text, str) and 1 <= len(text.strip()) <= 12000, "请输入 1–12000 字符的提示词")
     negative = request.get("negative", "")
@@ -325,10 +325,15 @@ def create(repo, request, *, persistent=False):
     if not using_anima:
         plan(loras, p, panel, p["drawing_prompts"]["P001-K01"]["payload"])
     p["prompt_input"]["loras"] = loras
+    return p
+
+
+def create(repo, request, *, persistent=False):
+    p = prepare_sample(repo, request)
     pid = "prompt-" + uuid.uuid4().hex[:12] if persistent else repo.create_transient()
     p["transient"] = not persistent
     if persistent:
-        p["brief"]["title"] = "排队出图 · " + text.strip().splitlines()[0][:24]
+        p["brief"]["title"] = "排队出图 · " + p["script"].strip().splitlines()[0][:24]
     with LOCK:
         folder = repo.folder(pid)
         e.save(folder / "project.json", p)
@@ -337,7 +342,8 @@ def create(repo, request, *, persistent=False):
 
 
 def run(app, pid, request, update, jid):
-    p = app.repo.get(pid)
+    from .prompt_board import sample_input
+    p = sample_input(app.repo, pid, request)
     e.need(p.get("quick_sample") and e.digest(p) == request["base_hash"], "试画输入已变化，请刷新")
     spec = p["prompt_input"]
     loras = selected_loras(spec.get("loras", []), spec["checkpoint"])
@@ -386,8 +392,9 @@ def run(app, pid, request, update, jid):
                     continue
             try:
                 emit(f"绘制第 {i + 1}/{spec['count']} 张")
-                batch = comfyui.run_batch(app.repo, pid, "P001-K01", emit, spec["checkpoint"], 1,
+                batch = comfyui.run_batch(app.repo, pid, p.get("board_target", "P001-K01"), emit, spec["checkpoint"], 1,
                     "seeds", loras, candidate_indices=[i], review_required=False,
+                    **({"board_sample": p} if p.get("board_target") else {}),
                     render_options={"diagnostic": "small_batch", "direct_prompt": True,
                                     "aspect_ratio": spec["aspect_ratio"], "resolution": spec.get("resolution", "default"),
                                     "consistency_lora": spec.get("consistency_lora", comfyui.config().get("consistency_lora", False)),

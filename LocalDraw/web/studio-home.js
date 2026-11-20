@@ -78,13 +78,7 @@ window.showStudioHome = async function({refresh=true} = {}) {
     },"primary"));
     choices.append(box);
   }
-  card("01","提示词出图","描述画面，搭配角色与 LoRA，让一个灵感成为一张图。","开始画一张图",async()=>{
-    if(stage==="prompt"&&$("extras").querySelector('[data-edit-key="prompt-positive"]')){await preserve();return;}
-    await preserve();clearTimeout(workspaceTimer);
-    if(pid?.startsWith("tmp-"))await api("/api/action",{action:"release_prompt",project:pid});
-    newMode=true;pid=null;snap=null;dirty=false;stage="prompt";target="";workspaceState={views:{}};
-    window.flushLoraSettings=null;$("projects").value="";await renderStage();
-  });
+  card("01","提示词出图","先写标题和分镜，再逐格出图、挑选图片，合成漫画页。","创建分镜作品",()=>enterPromptBoard(),false);
   card("02","创作新漫画","写下故事，确认分镜，挑选画面。把每一页慢慢打磨好。","开始一个新故事",async()=>{await $("new-project").onclick();});
   card("03","逐格提示词出图","导入提示词后，选择角色、LoRA 和每格生成张数。","直接导入每格提示词",()=>window.openDirectPromptImport(),false);
   home.append(choices);

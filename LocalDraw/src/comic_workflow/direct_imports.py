@@ -171,7 +171,7 @@ def standalone_import(repo, library, request):
     return save_panel_work(repo, library, rows, request.get("import_key"), title, digest)
 
 
-def save_panel_work(repo, library, rows, key, title, digest):
+def save_panel_work(repo, library, rows, key, title, digest, *, board=False):
     from .quick_sample import prompt_characters, prompt_panel
     e.need(isinstance(key, str) and re.fullmatch(r"[a-f0-9]{32}", key), "导入标识无效")
     pid = "panels-" + key
@@ -190,7 +190,7 @@ def save_panel_work(repo, library, rows, key, title, digest):
                           "page_turn_note": "", "state_in": {}, "state_out": {}, "lettering": [], "panels": []})
         last_group = group
         page = pages[-1]
-        summary = row["positive"].strip().splitlines()[0][:100]
+        summary = row["description"] if board else row["positive"].strip().splitlines()[0][:100]
         panel = prompt_panel(summary, row.get("aspect_ratio", "3:2"), [], page["id"], len(page["panels"]) + 1)
         page["panels"].append(panel)
         prompts.append({**row, "page_id": page["id"], "panel_id": panel["id"], "panel_hash": e.digest(panel),
@@ -203,15 +203,19 @@ def save_panel_work(repo, library, rows, key, title, digest):
                      "layout": "", "landmarks": [], "lighting": "", "axis_rule": ""}],
                      "props": [], "world_rules": [], "initial_state": {}}, "pages": pages}
     _, project, _, _ = story_import.prepare(doc, library)
+    if board:
+        project["prompt_board"] = True
+        project["provenance"] = "用户填写的创作分镜"
     bundle = {"id": key, "created": e.stamp(), "project_id": pid, "storyboard_hash": story_fingerprint(project),
               "panels": prompts}
     result = {"project": pid, "bundle": key, "saved": len(rows), "targets": [r["panel_id"] for r in prompts]}
     with tempfile.TemporaryDirectory(dir=repo.root) as temp:
         stage = Path(temp) / "pending"
-        e.save(stage / "prompt-imports" / (key + ".json"), bundle)
-        e.save(stage / "prompt-imports" / "current.json", {"id": key})
+        if not board:
+            e.save(stage / "prompt-imports" / (key + ".json"), bundle)
+            e.save(stage / "prompt-imports" / "current.json", {"id": key})
         e.save(stage / "prompt-imports" / "receipt.json", {"hash": digest, "result": result})
-        e.save(stage / "workspace.json", {"stage": "drawing", "target": "", "views": {}, "updated": 1})
+        e.save(stage / "workspace.json", {"stage": "prompt" if board else "drawing", "target": "", "views": {}, "updated": 1})
         e.save(stage / "project.json", project)
         stage.rename(dest)
     return result
