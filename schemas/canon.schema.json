@@ -1,0 +1,175 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "characters": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "origin": {
+            "type": "string",
+            "enum": [
+              "original",
+              "existing_work"
+            ]
+          },
+          "source_notes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 0
+          },
+          "verified_facts": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 0
+          },
+          "adaptation_choices": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 0
+          },
+          "unknowns": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 0
+          },
+          "appearance": {
+            "type": "string"
+          },
+          "voice": {
+            "type": "string"
+          },
+          "sample_lines": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 0
+          },
+          "motivation": {
+            "type": "string"
+          },
+          "taboos": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 0
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "origin",
+          "source_notes",
+          "verified_facts",
+          "adaptation_choices",
+          "unknowns",
+          "appearance",
+          "voice",
+          "sample_lines",
+          "motivation",
+          "taboos"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 1
+    },
+    "scenes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "layout": {
+            "type": "string"
+          },
+          "landmarks": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 0
+          },
+          "lighting": {
+            "type": "string"
+          },
+          "axis_rule": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "layout",
+          "landmarks",
+          "lighting",
+          "axis_rule"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 1
+    },
+    "props": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "description"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 0
+    },
+    "world_rules": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 0
+    },
+    "initial_state": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "characters",
+    "scenes",
+    "props",
+    "world_rules",
+    "initial_state"
+  ],
+  "additionalProperties": false
+}

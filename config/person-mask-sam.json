@@ -1,0 +1,5 @@
+{
+  "model": "models/person_detection/sam2.1_b.pt",
+  "source": "https://github.com/ultralytics/assets/releases/download/v8.3.0/sam2.1_b.pt",
+  "sha256": "f1a9cf2dd69d84bb463b5ad98246d03e2d47a130a9295db0ec967e6cd95e2e47"
+}

@@ -1,0 +1,24 @@
+{
+  "sdk": "Microsoft.Web.WebView2 1.0.3179.45",
+  "source": "Existing Microsoft-signed SDK files under C:\\Program Files (x86)\\VeryKuai\\2.7.2.3; source files unchanged",
+  "files": [
+    {
+      "file": "Microsoft.Web.WebView2.Core.dll",
+      "version": "1.0.3179.45",
+      "sha256": "4A4EFDF712CEEA4050EB2252EC2A9136CDCF32B9BFBB3AD58D79396F36E9665D",
+      "signature": "Valid"
+    },
+    {
+      "file": "Microsoft.Web.WebView2.WinForms.dll",
+      "version": "1.0.3179.45",
+      "sha256": "5705967F8BD1D711CFD48BDC9970EE491D7E96E4CD618A7BA41A534887CFBF5F",
+      "signature": "Valid"
+    },
+    {
+      "file": "WebView2Loader.dll",
+      "version": "1.0.3179.45",
+      "sha256": "1970AE5E398666304483203DAE64F8BC3327811114AE38BB3484ECBCE1386B41",
+      "signature": "Valid"
+    }
+  ]
+}

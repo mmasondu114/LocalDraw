@@ -1,0 +1,598 @@
+{
+  "version": 1,
+  "brief": {
+    "title": "末班车的失物",
+    "genre": "都市温情悬疑",
+    "direction": "雨夜旧车站，年轻值班员误以为陌生老人来寻找遗失的钱，最后发现他只是来归还一把旧伞。结尾克制，不说教。",
+    "page_count": 2,
+    "panels_per_page": 3,
+    "reading_direction": "LTR",
+    "page_mode": "single_page",
+    "first_story_page_side": "right",
+    "must_include": [
+      "老人把一枚铜色号码牌放在柜台上",
+      "下一页才揭晓号码牌对应的是旧伞",
+      "值班员最终把伞推回老人面前"
+    ],
+    "avoid": [
+      "超自然解释",
+      "长篇鸡汤对白"
+    ],
+    "character_material": "均为原创角色。C001 林夏：23岁女值班员，短黑发，深蓝制服，讲话简短，先办事再关心人；C002 陈伯：70岁老人，灰色雨衣，慢条斯理，不解释自己的善意。两人第一次见面。"
+  },
+  "canon": {
+    "characters": [
+      {
+        "id": "C001",
+        "name": "林夏",
+        "origin": "original",
+        "source_notes": [
+          "用户示例设定"
+        ],
+        "verified_facts": [],
+        "adaptation_choices": [
+          "23岁女值班员"
+        ],
+        "unknowns": [],
+        "appearance": "短黑发、深蓝制服",
+        "voice": "短句，先问办事需要，不煽情",
+        "sample_lines": [
+          "您丢了什么？",
+          "还下着呢。"
+        ],
+        "motivation": "完成值班，同时不让老人淋雨",
+        "taboos": [
+          "突然对陌生人长篇说教"
+        ]
+      },
+      {
+        "id": "C002",
+        "name": "陈伯",
+        "origin": "original",
+        "source_notes": [
+          "用户示例设定"
+        ],
+        "verified_facts": [],
+        "adaptation_choices": [
+          "70岁老人"
+        ],
+        "unknowns": [],
+        "appearance": "灰色雨衣、白色短发",
+        "voice": "慢、少字，用具体物品回应",
+        "sample_lines": [
+          "不是来领的。",
+          "借了很久。"
+        ],
+        "motivation": "归还多年前借的伞",
+        "taboos": [
+          "自夸善良"
+        ]
+      }
+    ],
+    "scenes": [
+      {
+        "id": "S001",
+        "name": "雨夜车站失物窗口",
+        "layout": "镜头位于柜台侧面，林夏在画面左侧柜台内，陈伯在右侧柜台外；出口在右后方",
+        "landmarks": [
+          "柜台右侧暖色台灯",
+          "右后方玻璃门"
+        ],
+        "lighting": "暖色室内灯与门外冷雨光",
+        "axis_rule": "两人连线为轴，保持林夏左陈伯右；特写不交换手和道具方向"
+      }
+    ],
+    "props": [
+      {
+        "id": "O001",
+        "description": "刻着17的铜色号码牌"
+      },
+      {
+        "id": "O002",
+        "description": "黑布旧长柄伞，木柄有一道浅裂纹"
+      }
+    ],
+    "world_rules": [
+      "现实都市，无超自然机制"
+    ],
+    "initial_state": {
+      "C001.location": "柜台内左侧",
+      "C002.location": "柜台外右侧",
+      "C001.clothing": "深蓝制服",
+      "C002.clothing": "灰色雨衣",
+      "O001.holder": "C002右手",
+      "O002.holder": "C002左手，柜台下不可见",
+      "knowledge.C001": "不知道来意",
+      "knowledge.C002": "来归还旧伞",
+      "time": "雨夜末班车后"
+    }
+  },
+  "options": {
+    "options": [
+      {
+        "id": "A",
+        "title": "归还",
+        "logline": "老人带着旧号码牌来归还多年前借的伞。",
+        "beats": [
+          "老人带着旧号码牌来归还多年前借的伞。"
+        ],
+        "ending": "值班员把伞推回去，让他继续遮雨。",
+        "tradeoff": "安静温情，反转较轻"
+      },
+      {
+        "id": "B",
+        "title": "认领",
+        "logline": "号码牌属于值班员失联的父亲，老人带来他留下的伞。",
+        "beats": [
+          "号码牌属于值班员失联的父亲，老人带来他留下的伞。"
+        ],
+        "ending": "值班员把伞推给老人，请他带路。",
+        "tradeoff": "悬疑更强，需要额外身世设定"
+      },
+      {
+        "id": "C",
+        "title": "轮值",
+        "logline": "老人每逢雨夜归还伞，想让下一位陌生人有伞可借。",
+        "beats": [
+          "老人每逢雨夜归还伞，想让下一位陌生人有伞可借。"
+        ],
+        "ending": "值班员让淋雨的老人先用，明天再还。",
+        "tradeoff": "强调善意传递，容易说教"
+      }
+    ]
+  },
+  "outline": {
+    "selected_option": "A",
+    "premise": "值班员以为老人来认领失物，老人却来还旧伞。",
+    "beats": [
+      "老人出示号码牌",
+      "否认来认领，引出悬念",
+      "翻页揭晓旧伞",
+      "值班员注意门外雨没停，把伞推回"
+    ],
+    "ending": "林夏只说还下着呢。",
+    "must_include_mapping": [
+      "P001-K02 号码牌",
+      "P002-K01 旧伞揭晓",
+      "P002-K03 推回旧伞"
+    ],
+    "unknowns": []
+  },
+  "plan": {
+    "pages": [
+      {
+        "id": "P001",
+        "number": 1,
+        "scene_ids": [
+          "S001"
+        ],
+        "character_ids": [
+          "C001",
+          "C002"
+        ],
+        "panel_count": 3,
+        "purpose": "建立误会和悬念",
+        "beat": "老人递出号码牌，却说不是来领的",
+        "hook": "那他来做什么？",
+        "reveal": "暂不显示旧伞",
+        "turn_after": true,
+        "constraints": [
+          "林夏左、陈伯右",
+          "柜台下方旧伞在第一页不可见"
+        ]
+      },
+      {
+        "id": "P002",
+        "number": 2,
+        "scene_ids": [
+          "S001"
+        ],
+        "character_ids": [
+          "C001",
+          "C002"
+        ],
+        "panel_count": 3,
+        "purpose": "揭晓并完成无声选择",
+        "beat": "旧伞出现，林夏让老人继续使用",
+        "hook": "留白结束",
+        "reveal": "归还旧伞",
+        "turn_after": true,
+        "constraints": [
+          "维持角色左右位置",
+          "保持雨夜"
+        ]
+      }
+    ]
+  },
+  "pages": {
+    "P001": {
+      "id": "P001",
+      "number": 1,
+      "reading_direction": "LTR",
+      "layout": "从上到下三个横格，格内从左向右阅读",
+      "page_turn_note": "单页阅读；末格留问，下一页才揭晓旧伞",
+      "state_in": {
+        "C001.location": "柜台内左侧",
+        "C002.location": "柜台外右侧",
+        "C001.clothing": "深蓝制服",
+        "C002.clothing": "灰色雨衣",
+        "O001.holder": "C002右手",
+        "O002.holder": "C002左手，柜台下不可见",
+        "knowledge.C001": "不知道来意",
+        "knowledge.C002": "来归还旧伞",
+        "time": "雨夜末班车后"
+      },
+      "panels": [
+        {
+          "id": "P001-K01",
+          "page_id": "P001",
+          "number": 1,
+          "purpose": "建立空间和误会",
+          "layout": "上方横幅，占页高40%",
+          "shot": "中远景",
+          "angle": "平视",
+          "composition": "林夏左、陈伯右，柜台遮住两人腰部以下，右后玻璃门有雨痕",
+          "scene_id": "S001",
+          "characters": [
+            {
+              "character_id": "C001",
+              "position": "左侧柜台内",
+              "action": "双手停在账本旁",
+              "expression": "公事公办但不冷淡",
+              "gaze": "依据构图面向互动对象（旧样例迁移，待人工细化）"
+            },
+            {
+              "character_id": "C002",
+              "position": "右侧柜台外",
+              "action": "面对林夏站定，双手在柜台下",
+              "expression": "平静",
+              "gaze": "依据构图面向互动对象（旧样例迁移，待人工细化）"
+            }
+          ],
+          "main_instant": "林夏隔着柜台看向陈伯",
+          "background": "旧车站失物窗口，右后台灯和玻璃门；门外雨夜",
+          "props": [],
+          "transition_in": "开场建立空间",
+          "transition_out": "沿道具与人物视线切到下一格",
+          "state_after": {
+            "C001.location": "柜台内左侧",
+            "C002.location": "柜台外右侧",
+            "C001.clothing": "深蓝制服",
+            "C002.clothing": "灰色雨衣",
+            "O001.holder": "C002右手",
+            "O002.holder": "C002左手，柜台下不可见",
+            "knowledge.C001": "不知道来意",
+            "knowledge.C002": "来归还旧伞",
+            "time": "雨夜末班车后"
+          },
+          "drawing_description": "林夏左、陈伯右，柜台遮住两人腰部以下，右后玻璃门有雨痕。林夏隔着柜台看向陈伯。不要画出柜台下方或旧伞。",
+          "aspect_ratio": "3:2"
+        },
+        {
+          "id": "P001-K02",
+          "page_id": "P001",
+          "number": 2,
+          "purpose": "让号码牌成为误导线索",
+          "layout": "中间窄幅，占页高25%",
+          "shot": "特写",
+          "angle": "微俯视",
+          "composition": "号码牌居中，陈伯右手从画面右侧进入，林夏和伞均不入镜",
+          "scene_id": "S001",
+          "characters": [
+            {
+              "character_id": "C002",
+              "position": "画外右侧，仅右手入镜",
+              "action": "指尖压在号码牌边缘",
+              "expression": "不入镜",
+              "gaze": "依据构图面向互动对象（旧样例迁移，待人工细化）"
+            }
+          ],
+          "main_instant": "陈伯右手指尖将铜色号码牌按在柜台上",
+          "background": "浅景深柜台表面，暖光从画面右侧落下",
+          "props": [
+            {
+              "prop_id": "O001",
+              "position": "柜台中央，陈伯右手指尖下",
+              "state": "17字样朝向林夏"
+            }
+          ],
+          "transition_in": "保持林夏左、陈伯右，沿上一格视线切入",
+          "transition_out": "沿道具与人物视线切到下一格",
+          "state_after": {
+            "C001.location": "柜台内左侧",
+            "C002.location": "柜台外右侧",
+            "C001.clothing": "深蓝制服",
+            "C002.clothing": "灰色雨衣",
+            "O001.holder": "柜台中央",
+            "O002.holder": "C002左手，柜台下不可见",
+            "knowledge.C001": "不知道来意",
+            "knowledge.C002": "来归还旧伞",
+            "time": "雨夜末班车后"
+          },
+          "drawing_description": "号码牌居中，陈伯右手从画面右侧进入，林夏和伞均不入镜。陈伯右手指尖将铜色号码牌按在柜台上。不要画出柜台下方或旧伞。",
+          "aspect_ratio": "3:2"
+        },
+        {
+          "id": "P001-K03",
+          "page_id": "P001",
+          "number": 3,
+          "purpose": "建立翻页悬念",
+          "layout": "底部横幅，占页高35%",
+          "shot": "近景",
+          "angle": "平视",
+          "composition": "陈伯在画面右侧，左侧留林夏肩部轮廓；裁切在胸口以上",
+          "scene_id": "S001",
+          "characters": [
+            {
+              "character_id": "C002",
+              "position": "右侧主体",
+              "action": "目光停在林夏脸上",
+              "expression": "轻微迟疑",
+              "gaze": "依据构图面向互动对象（旧样例迁移，待人工细化）"
+            },
+            {
+              "character_id": "C001",
+              "position": "左侧前景肩部",
+              "action": "面对陈伯",
+              "expression": "脸不入镜",
+              "gaze": "依据构图面向互动对象（旧样例迁移，待人工细化）"
+            }
+          ],
+          "main_instant": "陈伯望着林夏说不是来领的",
+          "background": "旧车站失物窗口，右后台灯和玻璃门；门外雨夜",
+          "props": [],
+          "transition_in": "保持林夏左、陈伯右，沿上一格视线切入",
+          "transition_out": "本页结束，翻页才显示旧伞",
+          "state_after": {
+            "C001.location": "柜台内左侧",
+            "C002.location": "柜台外右侧",
+            "C001.clothing": "深蓝制服",
+            "C002.clothing": "灰色雨衣",
+            "O001.holder": "柜台中央",
+            "O002.holder": "C002左手，柜台下不可见",
+            "knowledge.C001": "知道老人不是来认领失物，仍不明来意",
+            "knowledge.C002": "来归还旧伞",
+            "time": "雨夜末班车后"
+          },
+          "drawing_description": "陈伯在画面右侧，左侧留林夏肩部轮廓；裁切在胸口以上。陈伯望着林夏说不是来领的。不要画出柜台下方或旧伞。",
+          "aspect_ratio": "3:2"
+        }
+      ],
+      "lettering": [
+        {
+          "id": "P001-K01-T01",
+          "panel_id": "P001-K01",
+          "kind": "dialogue",
+          "speaker_id": "C001",
+          "text": "您丢了什么？",
+          "bubble_position": "左上，尾巴指向林夏",
+          "order": 1
+        },
+        {
+          "id": "P001-K02-T01",
+          "panel_id": "P001-K02",
+          "kind": "sfx",
+          "speaker_id": null,
+          "text": "嗒",
+          "bubble_position": "号码牌右下，小字",
+          "order": 1
+        },
+        {
+          "id": "P001-K03-T01",
+          "panel_id": "P001-K03",
+          "kind": "dialogue",
+          "speaker_id": "C002",
+          "text": "不是来领的。",
+          "bubble_position": "右上，避开陈伯脸",
+          "order": 1
+        }
+      ],
+      "state_out": {
+        "C001.location": "柜台内左侧",
+        "C002.location": "柜台外右侧",
+        "C001.clothing": "深蓝制服",
+        "C002.clothing": "灰色雨衣",
+        "O001.holder": "柜台中央",
+        "O002.holder": "C002左手，柜台下不可见",
+        "knowledge.C001": "知道老人不是来认领失物，仍不明来意",
+        "knowledge.C002": "来归还旧伞",
+        "time": "雨夜末班车后"
+      }
+    },
+    "P002": {
+      "id": "P002",
+      "number": 2,
+      "reading_direction": "LTR",
+      "layout": "从上到下三个横格，格内从左向右阅读",
+      "page_turn_note": "首格揭晓旧伞；末格结束，留雨声余韵",
+      "state_in": {
+        "C001.location": "柜台内左侧",
+        "C002.location": "柜台外右侧",
+        "C001.clothing": "深蓝制服",
+        "C002.clothing": "灰色雨衣",
+        "O001.holder": "柜台中央",
+        "O002.holder": "C002左手，柜台下不可见",
+        "knowledge.C001": "知道老人不是来认领失物，仍不明来意",
+        "knowledge.C002": "来归还旧伞",
+        "time": "雨夜末班车后"
+      },
+      "panels": [
+        {
+          "id": "P002-K01",
+          "page_id": "P002",
+          "number": 1,
+          "purpose": "翻页揭晓旧伞",
+          "layout": "上方横幅，占页高40%",
+          "shot": "特写",
+          "angle": "微俯视",
+          "composition": "黑布旧伞横贯画面，裂纹木柄朝右；号码牌位于伞后，不遮挡17",
+          "scene_id": "S001",
+          "characters": [
+            {
+              "character_id": "C002",
+              "position": "画外右侧，仅左手入镜",
+              "action": "左手扶住刚落在柜台的伞柄",
+              "expression": "不入镜",
+              "gaze": "依据构图面向互动对象（旧样例迁移，待人工细化）"
+            }
+          ],
+          "main_instant": "陈伯左手将旧伞横放在柜台上",
+          "background": "浅景深柜台表面，暖光从画面右侧落下",
+          "props": [
+            {
+              "prop_id": "O001",
+              "position": "柜台中央偏后",
+              "state": "仍朝林夏"
+            },
+            {
+              "prop_id": "O002",
+              "position": "柜台横放，木柄在右",
+              "state": "收拢，木柄浅裂纹"
+            }
+          ],
+          "transition_in": "保持林夏左、陈伯右，沿上一格视线切入",
+          "transition_out": "沿道具与人物视线切到下一格",
+          "state_after": {
+            "C001.location": "柜台内左侧",
+            "C002.location": "柜台外右侧",
+            "C001.clothing": "深蓝制服",
+            "C002.clothing": "灰色雨衣",
+            "O001.holder": "柜台中央",
+            "O002.holder": "柜台上，陈伯左手扶柄",
+            "knowledge.C001": "知道老人来还一把借了很久的伞",
+            "knowledge.C002": "来归还旧伞",
+            "time": "雨夜末班车后"
+          },
+          "drawing_description": "黑布旧伞横贯画面，裂纹木柄朝右；号码牌位于伞后，不遮挡17。陈伯左手将旧伞横放在柜台上。维持暖灯与冷雨光。",
+          "aspect_ratio": "3:2"
+        },
+        {
+          "id": "P002-K02",
+          "page_id": "P002",
+          "number": 2,
+          "purpose": "用视线而非说明呈现决定",
+          "layout": "中间窄幅，占页高25%",
+          "shot": "近景",
+          "angle": "平视",
+          "composition": "林夏在左侧近景，右后玻璃门雨痕可见，台面在画框之外",
+          "scene_id": "S001",
+          "characters": [
+            {
+              "character_id": "C001",
+              "position": "画面左侧",
+              "action": "目光转向右后方玻璃门",
+              "expression": "眉眼放松",
+              "gaze": "依据构图面向互动对象（旧样例迁移，待人工细化）"
+            }
+          ],
+          "main_instant": "林夏的视线落向玻璃门上的雨痕",
+          "background": "旧车站失物窗口，右后台灯和玻璃门；门外雨夜",
+          "props": [],
+          "transition_in": "保持林夏左、陈伯右，沿上一格视线切入",
+          "transition_out": "沿道具与人物视线切到下一格",
+          "state_after": {
+            "C001.location": "柜台内左侧",
+            "C002.location": "柜台外右侧",
+            "C001.clothing": "深蓝制服",
+            "C002.clothing": "灰色雨衣",
+            "O001.holder": "柜台中央",
+            "O002.holder": "柜台上，陈伯左手扶柄",
+            "knowledge.C001": "知道老人来还一把借了很久的伞",
+            "knowledge.C002": "来归还旧伞",
+            "time": "雨夜末班车后"
+          },
+          "drawing_description": "林夏在左侧近景，右后玻璃门雨痕可见，台面在画框之外。林夏的视线落向玻璃门上的雨痕。维持暖灯与冷雨光。",
+          "aspect_ratio": "3:2"
+        },
+        {
+          "id": "P002-K03",
+          "page_id": "P002",
+          "number": 3,
+          "purpose": "完成关怀的选择",
+          "layout": "底部横幅，占页高35%",
+          "shot": "中景",
+          "angle": "平视",
+          "composition": "林夏在左、陈伯在右，伞沿柜台向右滑，号码牌留在原位；右上预留空白",
+          "scene_id": "S001",
+          "characters": [
+            {
+              "character_id": "C001",
+              "position": "左侧柜台内",
+              "action": "右手掌贴着伞身向右推",
+              "expression": "平静自然",
+              "gaze": "依据构图面向互动对象（旧样例迁移，待人工细化）"
+            },
+            {
+              "character_id": "C002",
+              "position": "右侧柜台外",
+              "action": "双手停在胸前，没有同时接伞",
+              "expression": "稍显意外",
+              "gaze": "依据构图面向互动对象（旧样例迁移，待人工细化）"
+            }
+          ],
+          "main_instant": "林夏右手把旧伞推到陈伯面前",
+          "background": "旧车站失物窗口，右后台灯和玻璃门；门外雨夜",
+          "props": [
+            {
+              "prop_id": "O001",
+              "position": "柜台中央偏后",
+              "state": "未移动"
+            },
+            {
+              "prop_id": "O002",
+              "position": "柜台右侧陈伯面前",
+              "state": "林夏右手仍贴着伞身"
+            }
+          ],
+          "transition_in": "保持林夏左、陈伯右，沿上一格视线切入",
+          "transition_out": "以雨声留白结束",
+          "state_after": {
+            "C001.location": "柜台内左侧",
+            "C002.location": "柜台外右侧",
+            "C001.clothing": "深蓝制服",
+            "C002.clothing": "灰色雨衣",
+            "O001.holder": "柜台中央",
+            "O002.holder": "柜台右侧陈伯面前，林夏右手贴着伞身",
+            "knowledge.C001": "知道老人来还一把借了很久的伞",
+            "knowledge.C002": "知道林夏让自己继续用伞",
+            "time": "雨夜末班车后"
+          },
+          "drawing_description": "林夏在左、陈伯在右，伞沿柜台向右滑，号码牌留在原位；右上预留空白。林夏右手把旧伞推到陈伯面前。维持暖灯与冷雨光。",
+          "aspect_ratio": "3:2"
+        }
+      ],
+      "lettering": [
+        {
+          "id": "P002-K01-T01",
+          "panel_id": "P002-K01",
+          "kind": "dialogue",
+          "speaker_id": "C002",
+          "text": "借了很久。",
+          "bubble_position": "右上画外气泡，尾巴指向画外右侧",
+          "order": 1
+        },
+        {
+          "id": "P002-K03-T01",
+          "panel_id": "P002-K03",
+          "kind": "dialogue",
+          "speaker_id": "C001",
+          "text": "还下着呢。",
+          "bubble_position": "左上，尾巴指向林夏，避开推伞动作",
+          "order": 1
+        }
+      ],
+      "state_out": {
+        "C001.location": "柜台内左侧",
+        "C002.location": "柜台外右侧",
+        "C001.clothing": "深蓝制服",
+        "C002.clothing": "灰色雨衣",
+        "O001.holder": "柜台中央",
+        "O002.holder": "柜台右侧陈伯面前，林夏右手贴着伞身",
+        "knowledge.C001": "知道老人来还一把借了很久的伞",
+        "knowledge.C002": "知道林夏让自己继续用伞",
+        "time": "雨夜末班车后"
+      }
+    }
+  },
+  "provenance": "人工编排结构测试样例；不是本地模型输出"
+}

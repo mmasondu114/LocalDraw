@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>本地漫画工作室</title>
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body class="at-home">
+    <header>
+      <div class="brand-group">
+        <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><rect x="1" y="1" width="30" height="30" rx="9" fill="currentColor"/><path d="M9 9v14h14M14 18l9-9M17 9h6v6" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span class="brand">本地漫画工作室</span>
+        <span class="workspace-tag" title="生成任务会自动加载所需模型，无需提前手动启动">本地创作 · 模型自动加载</span>
+      </div>
+      <div class="header-actions">
+        <button id="model-download-entry" class="primary">下载模型</button>
+        <button id="display-settings">界面显示</button>
+        <button id="check-update">检测更新</button>
+        <span id="model-status">检查模型…</span
+        ><button id="start-model">启动分析模型</button
+        ><button id="stop-model">卸载模型</button>
+      </div>
+    </header>
+    <div id="notice" role="status" hidden></div>
+    <section id="studio-home" class="studio-home" aria-label="创作首页">
+      <div class="home-intro">
+        <small>你的本地创作空间</small>
+        <h1>今天，想画点什么？</h1>
+        <p role="status">正在连接本地工作室…</p>
+      </div>
+      <noscript>请启用浏览器 JavaScript 后重新打开工作室。</noscript>
+    </section>
+    <div class="shell">
+      <aside>
+        <div class="sidebar-caption">创作空间</div>
+        <button id="home-entry"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10 12 3l9 7M5 9v12h5v-7h4v7h5V9"/></svg><span>创作首页</span></button>
+        <button id="queue-entry"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h12M4 11h8M4 17h6M16 13v4l3 2M22 17a6 6 0 1 0-12 0 6 6 0 1 0 12 0"/></svg><span>任务队列</span></button>
+        <label>当前作品<select id="projects"></select></label>
+        <div class="row">
+          <button id="new-project">＋ 新作品</button
+          ><button id="sample">人工示例</button>
+        </div>
+        <button id="import-story"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H5v18h14V8l-5-5v5h5M8 12h8M8 16h5"/></svg><span>导入剧本</span></button>
+        <button id="character-library"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 7a4 4 0 1 0-8 0 4 4 0 1 0 8 0M4 21v-2a8 8 0 0 1 16 0v2"/></svg><span>角色库</span></button>
+        <button id="prompt-entry"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16v16H4zM4 16l5-5 4 4 3-3 4 4M15 8h.01"/></svg><span>提示词出图</span></button>
+        <button id="import-prompts">直接导入每格提示词</button>
+        <button id="manage-projects"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7V4h7l2 3h9v14H3z"/></svg><span>作品管理</span></button>
+        <nav id="stages"></nav>
+        <section id="remaining-drawing-settings" class="remaining-drawing-settings" hidden></section>
+        <div class="side-note" id="workflow-note">
+          01 剧本 → 02 分镜 → 03 绘图与选图 → 04 成品查看<br />选好后查看整页与对白，再下载成品。
+        </div>
+        <div class="project-tools">
+          <button id="history">版本历史</button>
+          <button id="fork">创建分支</button>
+          <button id="export" title="导出 Markdown / JSON">导出作品</button>
+          <button id="project-trash">回收站</button>
+          <button id="delete-project" class="danger">删除作品</button>
+        </div>
+      </aside>
+      <main>
+        <div class="page-heading">
+          <div>
+            <div id="provenance" class="eyebrow"></div>
+            <h1 id="heading">开始你的故事</h1>
+            <p id="stage-help"></p>
+          </div>
+          <span id="version" class="badge"></span>
+        </div>
+        <section id="connection-status" class="connection-status" role="alert" hidden>
+          <strong>后台连接中断</strong>
+          <p>正在自动尝试重新连接，当前无法确认任务状态。若工作室已关闭，请重新打开「LocalDraw.exe」。重新连接不会自动开始新任务。</p>
+        </section>
+        <section id="jobs" class="jobs"></section>
+        <section id="warnings"></section>
+        <div id="target-row" class="toolbar" hidden>
+          <label>页面<select id="page-select"></select></label
+          ><label
+            >修改范围<select id="panel-select">
+              <option value="">整页</option>
+            </select></label
+          >
+        </div>
+        <div class="main-content">
+        <div id="workspace">
+          <section id="simple-page"></section>
+          <details id="advanced-editor">
+            <summary>高级编辑（编号、状态、版式和 JSON）</summary>
+            <div class="tabs">
+              <button id="form-tab" class="active">内容编辑</button
+              ><button id="json-tab">JSON 高级编辑</button
+              ><button id="read-tab">阅读预览</button>
+            </div>
+            <section id="form" class="editor"></section>
+            <textarea
+              id="json-editor"
+              class="json-editor"
+              hidden
+              spellcheck="false"
+            ></textarea>
+            <section id="reader" class="reader" hidden></section>
+            <div class="edit-actions">
+              <button id="save-draft">保存草稿</button
+              ><button id="propose" class="primary">校验并查看候选差异</button
+              ><span>草稿不改变已确认内容</span>
+            </div>
+          </details>
+          <section class="generation">
+            <div>
+              <h2>告诉 AI 想怎么改</h2>
+              <p>不用填写分镜表格。写一句修改意见即可，改稿确认后才应用。</p>
+            </div>
+            <label id="option-label" hidden
+              >剧情方案<select id="option-select"></select></label
+            ><label
+              >本次创作或修改要求<textarea
+                id="instruction"
+                rows="3"
+                placeholder="例如：只改这一格的对白，语气更克制，保留原有剧情状态。"
+              ></textarea></label
+            ><button id="generate" class="primary">让 AI 生成分镜</button>
+          </section>
+        </div>
+        <section id="candidates"></section>
+        <section id="extras"></section>
+        </div>
+      </main>
+    </div>
+    <dialog id="dialog">
+      <div id="dialog-body"></div>
+      <div class="dialog-actions"><button id="close-dialog">关闭</button></div>
+    </dialog>
+    <script defer src="/image-size.js"></script>
+    <script defer src="/loras.js"></script>
+    <script defer src="/prompt-exchange.js"></script>
+    <script defer src="/problem-panels.js"></script>
+    <script defer src="/story-import.js"></script>
+    <script defer src="/direct-imports.js"></script>
+    <script defer src="/creative.js"></script>
+    <script defer src="/clothing.js"></script>
+    <script defer src="/prompt.js"></script>
+    <script defer src="/studio-home.js"></script>
+    <script defer src="/app.js"></script>
+    <script defer src="/model-downloads.js"></script>
+  </body>
+</html>

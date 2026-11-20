@@ -1,0 +1,9 @@
+{
+  "name": "animagine-xl-4.0-opt.safetensors",
+  "url": "https://huggingface.co/cagliostrolab/animagine-xl-4.0/resolve/main/animagine-xl-4.0-opt.safetensors",
+  "size": 6938350040,
+  "sha256": "6327eca98bfb6538dd7a4edce22484a1bbc57a8cff6b11d075d40da1afb847ac",
+  "directory": "models/checkpoints",
+  "source": "https://huggingface.co/cagliostrolab/animagine-xl-4.0",
+  "license": "CreativeML Open RAIL++-M"
+}

@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "selected_option": {
+      "type": "string"
+    },
+    "premise": {
+      "type": "string"
+    },
+    "beats": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 0
+    },
+    "ending": {
+      "type": "string"
+    },
+    "must_include_mapping": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 0
+    },
+    "unknowns": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 0
+    }
+  },
+  "required": [
+    "selected_option",
+    "premise",
+    "beats",
+    "ending",
+    "must_include_mapping",
+    "unknowns"
+  ],
+  "additionalProperties": false
+}

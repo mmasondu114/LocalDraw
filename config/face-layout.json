@@ -1,0 +1,6 @@
+{
+  "model": "models/person_detection/face_yolov8n.pt",
+  "sha256": "70b640f8f60b1cf0dcc72f30caf3da9495eb2fb6509da48c53374ad6806e6a9c",
+  "source": "https://huggingface.co/Bingsu/adetailer/resolve/53cc19de382014514d9d4038601d261a7faa9b7b/face_yolov8n.pt",
+  "confidence": 0.3
+}

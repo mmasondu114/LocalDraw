@@ -1,0 +1,42 @@
+{
+  "3404438": {
+    "words": [
+      "vulpisfoglia"
+    ],
+    "source": "https://civitai.com/models/3001217?modelVersionId=3404438",
+    "evidence": "Author description and safetensors training tags/dataset metadata reviewed on 2026-10-15",
+    "sha256": "0809644cb9f8e7c2cbb457ce0684dd0f933bb2b53642dad1d7d55cfda4809c98"
+  },
+  "3032245": {
+    "words": [
+      "shu"
+    ],
+    "source": "https://civitai.com/models/2700192?modelVersionId=3032245",
+    "evidence": "Author description and safetensors training tags/dataset metadata reviewed on 2026-10-15",
+    "sha256": "5675954b3c0344650310a798fc3c1cff965c57f5e987ef37ad5190fbe1e36650"
+  },
+  "3246286": {
+    "words": [
+      "alyoshagh"
+    ],
+    "source": "https://civitai.com/models/2873007?modelVersionId=3246286",
+    "evidence": "Author description and safetensors training tags/dataset metadata reviewed on 2026-10-15",
+    "sha256": "e96d2ba5b13ab5818035967be846e4a78938c6e4aee8de48f0128d1e020643e4"
+  },
+  "3011231": {
+    "words": [
+      "nefer"
+    ],
+    "source": "https://civitai.com/models/2681767?modelVersionId=3011231",
+    "evidence": "Author description and safetensors training tags/dataset metadata reviewed on 2026-10-15",
+    "sha256": "9c33602592426a71c20568ed779f113d5ba7e0001d9d219604ef74fafcfcea1e"
+  },
+  "3007528": {
+    "words": [
+      "zibai"
+    ],
+    "source": "https://civitai.com/models/2678511?modelVersionId=3007528",
+    "evidence": "Author description and safetensors training tags/dataset metadata reviewed on 2026-10-15",
+    "sha256": "5b34e5d9f9b2c1ffb9c8713f03b230d0428865cc56ef8b97fe2f71c902ea439a"
+  }
+}

@@ -1,0 +1,193 @@
+{
+  "version": 1,
+  "view": "back",
+  "reference_hand": "right",
+  "depth_file": "data/hand-guides/relaxed-right-back-depth.png",
+  "depth_sha256": "a372dab91d26a0eed4a4b8ecb397bcd2590989de3d3cfc7b076367b4ccebc5a3",
+  "projected_joints": [
+    [
+      398.7329279864207,
+      135.74897182839257
+    ],
+    [
+      460.47294475071664,
+      228.82340579958898
+    ],
+    [
+      512.3012330409672,
+      291.3594236357936
+    ],
+    [
+      535.1181862569813,
+      354.6531265091783
+    ],
+    [
+      589.829401621329,
+      434.3739834241569
+    ],
+    [
+      463.72673844386424,
+      366.61440507716696
+    ],
+    [
+      467.3026730399579,
+      451.3182646987428
+    ],
+    [
+      462.8276163472661,
+      516.9849477335811
+    ],
+    [
+      460.36319503760234,
+      592.2734694582011
+    ],
+    [
+      395.31289504308785,
+      376.63174488673184
+    ],
+    [
+      378.52651707877936,
+      457.267882843901
+    ],
+    [
+      360.8244748891697,
+      521.6517386319382
+    ],
+    [
+      339.603051377926,
+      594.6631237758057
+    ],
+    [
+      325.0992565059901,
+      345.3768514539115
+    ],
+    [
+      310.7065255514213,
+      423.6607360414096
+    ],
+    [
+      283.22387407799914,
+      491.40440204579915
+    ],
+    [
+      257.75051646732857,
+      564.7783740184137
+    ],
+    [
+      273.6203007027507,
+      317.9448803098473
+    ],
+    [
+      236.72766754935896,
+      365.8045516512669
+    ],
+    [
+      199.55252600833774,
+      411.86503658636605
+    ],
+    [
+      161.61077543693992,
+      460.0407870446465
+    ]
+  ],
+  "source_credit": {
+    "file": "JfHands0005closefvf.JPG",
+    "source": "https://commons.wikimedia.org/wiki/File:JfHands0005closefvf.JPG",
+    "download_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a3/JfHands0005closefvf.JPG/960px-JfHands0005closefvf.JPG?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "sha256": "e82803a74b0ed25eb09de8a3096c106ad1faaa443a36bee6ce6f7b1ce01da8a0",
+    "metadata": {
+      "DateTime": {
+        "value": "2014-10-28 13:19:12",
+        "source": "mediawiki-metadata",
+        "hidden": ""
+      },
+      "ObjectName": {
+        "value": "JfHands0005closefvf",
+        "source": "mediawiki-metadata"
+      },
+      "CommonsMetadataExtension": {
+        "value": 1.2,
+        "source": "extension",
+        "hidden": ""
+      },
+      "Categories": {
+        "value": "Taken with Nikon D3200|Chiromancy|Self-published work|Close-up photographs of human hands|Both hands|Bulging hand veins",
+        "source": "commons-categories",
+        "hidden": ""
+      },
+      "Assessments": {
+        "value": "",
+        "source": "commons-categories",
+        "hidden": ""
+      },
+      "ImageDescription": {
+        "value": "<a href=\"https://en.wikipedia.org/wiki/en:Human\" class=\"extiw\" title=\"w:en:Human\">Human</a> <a href=\"https://en.wikipedia.org/wiki/en:Hand\" class=\"extiw\" title=\"w:en:Hand\">Hands</a> - (Palmar (Volar - the skin in this area contains <a href=\"https://en.wikipedia.org/wiki/en:Dermal_papillae\" class=\"extiw\" title=\"w:en:Dermal papillae\">Dermal papillae</a>) and Dorsal aspects or opisthenar area  of human hand with  papillary ridges of palm or \"fingerprints\" acting as friction pads. Lines of the hand chiromancy Some of the lines of the hand in <a href=\"https://en.wikipedia.org/wiki/en:Palmistry\" class=\"extiw\" title=\"w:en:Palmistry\">Palmistry</a> 1: Life line - 2: Head line - 3: Heart line - 4: Girdle of Venus - 5: Sun line - 6: Mercury line - 7: Fate line).",
+        "source": "commons-desc-page"
+      },
+      "DateTimeOriginal": {
+        "value": "2014-10-28 21:04:46",
+        "source": "commons-desc-page"
+      },
+      "Credit": {
+        "value": "<span class=\"int-own-work\" lang=\"en\">Own work</span>",
+        "source": "commons-desc-page"
+      },
+      "Artist": {
+        "value": "<a href=\"//commons.wikimedia.org/wiki/User:Judgefloro\" title=\"User:Judgefloro\">Judgefloro</a>",
+        "source": "commons-desc-page"
+      },
+      "LicenseShortName": {
+        "value": "CC BY-SA 4.0",
+        "source": "commons-desc-page",
+        "hidden": ""
+      },
+      "UsageTerms": {
+        "value": "Creative Commons Attribution-Share Alike 4.0",
+        "source": "commons-desc-page"
+      },
+      "AttributionRequired": {
+        "value": "true",
+        "source": "commons-desc-page",
+        "hidden": ""
+      },
+      "LicenseUrl": {
+        "value": "https://creativecommons.org/licenses/by-sa/4.0",
+        "source": "commons-desc-page"
+      },
+      "Copyrighted": {
+        "value": "True",
+        "source": "commons-desc-page",
+        "hidden": ""
+      },
+      "Restrictions": {
+        "value": "",
+        "source": "commons-desc-page",
+        "hidden": ""
+      },
+      "License": {
+        "value": "cc-by-sa-4.0",
+        "source": "commons-templates",
+        "hidden": ""
+      }
+    }
+  },
+  "source_review": "data/test-results/reference-hand-mesh/20261008-014413-600029/visual-review.json",
+  "hand_lora": {
+    "file": "sdxl/原神/手部修复_版本2055924619.safetensors",
+    "sha256": "66e5a79120e47a9625dca3fb9db0607e1a267a0de9bb5aa0b0633637c5098730",
+    "family": "Illustrious",
+    "weight": 0.35,
+    "source": "https://civitai.com/models/200255?modelVersionId=2212079"
+  },
+  "method": "https://github.com/wenquanlu/HandRefiner",
+  "detailer_method": "https://github.com/ltdrdata/ComfyUI-extension-tutorials/blob/Main/ComfyUI-Impact-Pack/workflow/dwpose-segs-handfix.png",
+  "impact_revision": "b22aa90cf4a419a8ba9881f90827fbb35dad2612",
+  "control_strength": 0.8,
+  "steps": 20,
+  "cfg": 5.5,
+  "first_denoise": 0.9,
+  "second_denoise": 0.25,
+  "gpu_only": true,
+  "acceptance_scope": "Exact hand outline and preview verified. Mask coverage and margin/seam causes corrected. Optional Fooocus backend now runs through actual studio entry on GPU; repeated finger geometry still fails. Default remains Impact, no new hand weights.",
+  "pose_control": false
+}
