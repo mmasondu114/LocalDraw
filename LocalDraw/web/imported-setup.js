@@ -19,6 +19,18 @@ async function openImportedSetup(project, bundle, rows) {
   const close = button("稍后再画", () => page.close());
   top.append(heading, close);
   const body = node("div", undefined, "setup-body");
+  const chain = node("input"), chainLabel = node("label", undefined, "setup-chain");
+  chain.type = "checkbox";
+  const unavailable = rows.length < 2 ? "至少导入两格后可用。" :
+    (data.previous_panel_unavailable ?? "请更新工作室后台以启用连续参考。");
+  chain.disabled = Boolean(unavailable);
+  chain.checked = !chain.disabled && draft.reference_previous_panel !== false;
+  chain.onchange = remember;
+  const chainTitle = node("strong", "自动参考上一格"), chainHint = node("small",
+    unavailable || "第 1 格独立生成，后续每格参考上一格在本次任务中最先生成的图片。");
+  chainTitle.id = "previous-panel-label"; chainHint.id = "previous-panel-hint";
+  chain.setAttribute("aria-labelledby", chainTitle.id); chain.setAttribute("aria-describedby", chainHint.id);
+  chainLabel.append(chain, chainTitle, chainHint);
   const libraries = node("div", undefined, "setup-libraries");
   const footer = node("div", undefined, "setup-footer"), total = node("strong");
   const status = node("p"); status.setAttribute("role", "status");
@@ -37,6 +49,7 @@ async function openImportedSetup(project, bundle, rows) {
   }
   function remember() {
     const saved = cacheLocal(draftKey, JSON.stringify({count:count.value, counts:Object.fromEntries(counts),
+      reference_previous_panel:chain.disabled ? draft.reference_previous_panel : chain.checked,
       common_negative:commonNegative.value, negative_by_panel:Object.fromEntries(negativeEdits),
       roles:[...cast.keys()], weights:Object.fromEntries(weights)}));
     if (!saved) status.textContent = "本机未能保存设置草稿，关闭前请复制编辑过的提示词。";
@@ -139,7 +152,7 @@ async function openImportedSetup(project, bundle, rows) {
   }
   count.oninput=()=>{for(const n of entries.querySelectorAll("input"))n.placeholder=count.value;remember();};
   quantities.append(node("h2","逐格设置"),commonLabel,node("p","生成时，通用负面提示词会追加到每一格的负面提示词末尾。"),defaultLabel,details);
-  body.append(libraries,quantities);
+  body.append(chainLabel,libraries,quantities);
   const start = button("开始生成", async () => {
     if (submitting) return;
     const invalid = [...page.querySelectorAll("input")].find(input => !input.checkValidity());
@@ -149,6 +162,7 @@ async function openImportedSetup(project, bundle, rows) {
     try {
       await act("draw_imported", {project,bundle,targets:rows.map(r=>r.panel_id),checkpoint:model,
         candidate_count:Number(count.value),import_setup:{
+          reference_previous_panel:chain.checked,
           characters:[...cast.values()].map(c=>({name:c.name,revision:c.revision})),
           loras:[...weights].map(([file,weight])=>({file,weight:Number(weight)})),
           common_negative:commonNegative.value, negative_by_panel:Object.fromEntries(negativeEdits),

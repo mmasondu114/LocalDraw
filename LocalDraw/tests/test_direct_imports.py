@@ -190,3 +190,46 @@ class DirectImportsTest(unittest.TestCase):
                         {"negative_by_panel": {ids[0]: None}}):
             with self.assertRaisesRegex(ValueError, "负面提示词"):
                 prompt_exchange.prepare_request(self.repo, self.pid, {**request, "import_setup": invalid})
+
+    def test_previous_panel_uses_this_runs_first_image_in_reading_order_and_on_resume(self):
+        from PIL import Image
+        from comic_workflow import anima_consistency as ac
+        ids = ["P001-K01", "P001-K02", "P002-K01"]
+        saved = self.save_prompts([{"panel_id": k, "positive": k, "negative": ""} for k in reversed(ids)])
+        spec = {**saved, "candidate_count": 2, "checkpoint": ac.CHECKPOINT,
+                "import_setup": {"reference_previous_panel": True}}
+        with patch.object(ac, "previous_panel_unavailable", return_value=""):
+            request = prompt_exchange.prepare_request(self.repo, self.pid, spec)
+        folder = self.repo.folder(self.pid) / "images"
+        folder.mkdir(exist_ok=True)
+        batches = [{"panel_id": ids[0], "render_options": {"import_run": "old"},
+                    "candidate_indices": [0], "images": [{"id": "old"}]}]
+        e.save(folder / "index.json", {"batches": batches})
+        calls = []
+        def draw(repo, pid, panel, update, model, count, mode, loras, slots, *, render_options, **kw):
+            fixed = render_options.get("consistency_reference", {})
+            calls.append((panel, fixed.get("source_image_id")))
+            if fixed:
+                self.assertTrue(render_options["consistency_lora"])
+                self.assertEqual((ac.DATA / "comfy-input" / fixed["reference"]).read_bytes(),
+                                 (folder / (fixed["source_image_id"] + ".png")).read_bytes())
+            key = f"{panel}-{slots[0]}"
+            Image.new("RGB", (8, 8), (len(calls)*20, 0, 0)).save(folder / (key + ".png"))
+            batch = {"id": key, "panel_id": panel, "status": "done", "candidate_indices": slots,
+                     "render_options": render_options, "images": [{"id": key, "file": key + ".png"}]}
+            batches.append(batch)
+            e.save(folder / "index.json", {"batches": batches})
+            return batch
+        with patch.object(ac, "DATA", folder.parent), patch.object(prompt_exchange.comfyui, "run_batch", side_effect=draw):
+            report = prompt_exchange.draw_imported(Mock(repo=self.repo), self.pid, request, lambda _: None, "chain")
+            self.assertFalse(report["errors"])
+            self.assertEqual(calls, [(ids[0], None)]*2 + [(ids[1], ids[0]+"-0")]*2 + [(ids[2], ids[1]+"-0")]*2)
+            batches.pop()
+            e.save(folder / "index.json", {"batches": batches})
+            calls.clear()
+            prompt_exchange.draw_imported(Mock(repo=self.repo), self.pid, request, lambda _: None, "resume")
+            self.assertEqual(calls, [(ids[2], ids[1]+"-0")])
+        with self.assertRaisesRegex(ValueError, "未生成可用图片"):
+            prompt_exchange.previous_panel_reference(self.repo, self.pid, "new", ids[0], ids[1])
+        with self.assertRaisesRegex(ValueError, "Delta"):
+            prompt_exchange.prepare_request(self.repo, self.pid, {**spec, "checkpoint": "other"})

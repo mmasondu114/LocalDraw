@@ -1737,6 +1737,10 @@ dialog.import-setup[open] {
 }
 .setup-top h1 {margin:0;flex:1;font-size:clamp(22px,2vw,32px)}
 .setup-body {overflow:auto;padding:24px max(20px,calc((100vw - 1240px)/2));}
+.import-setup label.setup-chain {display:grid;grid-template-columns:auto 1fr;align-items:center;gap:4px 12px;
+  margin:0 0 16px;padding:14px 20px;border:1px solid var(--line);border-radius:12px;background:var(--panel);cursor:pointer}
+.setup-chain input[type=checkbox] {grid-row:span 2;width:18px;height:18px;margin:0}
+.setup-chain small {grid-column:2;color:var(--muted)}
 .setup-libraries {display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
 .setup-section {min-width:0;padding:20px;border-radius:12px;border:1px solid var(--line);background:var(--panel)}
 .setup-section h2 {margin:0;font-size:20px}

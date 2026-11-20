@@ -880,6 +880,7 @@ def make_handler(app):
                     self.send(200,{**preview_reference(), 'local_repair_features': ['owner','outline','blend_mask']})
                     return
                 if url.path == "/api/drawing-options":
+                    from .anima_consistency import previous_panel_unavailable
                     from .comparison_models import available
                     from .hand_detail import capability as hand_detail_capability
                     selected_checkpoint = query.get("checkpoint", [None])[0]
@@ -888,6 +889,7 @@ def make_handler(app):
                         200,
                         {
                             "comfy": comfyui.discover(checkpoint=selected_checkpoint, probe=False),
+                            "previous_panel_unavailable": previous_panel_unavailable(selected_checkpoint or comfyui.config()["checkpoint"]),
                             "art_presets": art_presets.PRESETS,
                             "prompt_characters": True,
                             "prompt_translate": True,

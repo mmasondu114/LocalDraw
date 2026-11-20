@@ -159,6 +159,13 @@ def prepare_import_settings(repo, settings, model, targets, bundle):
     from .clothing_policy import resolve_selections
     from .quick_sample import selected_loras
     e.need(isinstance(settings, dict), "出图设置无效")
+    chain = settings.get("reference_previous_panel", False)
+    e.need(type(chain) is bool, "自动参考上一格选项无效")
+    if chain:
+        from .anima_consistency import previous_panel_unavailable
+        reason = previous_panel_unavailable(model)
+        e.need(not reason, reason)
+        e.need(len(targets) >= 2, "自动参考上一格至少需要两格")
     roles = settings.get("characters", [])
     e.need(isinstance(roles, list) and len(roles) <= 4, "最多选择 4 个角色")
     cards, selected, seen = [], [], set()
@@ -192,6 +199,7 @@ def prepare_import_settings(repo, settings, model, targets, bundle):
             suffixes[row["panel_id"]] = suffix
     return (selected_loras(settings.get("loras", []), model),
             {"selected_characters": selected, "character_suffixes": suffixes,
+             "reference_previous_panel": chain,
              "common_negative": common, "negative_by_panel": dict(edits),
              "candidate_slots_by_panel": {key: list(range(n)) for key, n in counts.items()}})
 
@@ -219,6 +227,7 @@ def prepare_request(repo, pid, request):
         explicit_loras, setup = prepare_import_settings(repo, request["import_setup"], model, targets, bundle)
     from . import anima_consistency, qwen_edit
     references = request.get("references_by_panel", {})
+    e.need(not (setup.get("reference_previous_panel") and references), "自动参考上一格与固定参考图只能选择一种")
     e.need(isinstance(references, dict) and set(references) <= set(targets),
            "一致性参考只能指定本次绘制的画格")
     e.need(not references or model in {anima_consistency.CHECKPOINT, qwen_edit.CHECKPOINT},
@@ -261,6 +270,20 @@ def prepare_request(repo, pid, request):
             **edit_snapshot, **size, **setup}
 
 
+def previous_panel_reference(repo, pid, run_key, previous_panel, current_panel):
+    from .anima_consistency import freeze_reference
+    batches = [b for b in comfyui.drawing_state(repo, pid)["batches"]
+               if b.get("render_options", {}).get("import_run") == run_key]
+    # A resumed panel must keep the pixels used by its already submitted candidates.
+    for batch in batches:
+        fixed = batch["render_options"].get("consistency_reference")
+        if batch["panel_id"] == current_panel and fixed:
+            return fixed
+    image = next((im for b in batches if b["panel_id"] == previous_panel for im in b.get("images", [])), None)
+    e.need(image is not None, f"{previous_panel} 未生成可用图片，无法继续绘制 {current_panel}")
+    return freeze_reference(repo, pid, image["id"])
+
+
 def draw_imported(app, pid, request, update, jid):
     if request.get("revision_note"):
         from .page_redraw import apply_revision
@@ -270,6 +293,10 @@ def draw_imported(app, pid, request, update, jid):
     repo = app.repo
     bundle = load_import(repo, pid, request["bundle"])
     rows = [r for r in bundle["panels"] if r["panel_id"] in request["targets"]]
+    chained = request.get("reference_previous_panel", False)
+    if chained:
+        order = {p["id"]: i for i, (_, p) in enumerate(panels(repo.get(pid)))}
+        rows.sort(key=lambda row: order[row["panel_id"]])
     total = sum(len(slots_for_panel(request, row['panel_id'])) for row in rows)
     report = {"import": bundle["id"], "batches": [], "errors": [], "total": total}
     path = repo.folder(pid) / "runs" / jid / "imported-drawing.json"
@@ -301,7 +328,8 @@ def draw_imported(app, pid, request, update, jid):
             if pending.get("status") in {"running", "uncertain"}:
                 recovered = recover_batch(repo, pid, pending)
                 e.need(recovered["status"] not in {"running", "uncertain"}, "之前的出图尚未确认结束，暂不提交新的图片")
-        for row in rows:
+        for index, row in enumerate(rows):
+            chain_reference = None
             row = {**row, "negative": effective_negative(row, request)}
             suffix = request.get("character_suffixes", {}).get(row["panel_id"])
             if suffix:
@@ -341,6 +369,11 @@ def draw_imported(app, pid, request, update, jid):
                            "hand_detail": False, "import_bundle": bundle["id"], "import_run": request["run_key"]}
                 if "consistency_lora" in request:
                     options["consistency_lora"] = request["consistency_lora"]
+                if chained and index:
+                    if chain_reference is None:
+                        chain_reference = previous_panel_reference(repo, pid, request["run_key"],
+                                                                  rows[index-1]["panel_id"], row["panel_id"])
+                    options.update(consistency_lora=True, consistency_reference=chain_reference)
                 if row["panel_id"] in request.get("references_by_panel", {}):
                     from .qwen_edit import CHECKPOINT as EDIT_CHECKPOINT
                     if request['checkpoint'] == EDIT_CHECKPOINT:

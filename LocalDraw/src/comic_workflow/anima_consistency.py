@@ -12,6 +12,14 @@ CHECKPOINT = 'animaDeltaMix38BQwen0_deltaMixV60.safetensors'
 LORA = lora_file_key('anime/edit/AnimeEditV2.safetensors')
 
 
+def previous_panel_unavailable(checkpoint):
+    if checkpoint != CHECKPOINT:
+        return '自动参考上一格需要 Anima Delta v6 模型'
+    if not (model_directory(ROOT) / 'loras' / LORA).is_file():
+        return '自动参考上一格需要安装 AnimeEditV2 LoRA'
+    return ''
+
+
 def selected_character_reference(project, panel, checkpoint, prefs, *, library=None):
     """Read-only resolution of an explicitly chosen character, including group shots."""
     key = (prefs or {}).get('reference_character_id')
