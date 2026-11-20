@@ -4,7 +4,7 @@ LocalDraw 是 Windows x64 桌面应用，支持创作漫画、编辑分镜，以
 
 ## 下载和安装
 
-登录有仓库访问权限的 GitHub 账号，打开[最新发行版](https://github.com/mmasondu114/LocalDraw/releases/latest)。
+登录有仓库访问权限的 GitHub 账号。新电脑从[首次安装包](https://github.com/mmasondu114/LocalDraw/releases/tag/v0.1.1)安装，已有安装从[最新发行版](https://github.com/mmasondu114/LocalDraw/releases/latest)下载程序更新。
 
 - **首次安装**　把四个以 `.001` 至 `.004` 结尾的文件和 `Join-LocalDraw-Setup.cmd` 下载到同一个文件夹。双击命令文件，等它确认安装程序校验通过，再运行合并得到的 EXE，选择空目录安装。此包面向 Windows x64、RTX 4080 环境。首次出图需要在应用中点「下载模型」，或使用已安装的模型。
 - **更新已有安装**　等当前任务结束后关闭工作室，将对应版本的 `Update.zip` 解压到含有 `LocalDraw.exe` 的目录并覆盖程序文件。重启电脑后打开工作室，以加载新的后台程序。此更新包适用于已安装 RTX 4080 完整版的电脑。
