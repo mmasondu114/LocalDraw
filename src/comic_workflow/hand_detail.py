@@ -12,7 +12,6 @@ import uuid
 from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFilter
-from .installed_assets import read_path
 from . import engine as e
 from .paths import ROOT, DATA, local_path
 
@@ -24,7 +23,7 @@ def config():
 
 def capability():
     settings = config()
-    detector = read_path(ROOT, settings.get("detector", "models/hand_detection/hand_yolov8n.pt"))
+    detector = local_path(settings.get("detector", "models/hand_detection/hand_yolov8n.pt"))
     comfy = e.read(ROOT / "config/comfyui.json")
     python = local_path(comfy["python_path"])
     installed = python.parent.parent / "Lib/site-packages/ultralytics/__init__.py"
@@ -34,7 +33,7 @@ def capability():
 
 
 def detect(image, output, cfg, settings):
-    detector = read_path(ROOT, settings["detector"])
+    detector = local_path(settings["detector"])
     e.need(detector.is_file(), "手部检测模型未安装")
     digest = hashlib.sha256(detector.read_bytes()).hexdigest()
     e.need(digest == settings["sha256"], "手部检测模型校验失败")

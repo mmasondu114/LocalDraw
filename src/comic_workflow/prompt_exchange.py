@@ -53,20 +53,6 @@ def export_storyboard(repo, pid):
     }
 
 
-def export_download(repo, pid):
-    """Attach portable pages only to an explicit human download."""
-    with LOCK:
-        project = repo.get(pid)
-        document = export_storyboard(repo, pid)
-        document["portable_storyboard"] = {
-            "format": "local-draw-story-v1",
-            "brief": {key: value for key, value in project["brief"].items() if key != "character_refs"},
-            "canon": project["canon"],
-            "pages": [project["pages"][key] for key in sorted(project["pages"])],
-        }
-        return document
-
-
 def preview(repo, pid, document):
     e.need(isinstance(document, dict), "文件顶层须是 JSON 对象")
     e.need(len(json.dumps(document, ensure_ascii=False)) <= 2_000_000, "文件超过 2 MB，请分批导入")

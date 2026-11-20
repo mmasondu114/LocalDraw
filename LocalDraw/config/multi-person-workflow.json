@@ -1,0 +1,51 @@
+{
+  "source": "https://www.andreszsogon.com/building-a-multi-character-comfyui-workflow-with-area-conditioning-openpose-control-and-style-layering/",
+  "components": [
+    {
+      "name": "ComfyUI-Lora-Pipeline",
+      "repository": "https://github.com/andreszs/ComfyUI-Lora-Pipeline",
+      "revision": "9bc4c9a3c8481d8ffe19dc9d2541b5b190c57831"
+    },
+    {
+      "name": "ComfyUI-OpenPose-Studio",
+      "repository": "https://github.com/andreszs/ComfyUI-OpenPose-Studio",
+      "revision": "2075fbe59b88c31fc16d602ca1ff66f81abd9e43"
+    },
+    {
+      "name": "ComfyUI-Styler-Pipeline",
+      "repository": "https://github.com/andreszs/ComfyUI-Styler-Pipeline",
+      "revision": "feeb683d74f607b057181b26de1d673af53567d7"
+    }
+  ],
+  "gpu_only": true,
+  "acceptance": "failed_multi_character_visual_review",
+  "acceptance_report": "data/lora-curation/current-acceptance.json",
+  "experimental_components": [
+    {
+      "name": "bv_nodepack",
+      "repository": "https://github.com/BlackVortexAI/bv_nodepack",
+      "revision": "dc7af1bec7461b70ae1e100f3c02e5cff2169869",
+      "local_patch": "config\\bv-sdxl-clip-hooks.patch",
+      "enabled_by_default": false,
+      "report": "data/test-results/bv-regional/20261007-081608-892601/visual-review.json",
+      "additional_patch": "config/ipadapter-regional-text-bridge.patch",
+      "studio_integration": "src/comic_workflow/bv_regional.py"
+    },
+    {
+      "name": "native_masked",
+      "source": "https://blog.comfy.org/p/masking-and-scheduling-lora-and-model-weights",
+      "enabled_by_default": true,
+      "studio_integration": "src/comic_workflow/native_regional.py",
+      "report": "data/test-results/native-studio-batch/20261007-121950-975932/visual-review.json",
+      "acceptance": "count_and_continuity_passed_likeness_partial"
+    },
+    {
+      "name": "A8R8_ComfyUI_nodes",
+      "repository": "https://github.com/ramyma/A8R8_ComfyUI_nodes",
+      "revision": "8d617cea60f2cd9e55f3152be356141d19ad48a2",
+      "enabled_by_default": false,
+      "local_vendor_changes": false,
+      "report": "data/test-results/attention-couple/20261007-092546-413857/visual-review.json"
+    }
+  ]
+}

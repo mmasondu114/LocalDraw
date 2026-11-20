@@ -1,0 +1,20 @@
+{
+  "comfyui": {
+    "repository": "https://github.com/Comfy-Org/ComfyUI",
+    "commit": "ba994879b88d0ebd9950b1e5c1e923d928f216ba",
+    "directory": "runtime/ComfyUI-Anima",
+    "version": "0.40.0"
+  },
+  "nodes": [
+    {
+      "repository": "https://github.com/GumGum10/comfyui-anima-3-8B",
+      "commit": "381c13af328b958febf86c155d2f4b007cd0f55b",
+      "directory": "runtime/custom_nodes/comfyui-anima-3-8B"
+    },
+    {
+      "repository": "https://github.com/KitagawaCoding/ComfyUI-Anima-3.8B-loraPatch",
+      "commit": "ed655416f8245f2abd274739c0caebfe47adc711",
+      "directory": "runtime/custom_nodes/ComfyUI-Anima-3.8B-loraPatch"
+    }
+  ]
+}

@@ -10,7 +10,6 @@ import subprocess
 
 from PIL import Image
 
-from .installed_assets import models as model_directory
 from . import engine as e
 from .paths import ROOT, DATA
 
@@ -56,7 +55,7 @@ def workflow(checkpoint, seed, repair, cfg, control, positive, negative):
                                         'rev-parse', 'HEAD'], text=True).strip()
     e.need(revision == REVISION, '手部补绘组件版本未核对')
     for name, digest in WEIGHTS.items():
-        path = model_directory(ROOT) / "inpaint" / name
+        path = ROOT / 'models/inpaint' / name
         e.need(path.is_file(), '既有手部补绘模型缺失')
         with path.open('rb') as stream:
             e.need(hashlib.file_digest(stream, 'sha256').hexdigest() == digest, '既有手部补绘模型校验失败')
@@ -113,7 +112,7 @@ def workflow(checkpoint, seed, repair, cfg, control, positive, negative):
     graph['31']['inputs']['clip']=clip
     if pose_only:
         pose_control=e.read(ROOT/'config/multi-person-control.json')
-        path=model_directory(ROOT) / "controlnet"/pose_control['name']
+        path=ROOT/'models/controlnet'/pose_control['name']
         with path.open('rb') as stream:
             e.need(hashlib.file_digest(stream,'sha256').hexdigest()==pose_control['sha256'],
                    '既有手指骨架控制模型校验失败')

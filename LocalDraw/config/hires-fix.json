@@ -1,0 +1,11 @@
+{
+  "file": "models/upscale_models/RealESRGAN_x4plus_anime_6B.pth",
+  "sha256": "f872d837d3c90ed2e05227bed711af5671a6fd1c9f7d7e91c911a61f155e99da",
+  "scale": 1.5,
+  "steps": 20,
+  "denoise": 0.35,
+  "source": "https://civitai.com/models/827184?modelVersionId=2883731",
+  "workflow_source": "https://comfyanonymous.github.io/ComfyUI_examples/2_pass_txt2img/",
+  "upscaler_source": "https://github.com/xinntao/Real-ESRGAN",
+  "gpu_only": true
+}

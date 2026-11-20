@@ -1,0 +1,23 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "comfyui-styler-pipeline"
+version = "1.0.9"
+description = "AI-assisted style suggestions and ControlNet/OpenPose-friendly conditioning for ComfyUI."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { file = "LICENSE" }
+dependencies = []
+
+[project.urls]
+Repository = "https://github.com/andreszs/comfyui-styler-pipeline"
+Documentation = "https://github.com/andreszs/comfyui-styler-pipeline#readme"
+"Bug Tracker" = "https://github.com/andreszs/comfyui-styler-pipeline/issues"
+
+[tool.comfy]
+PublisherId = "andreszs"
+DisplayName = "Styler Pipeline"
+Icon = "https://raw.githubusercontent.com/andreszs/comfyui-styler-pipeline/main/assets/icon.svg"
+Banner = "https://raw.githubusercontent.com/andreszs/comfyui-styler-pipeline/refs/heads/main/assets/banner_109.gif"

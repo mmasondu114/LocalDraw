@@ -1,0 +1,17 @@
+diff --git a/CrossAttentionPatch.py b/CrossAttentionPatch.py
+index adb2079..c5832df 100644
+--- a/CrossAttentionPatch.py
++++ b/CrossAttentionPatch.py
+@@ -22,7 +22,11 @@ class Attn2Replace:
+ 
+     def __call__(self, q, k, v, extra_options):
+         dtype = q.dtype
+-        out = optimized_attention(q, k, v, extra_options["n_heads"])
++        # An explicit regional backend supplies the text attention result;
++        # the author's image callbacks below remain unchanged.
++        base_attention = getattr(self, "base_attention", None)
++        out = (base_attention(q, k, v, extra_options) if base_attention is not None
++               else optimized_attention(q, k, v, extra_options["n_heads"]))
+         sigma = extra_options["sigmas"].detach().cpu()[0].item() if 'sigmas' in extra_options else 999999999.9
+ 
+         device_kwargs = self.get_multigpu_kwargs(q.device)

@@ -1,0 +1,10 @@
+{
+  "name": "illustriousXL_v10.safetensors",
+  "url": "https://civitai.com/api/download/models/1536174?fileId=1436139",
+  "source": "https://civitai.com/models/1359846/illustrious-xl-controlnet-openpose",
+  "workflow_source": "https://github.com/andreszs/ComfyUI-Lora-Pipeline",
+  "sha256": "0d8bacf24534dc6f2716f5d0ffa6085571928776f8687565ef290a17d9f3615c",
+  "size": 2502140008,
+  "strength": 0.9,
+  "end_percent": 0.6
+}

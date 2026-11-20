@@ -3,7 +3,6 @@
 import copy
 import json
 import secrets
-import socket
 import subprocess
 import time
 import urllib.error
@@ -12,7 +11,6 @@ import urllib.request
 import uuid
 from pathlib import Path
 
-from .installed_assets import models as model_directory
 from . import engine as e
 from .model import request_json
 from .paths import ROOT, DATA, local_path
@@ -28,26 +26,6 @@ def config():
     return e.read(ROOT / "config/comfyui.json")
 
 
-# A model process started by another studio is never a target for this copy.
-_private_process = None
-_verified_process = None
-
-
-def _verify_service(url):
-    global _verified_process
-    process = _private_process
-    e.need(process is not None and process.poll() is None, "此副本尚未启动绘图服务")
-    if _verified_process is process:
-        return
-    stats = request_json(url + "/system_stats", timeout=2)
-    argv = stats.get("system", {}).get("argv", [])
-    marker = str(DATA / "comfy-user")
-    e.need("--user-directory" in argv and
-           argv[argv.index("--user-directory") + 1:argv.index("--user-directory") + 2] == [marker],
-           "该端口不是此副本的绘图服务")
-    _verified_process = process
-
-
 def api(path, body=None, timeout=10):
     cfg = config()
     url = urllib.parse.urlparse(cfg["endpoint"])
@@ -55,8 +33,6 @@ def api(path, body=None, timeout=10):
         url.scheme == "http" and url.hostname in ("127.0.0.1", "localhost"),
         "ComfyUI 只支持本机接口",
     )
-    if cfg.get("private_service"):
-        _verify_service(cfg["endpoint"])
     return request_json(cfg["endpoint"] + path, body, timeout)
 
 
@@ -85,7 +61,7 @@ def discover(checkpoint=None, *, probe=True):
         if checkpoint is None:
             return True
         folder = directory(checkpoint)
-        if (model_directory(ROOT) / "loras" / folder).is_dir():
+        if (ROOT / "models/loras" / folder).is_dir():
             return name.startswith(folder + "/")
         return matches(name, checkpoint)
     try:
@@ -117,13 +93,13 @@ def discover(checkpoint=None, *, probe=True):
         return {
             "ready": False if probe else None,
             "checkpoints": [
-                p.relative_to(model_directory(ROOT) / "checkpoints").as_posix()
-                for p in (model_directory(ROOT) / "checkpoints").rglob("*.safetensors")
+                p.relative_to(ROOT / "models/checkpoints").as_posix()
+                for p in (ROOT / "models/checkpoints").rglob("*.safetensors")
             ] + prompt_models.installed(),
             "loras": [
-                p.relative_to(model_directory(ROOT) / "loras").as_posix()
-                for p in (model_directory(ROOT) / "loras").rglob("*.safetensors")
-                if in_folder(p.relative_to(model_directory(ROOT) / "loras").as_posix())
+                p.relative_to(ROOT / "models/loras").as_posix()
+                for p in (ROOT / "models/loras").rglob("*.safetensors")
+                if in_folder(p.relative_to(ROOT / "models/loras").as_posix())
             ],
             "configured": config()["checkpoint"],
             "consistency_enabled": config().get("consistency_lora", False),
@@ -254,7 +230,6 @@ class ComfyManager:
         self.job = None
 
     def start(self, runtime_options=None):
-        global _private_process
         cfg = {**config(), **(runtime_options or {})}
         if discover()["ready"]:
             stats = api("/system_stats")
@@ -269,18 +244,7 @@ class ComfyManager:
             e.need(matching_memory,
                    '现有绘图服务的显存模式与配置不一致，请重启绘图服务；推理必须使用 CUDA')
             return
-        port = urllib.parse.urlparse(cfg["endpoint"]).port
-        if cfg.get("private_service"):
-            e.need(self.process is None or self.process.poll() is not None,
-                   "副本绘图服务尚未就绪，请稍后重试")
-            with socket.socket() as probe:
-                if hasattr(socket, "SO_EXCLUSIVEADDRUSE"):
-                    probe.setsockopt(socket.SOL_SOCKET, socket.SO_EXCLUSIVEADDRUSE, 1)
-                try:
-                    probe.bind(("127.0.0.1", port))
-                except OSError as exc:
-                    raise ValueError("副本绘图端口已被占用，已保留原有服务") from exc
-        source = local_path(cfg["source_directory"])
+        source = Path(cfg["source_directory"])
         python = local_path(cfg["python_path"])
         e.need(
             python.exists() and (source / "main.py").exists(),
@@ -301,7 +265,7 @@ class ComfyManager:
         # Written at launch so moving the checkout does not leave stale absolute model paths.
         (ROOT / "config/comfy-model-paths.yaml").write_text(
             "comic_studio:\n  base_path: "
-            + json.dumps(str(model_directory(ROOT)))
+            + json.dumps(str(ROOT / "models"))
             + "\n  checkpoints: checkpoints\n  loras: loras\n  clip_vision: clip_vision\n  ipadapter: ipadapter\n  controlnet: controlnet\n  upscale_models: upscale_models\n  inpaint: inpaint\n"
             + "  diffusion_models: diffusion_models\n  text_encoders: text_encoders\n  vae: vae\n"
             + "comic_nodes:\n  base_path: "
@@ -321,7 +285,7 @@ class ComfyManager:
             "--listen",
             "127.0.0.1",
             "--port",
-            str(port),
+            "8188",
             "--cuda-device",
             "0",
             *(["--reserve-vram", "2", "--disable-smart-memory"] if cfg.get('memory_mode') == 'auto_cuda'
@@ -344,10 +308,6 @@ class ComfyManager:
             "--extra-model-paths-config",
             str(ROOT / "config/comfy-model-paths.yaml"),
         ]
-        if cfg.get("private_service"):
-            user = DATA / "comfy-user"
-            user.mkdir(parents=True, exist_ok=True)
-            args += ["--user-directory", str(user)]
         if cfg.get('bv_regional_trial') or cfg.get('regional_lora_backend') == 'bv_sdxl':
             # Trial only: load the author's pinned regional-attention backend.
             args.insert(args.index('--disable-api-nodes'),'bv_nodepack')
@@ -372,8 +332,6 @@ class ComfyManager:
             stderr=subprocess.STDOUT,
             creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
         )
-        if cfg.get("private_service"):
-            _private_process = self.process
         self.job = attach_exit_job(self.process)
         deadline = time.monotonic() + 180
         while time.monotonic() < deadline:
@@ -546,8 +504,8 @@ def run_batch(
         lora["file"] = lora_file_key(lora.get("file", ""))
         e.need(matches(lora["file"], checkpoint), "LoRA 不在当前模型对应的文件夹中")
         structural_match = False
-        local_lora = (model_directory(ROOT) / "loras" / lora.get("file", "")).resolve()
-        lora_root = (model_directory(ROOT) / "loras").resolve()
+        local_lora = (ROOT / "models/loras" / lora.get("file", "")).resolve()
+        lora_root = (ROOT / "models/loras").resolve()
         if local_lora.is_relative_to(lora_root) and local_lora.is_file():
             from .lora_inspection import inspect_lora
 
@@ -997,7 +955,7 @@ def cleanup_prompt_output(job, record):
     try:
         stats = api("/system_stats")
         argv = stats.get("system", {}).get("argv", [])
-        temp_root = local_path(config()["source_directory"]) / "temp"
+        temp_root = Path(config()["source_directory"]) / "temp"
         if "--temp-directory" in argv:
             temp_root = Path(argv[argv.index("--temp-directory") + 1])
         temp_root = temp_root.resolve()

@@ -9,7 +9,6 @@ class PauseModelTests(unittest.TestCase):
         self.app = Application.__new__(Application)
         self.app.model = Mock(vision=True)
         self.app.comfy = Mock()
-        self.app.comfy.process.poll.return_value = None
 
     @patch("comic_workflow.server.comfyui.api")
     @patch("comic_workflow.server.comfyui.discover", return_value={"ready": True})

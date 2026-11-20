@@ -57,7 +57,7 @@ class LocalPromptTests(unittest.TestCase):
         self.app.prepare_language.assert_called_once()
         self.assertEqual(set(self.app.prepare_language.call_args.kwargs), {"update"})
         self.app.model.start.assert_not_called()
-        self.app.model.stop.assert_not_called()  # Jobs owns final idle release
+        self.app.model.stop.assert_called_once()
         self.assertEqual(self.app.comfy.mock_calls, [])
         self.assertEqual(result["completed"], len(self.doc["panels"]))
         self.assertEqual(generate.call_count, len(self.doc["panels"]))
@@ -84,7 +84,7 @@ class LocalPromptTests(unittest.TestCase):
         draft = lp.current_draft(self.repo, self.pid)["draft"]
         self.assertEqual(draft["completed"], 1)
         self.assertEqual(draft["status"], "failed")
-        self.app.model.stop.assert_not_called()  # Jobs owns final idle release
+        self.app.model.stop.assert_called_once()
         with patch.object(lp.creative, "structured", side_effect=self.response) as generate:
             self.run_draft()
         self.assertEqual(generate.call_count, len(self.doc["panels"]) - 1)
@@ -94,7 +94,7 @@ class LocalPromptTests(unittest.TestCase):
         self.app.prepare_language.side_effect = RuntimeError("load failed")
         with self.assertRaises(RuntimeError):
             self.run_draft()
-        self.app.model.stop.assert_not_called()  # Jobs owns final idle release
+        self.app.model.stop.assert_called_once()
         self.app.prepare_language.side_effect = None
         for value in ["", "中文提示词"]:
             bad = {"panel_id": self.doc["panels"][0]["panel_id"], "positive": value, "negative": ""}
@@ -117,7 +117,7 @@ class LocalPromptTests(unittest.TestCase):
         with patch.object(lp.creative, "structured", side_effect=TaskCancelled), self.assertRaises(TaskCancelled):
             self.run_draft()
         self.assertEqual(lp.current_draft(self.repo, self.pid)["draft"]["status"], "cancelled")
-        self.app.model.stop.assert_not_called()  # Jobs owns final idle release
+        self.app.model.stop.assert_called_once()
 
     def test_action_queues_work_with_resumable_snapshot_without_loading_model(self):
         app = Application.__new__(Application)
@@ -136,13 +136,13 @@ class GpuLifecycleTests(unittest.TestCase):
             root = Path(tmp)
             weights = root / "model.gguf"
             weights.write_bytes(b"test")
-            cfg = {**model.raw_settings(), "model_path": str(weights), "model_size": 4, "model_sha256": "hash"}
+            cfg = {**model.settings(), "model_path": str(weights), "model_size": 4, "model_sha256": "hash"}
             manager = model.ModelManager()
             gpu = Mock()
             gpu.poll.return_value = None
             manager.status = lambda: {"owned": manager.process is not None, "ready": manager.process is not None}
             with patch.object(model, "settings", return_value=cfg), patch.object(model, "DATA", root), \
-                 patch("comic_workflow.strata_model.DATA", root), patch.object(model, "filehash", return_value="hash"), \
+                 patch.object(model, "filehash", return_value="hash"), \
                  patch.object(model, "terminate_tree"), patch.object(model, "close_job"), \
                  patch.object(model, "attach_exit_job", return_value=None), \
                  patch.object(model.subprocess, "Popen", return_value=gpu) as launch:
@@ -154,7 +154,7 @@ class GpuLifecycleTests(unittest.TestCase):
                     self.assertEqual(args[args.index("--flash-attn") + 1], "on")
                     self.assertNotIn("--no-op-offload", args)
                     self.assertNotIn("--no-kv-offload", args)
-                    self.assertIn("LLAMA_API_KEY", launch.call_args.kwargs["env"])
+                    self.assertNotIn("env", launch.call_args.kwargs)
                     manager.start()
                     self.assertEqual(launch.call_count, 1)
                 finally:
@@ -163,8 +163,6 @@ class GpuLifecycleTests(unittest.TestCase):
     def test_preparation_frees_idle_drawing_weights_before_gpu_load(self):
         app = Application.__new__(Application)
         app.model = Mock()
-        app.comfy = Mock()
-        app.comfy.process.poll.return_value = None
         events = Mock()
         events.attach_mock(app.model.start, "start")
         with patch("comic_workflow.server.comfyui.discover", return_value={"ready": True}), \

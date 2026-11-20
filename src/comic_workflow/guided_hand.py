@@ -10,7 +10,6 @@ import subprocess
 
 from PIL import Image, ImageDraw
 
-from .installed_assets import models as model_directory
 from . import engine as e
 from .paths import ROOT
 
@@ -95,8 +94,8 @@ def source_style_loras(repair, cfg):
         if (game not in ('原神','明日方舟') or lora_names.display_name(name) not in RENDER_STYLE_NAMES
                 or item.get('character_id') or item.get('target_character_ids') or name in seen):
             continue
-        path=(model_directory(ROOT) / "loras"/name).resolve()
-        e.need(path.is_relative_to((model_directory(ROOT) / "loras").resolve()) and path.is_file(), '原图画风模型缺失或路径无效')
+        path=(ROOT/'models/loras'/name).resolve()
+        e.need(path.is_relative_to((ROOT/'models/loras').resolve()) and path.is_file(), '原图画风模型缺失或路径无效')
         weight=item.get('weight');clip=item.get('clip_weight',weight)
         e.need(all(type(v) in (int,float) and math.isfinite(v) and 0<=v<=2 for v in (weight,clip)),
                '原图画风权重无效')
@@ -188,10 +187,10 @@ def workflow(checkpoint, seed, repair):
     e.need(checkpoint=='waiIllustriousSDXL_v170.safetensors', '此手形修复目前使用已验证的日漫默认模型')
     from .comfyui import lora_file_key
     lora={**cfg['hand_lora'], 'file':lora_file_key(cfg['hand_lora']['file'])}
-    path=model_directory(ROOT) / "loras"/lora['file']
+    path=ROOT/'models/loras'/lora['file']
     e.need(path.is_file() and hashlib.sha256(path.read_bytes()).hexdigest()==lora['sha256'], '现有手部模型校验失败')
     control=e.read(ROOT/'config/control-model.json')
-    path=model_directory(ROOT) / "controlnet"/control['name']
+    path=ROOT/'models/controlnet'/control['name']
     e.need(path.is_file() and hashlib.sha256(path.read_bytes()).hexdigest()==control['sha256'], '现有深度控制模型校验失败')
     backend=cfg.get('backend','impact')
     e.need(backend in ('impact','fooocus_depth'), '手部补绘方式无效')
@@ -244,7 +243,7 @@ def workflow(checkpoint, seed, repair):
         # Optional QA path: the published SEGS wrapper recursively applies the
         # previous depth wrapper, so both controls survive both detailer passes.
         pose_control=e.read(ROOT/'config/multi-person-control.json')
-        path=model_directory(ROOT) / "controlnet"/pose_control['name']
+        path=ROOT/'models/controlnet'/pose_control['name']
         e.need(path.is_file() and hashlib.sha256(path.read_bytes()).hexdigest()==pose_control['sha256'],
                '现有手指骨架控制模型校验失败')
         with Image.open(ROOT/cfg['depth_file']) as template:

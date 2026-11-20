@@ -20,14 +20,14 @@ class StrataPromptTests(unittest.TestCase):
                 self.assertEqual(profile[key][profile[key].index("--max-context") + 1], "65536")
         self.assertEqual(paths.settings(), original)
         with paths.prompt_model():
-            self.assertEqual(paths.settings()["context_size"], 65536)
+            self.assertEqual(paths.settings()["context_size"], 262144)
 
     def test_prompt_override_is_scoped_and_resets_on_failure(self):
         original = paths.settings()
         with self.assertRaises(RuntimeError):
             with paths.prompt_model():
                 self.assertEqual(paths.settings()["model_backend"], "strata")
-                self.assertEqual(paths.settings()["context_size"], 65536)
+                self.assertEqual(paths.settings()["context_size"], 262144)
                 with concurrent.futures.ThreadPoolExecutor(1) as pool:
                     self.assertEqual(pool.submit(paths.settings).result(), original)
                 raise RuntimeError("generation failed")
@@ -44,7 +44,7 @@ class StrataPromptTests(unittest.TestCase):
 
     def manager(self, path):
         return StrataManager({"model_port": 8094, "model_name": "qwen3.8-flash-next-iq3_s",
-            "context_size": 65536, "model_files": [{"path": str(path), "size": 1}]})
+            "context_size": 262144, "model_files": [{"path": str(path), "size": 1}]})
 
     def test_http_health_without_loaded_model_is_not_ready(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -52,7 +52,7 @@ class StrataPromptTests(unittest.TestCase):
             path.write_bytes(b"x")
             manager = self.manager(path)
             health = {"service": "strata", "status": "ok", "loaded": False,
-                      "model": manager.cfg["model_name"], "max_context": 65536}
+                      "model": manager.cfg["model_name"], "max_context": 262144}
             with patch.object(model, "request_json", return_value=health):
                 self.assertFalse(manager.status()["ready"])
                 health["loaded"] = True
@@ -66,7 +66,7 @@ class StrataPromptTests(unittest.TestCase):
             path.write_bytes(b"x")
             manager = self.manager(path)
             with patch.object(model, "request_json", return_value={"service": "strata"}) as call:
-                with self.assertRaisesRegex(ValueError, "独立服务"):
+                with self.assertRaisesRegex(ValueError, "独立窗口"):
                     manager.start(Mock())
                 manager.stop()
             self.assertTrue(all('/unload' not in c.args[0] for c in call.call_args_list))
@@ -76,7 +76,7 @@ class StrataPromptTests(unittest.TestCase):
         manager.process = Mock()
         manager.process.poll.return_value = None
         events = []
-        with patch.object(model, "request_json", side_effect=lambda *a, **k: events.append("unload") or {"status": "unloaded"}), \
+        with patch.object(model, "request_json", side_effect=lambda *a, **k: events.append("unload")), \
              patch("comic_workflow.strata_model.terminate_tree", side_effect=lambda p: events.append("terminate")):
             manager.stop()
         self.assertEqual(events, ["unload", "terminate"])

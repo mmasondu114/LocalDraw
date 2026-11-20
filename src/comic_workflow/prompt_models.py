@@ -1,5 +1,4 @@
 """Local diffusion model profiles used by the studio's prompt renderer."""
-from .installed_assets import models as model_directory
 from .paths import ROOT
 
 MODELS = {
@@ -15,8 +14,8 @@ MODELS = {
 
 def installed():
     from .qwen_edit import CHECKPOINT, ASSETS
-    return [name for name in MODELS if (model_directory(ROOT) / "diffusion_models" / name).is_file()
-            and (name != CHECKPOINT or all((model_directory(ROOT) / asset).is_file() for asset in ASSETS))]
+    return [name for name in MODELS if (ROOT / "models/diffusion_models" / name).is_file()
+            and (name != CHECKPOINT or all((ROOT / 'models' / asset).is_file() for asset in ASSETS))]
 
 
 def defaults(checkpoint):

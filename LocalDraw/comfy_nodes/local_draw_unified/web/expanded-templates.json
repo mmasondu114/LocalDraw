@@ -1,0 +1,7485 @@
+{
+  "Anima 3.8B v1.1": {
+    "id": "b28efb99-85dd-4914-9535-7231176c3908",
+    "revision": 0,
+    "last_node_id": 50,
+    "last_link_id": 19,
+    "nodes": [
+      {
+        "id": 1,
+        "type": "LocalDrawExpandedControls",
+        "title": "① 常用设置 · 模型 / LoRA / 步数",
+        "pos": [
+          40,
+          80
+        ],
+        "size": [
+          390,
+          400
+        ],
+        "flags": {},
+        "order": 0,
+        "mode": 0,
+        "inputs": [],
+        "outputs": [],
+        "properties": {
+          "Node name for S&R": "LocalDrawExpandedControls",
+          "ld_role": "controls",
+          "ld_branch": false
+        },
+        "widgets_values": [
+          "Anima 3.8B v1.1",
+          "不使用 LoRA",
+          0.7,
+          "不使用 LoRA",
+          0.7,
+          "不使用 LoRA",
+          0.7,
+          0,
+          0,
+          832,
+          1216,
+          1
+        ],
+        "color": "#223",
+        "bgcolor": "#335"
+      },
+      {
+        "id": 10,
+        "type": "Anima38BV2Loader",
+        "title": "底模 · Anima 3.8B v1.1",
+        "pos": [
+          40,
+          650
+        ],
+        "size": [
+          340,
+          110
+        ],
+        "flags": {},
+        "order": 1,
+        "mode": 0,
+        "inputs": [],
+        "outputs": [
+          {
+            "name": "MODEL",
+            "type": "MODEL",
+            "links": [
+              1
+            ]
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "Anima38BV2Loader",
+          "ld_role": "loader",
+          "ld_branch": true
+        },
+        "widgets_values": [
+          "Anima-3.8B-v1.1.safetensors"
+        ]
+      },
+      {
+        "id": 11,
+        "type": "CLIPLoader",
+        "title": "文本编码器 · 自动匹配",
+        "pos": [
+          40,
+          790
+        ],
+        "size": [
+          340,
+          115
+        ],
+        "flags": {},
+        "order": 2,
+        "mode": 0,
+        "inputs": [],
+        "outputs": [
+          {
+            "name": "CLIP",
+            "type": "CLIP",
+            "links": [
+              2
+            ]
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "CLIPLoader",
+          "ld_role": "clip",
+          "ld_branch": true
+        },
+        "widgets_values": [
+          "qwen_3_06b_base.safetensors",
+          "stable_diffusion",
+          "default"
+        ]
+      },
+      {
+        "id": 13,
+        "type": "VAELoader",
+        "title": "VAE · 自动匹配",
+        "pos": [
+          1480,
+          850
+        ],
+        "size": [
+          340,
+          100
+        ],
+        "flags": {},
+        "order": 3,
+        "mode": 0,
+        "inputs": [],
+        "outputs": [
+          {
+            "name": "VAE",
+            "type": "VAE",
+            "links": [
+              18
+            ]
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "VAELoader",
+          "ld_role": "vae",
+          "ld_branch": true
+        },
+        "widgets_values": [
+          "qwen_image_vae.safetensors"
+        ]
+      },
+      {
+        "id": 12,
+        "type": "AnimaQwen35Loader",
+        "title": "语义编码器 · Qwen3.5",
+        "pos": [
+          40,
+          940
+        ],
+        "size": [
+          340,
+          90
+        ],
+        "flags": {},
+        "order": 4,
+        "mode": 0,
+        "inputs": [],
+        "outputs": [
+          {
+            "name": "CLIP",
+            "type": "CLIP",
+            "links": [
+              9,
+              12
+            ]
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "AnimaQwen35Loader",
+          "ld_role": "qwen35",
+          "ld_branch": true
+        },
+        "widgets_values": [
+          "qwen35_4b.safetensors"
+        ]
+      },
+      {
+        "id": 20,
+        "type": "DeltaMixQ35LoraLoader",
+        "title": "LoRA 1 · 关闭（旁路）",
+        "pos": [
+          460,
+          650
+        ],
+        "size": [
+          300,
+          230
+        ],
+        "flags": {},
+        "order": 5,
+        "mode": 4,
+        "inputs": [
+          {
+            "name": "model",
+            "type": "MODEL",
+            "link": 1
+          },
+          {
+            "name": "clip",
+            "type": "CLIP",
+            "link": 2
+          }
+        ],
+        "outputs": [
+          {
+            "name": "model",
+            "type": "MODEL",
+            "links": [
+              3
+            ]
+          },
+          {
+            "name": "clip",
+            "type": "CLIP",
+            "links": [
+              4
+            ]
+          },
+          {
+            "name": "log",
+            "type": "STRING",
+            "links": []
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "DeltaMixQ35LoraLoader",
+          "ld_role": "lora_1",
+          "ld_branch": true
+        },
+        "widgets_values": [
+          "anime\\原神\\丝柯克_3016476.safetensors",
+          0.7,
+          true,
+          true,
+          0
+        ]
+      },
+      {
+        "id": 21,
+        "type": "DeltaMixQ35LoraLoader",
+        "title": "LoRA 2 · 关闭（旁路）",
+        "pos": [
+          790,
+          650
+        ],
+        "size": [
+          300,
+          230
+        ],
+        "flags": {},
+        "order": 6,
+        "mode": 4,
+        "inputs": [
+          {
+            "name": "model",
+            "type": "MODEL",
+            "link": 3
+          },
+          {
+            "name": "clip",
+            "type": "CLIP",
+            "link": 4
+          }
+        ],
+        "outputs": [
+          {
+            "name": "model",
+            "type": "MODEL",
+            "links": [
+              5
+            ]
+          },
+          {
+            "name": "clip",
+            "type": "CLIP",
+            "links": [
+              6
+            ]
+          },
+          {
+            "name": "log",
+            "type": "STRING",
+            "links": []
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "DeltaMixQ35LoraLoader",
+          "ld_role": "lora_2",
+          "ld_branch": true
+        },
+        "widgets_values": [
+          "anime\\原神\\丝柯克_3016476.safetensors",
+          0.7,
+          true,
+          true,
+          0
+        ]
+      },
+      {
+        "id": 22,
+        "type": "DeltaMixQ35LoraLoader",
+        "title": "LoRA 3 · 关闭（旁路）",
+        "pos": [
+          1120,
+          650
+        ],
+        "size": [
+          300,
+          230
+        ],
+        "flags": {},
+        "order": 7,
+        "mode": 4,
+        "inputs": [
+          {
+            "name": "model",
+            "type": "MODEL",
+            "link": 5
+          },
+          {
+            "name": "clip",
+            "type": "CLIP",
+            "link": 6
+          }
+        ],
+        "outputs": [
+          {
+            "name": "model",
+            "type": "MODEL",
+            "links": [
+              7,
+              10,
+              13
+            ]
+          },
+          {
+            "name": "clip",
+            "type": "CLIP",
+            "links": [
+              8,
+              11
+            ]
+          },
+          {
+            "name": "log",
+            "type": "STRING",
+            "links": []
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "DeltaMixQ35LoraLoader",
+          "ld_role": "lora_3",
+          "ld_branch": true
+        },
+        "widgets_values": [
+          "anime\\原神\\丝柯克_3016476.safetensors",
+          0.7,
+          true,
+          true,
+          0
+        ]
+      },
+      {
+        "id": 30,
+        "type": "Anima38BV2Prompt",
+        "title": "② 正向提示词 · 想画什么",
+        "pos": [
+          490,
+          80
+        ],
+        "size": [
+          440,
+          220
+        ],
+        "flags": {},
+        "order": 8,
+        "mode": 0,
+        "inputs": [
+          {
+            "name": "model",
+            "type": "MODEL",
+            "link": 7
+          },
+          {
+            "name": "native_clip",
+            "type": "CLIP",
+            "link": 8
+          },
+          {
+            "name": "qwen35_clip",
+            "type": "CLIP",
+            "link": 9
+          }
+        ],
+        "outputs": [
+          {
+            "name": "expanded",
+            "type": "CONDITIONING",
+            "links": [
+              14
+            ]
+          },
+          {
+            "name": "native",
+            "type": "CONDITIONING",
+            "links": []
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "Anima38BV2Prompt",
+          "ld_role": "positive",
+          "ld_branch": true
+        },
+        "widgets_values": [
+          "masterpiece, best quality, safe, anime illustration. An adult female traveler with silver hair wears a blue cloak over a white dress. She stands on a stone bridge in a mountain village, warm morning sunlight, mountains in the distance, detailed background."
+        ],
+        "color": "#232",
+        "bgcolor": "#353"
+      },
+      {
+        "id": 31,
+        "type": "Anima38BV2Prompt",
+        "title": "③ 反向提示词 · 避免什么",
+        "pos": [
+          490,
+          360
+        ],
+        "size": [
+          440,
+          180
+        ],
+        "flags": {},
+        "order": 9,
+        "mode": 0,
+        "inputs": [
+          {
+            "name": "model",
+            "type": "MODEL",
+            "link": 10
+          },
+          {
+            "name": "native_clip",
+            "type": "CLIP",
+            "link": 11
+          },
+          {
+            "name": "qwen35_clip",
+            "type": "CLIP",
+            "link": 12
+          }
+        ],
+        "outputs": [
+          {
+            "name": "expanded",
+            "type": "CONDITIONING",
+            "links": [
+              15
+            ]
+          },
+          {
+            "name": "native",
+            "type": "CONDITIONING",
+            "links": []
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "Anima38BV2Prompt",
+          "ld_role": "negative",
+          "ld_branch": true
+        },
+        "widgets_values": [
+          "worst quality, low quality, blurry, jpeg artifacts, watermark, signature, text"
+        ],
+        "color": "#322",
+        "bgcolor": "#533"
+      },
+      {
+        "id": 40,
+        "type": "EmptyLatentImage",
+        "title": "④ 画布尺寸与张数",
+        "pos": [
+          1000,
+          440
+        ],
+        "size": [
+          350,
+          120
+        ],
+        "flags": {},
+        "order": 10,
+        "mode": 0,
+        "inputs": [],
+        "outputs": [
+          {
+            "name": "LATENT",
+            "type": "LATENT",
+            "links": [
+              16
+            ]
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "EmptyLatentImage",
+          "ld_role": "latent",
+          "ld_branch": false
+        },
+        "widgets_values": [
+          832,
+          1216,
+          1
+        ]
+      },
+      {
+        "id": 41,
+        "type": "KSampler",
+        "title": "⑤ 采样 · 实际步数 / CFG / 种子",
+        "pos": [
+          1000,
+          80
+        ],
+        "size": [
+          350,
+          330
+        ],
+        "flags": {},
+        "order": 11,
+        "mode": 0,
+        "inputs": [
+          {
+            "name": "model",
+            "type": "MODEL",
+            "link": 13
+          },
+          {
+            "name": "positive",
+            "type": "CONDITIONING",
+            "link": 14
+          },
+          {
+            "name": "negative",
+            "type": "CONDITIONING",
+            "link": 15
+          },
+          {
+            "name": "latent_image",
+            "type": "LATENT",
+            "link": 16
+          }
+        ],
+        "outputs": [
+          {
+            "name": "LATENT",
+            "type": "LATENT",
+            "links": [
+              17
+            ]
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "KSampler",
+          "ld_role": "sampler",
+          "ld_branch": false
+        },
+        "widgets_values": [
+          20261016,
+          "randomize",
+          40,
+          6.0,
+          "res_multistep",
+          "beta",
+          1
+        ]
+      },
+      {
+        "id": 42,
+        "type": "VAEDecode",
+        "title": "⑥ VAE 解码 · 潜空间转图片",
+        "pos": [
+          1480,
+          650
+        ],
+        "size": [
+          340,
+          100
+        ],
+        "flags": {},
+        "order": 12,
+        "mode": 0,
+        "inputs": [
+          {
+            "name": "samples",
+            "type": "LATENT",
+            "link": 17
+          },
+          {
+            "name": "vae",
+            "type": "VAE",
+            "link": 18
+          }
+        ],
+        "outputs": [
+          {
+            "name": "IMAGE",
+            "type": "IMAGE",
+            "links": [
+              19
+            ]
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "VAEDecode",
+          "ld_role": "decode",
+          "ld_branch": false
+        },
+        "widgets_values": []
+      },
+      {
+        "id": 43,
+        "type": "SaveImage",
+        "title": "⑦ 图片预览 · 自动保存",
+        "pos": [
+          1480,
+          80
+        ],
+        "size": [
+          440,
+          500
+        ],
+        "flags": {},
+        "order": 13,
+        "mode": 0,
+        "inputs": [
+          {
+            "name": "images",
+            "type": "IMAGE",
+            "link": 19
+          }
+        ],
+        "outputs": [
+          {
+            "name": "images",
+            "type": "IMAGE",
+            "links": []
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "SaveImage",
+          "ld_role": "save",
+          "ld_branch": false
+        },
+        "widgets_values": [
+          "FullNodes/image"
+        ]
+      },
+      {
+        "id": 50,
+        "type": "Note",
+        "title": "操作说明 · 所有生成步骤均已展开",
+        "pos": [
+          460,
+          940
+        ],
+        "size": [
+          960,
+          110
+        ],
+        "flags": {},
+        "order": 14,
+        "mode": 0,
+        "inputs": [],
+        "outputs": [],
+        "properties": {
+          "Node name for S&R": "Note",
+          "ld_role": "note",
+          "ld_branch": false
+        },
+        "widgets_values": [
+          "先在①选择模型、LoRA与常用参数，再填写正反提示词，点击运行。\n步数 / CFG = 0：使用模型推荐值，实际数值见⑤。\n①只同步设置，不参与生成。下方每个节点都可检查与修改。\nLoRA选择“不使用”时，该节点变为紫色旁路。\n切换模型会替换配套加载、LoRA及编码节点；保留提示词、尺寸和手动步数。\nLoRA触发词请写入正向提示词。Krea2不使用反向提示词。"
+        ]
+      }
+    ],
+    "links": [
+      [
+        1,
+        10,
+        0,
+        20,
+        0,
+        "MODEL"
+      ],
+      [
+        2,
+        11,
+        0,
+        20,
+        1,
+        "CLIP"
+      ],
+      [
+        3,
+        20,
+        0,
+        21,
+        0,
+        "MODEL"
+      ],
+      [
+        4,
+        20,
+        1,
+        21,
+        1,
+        "CLIP"
+      ],
+      [
+        5,
+        21,
+        0,
+        22,
+        0,
+        "MODEL"
+      ],
+      [
+        6,
+        21,
+        1,
+        22,
+        1,
+        "CLIP"
+      ],
+      [
+        7,
+        22,
+        0,
+        30,
+        0,
+        "MODEL"
+      ],
+      [
+        8,
+        22,
+        1,
+        30,
+        1,
+        "CLIP"
+      ],
+      [
+        9,
+        12,
+        0,
+        30,
+        2,
+        "CLIP"
+      ],
+      [
+        10,
+        22,
+        0,
+        31,
+        0,
+        "MODEL"
+      ],
+      [
+        11,
+        22,
+        1,
+        31,
+        1,
+        "CLIP"
+      ],
+      [
+        12,
+        12,
+        0,
+        31,
+        2,
+        "CLIP"
+      ],
+      [
+        13,
+        22,
+        0,
+        41,
+        0,
+        "MODEL"
+      ],
+      [
+        14,
+        30,
+        0,
+        41,
+        1,
+        "CONDITIONING"
+      ],
+      [
+        15,
+        31,
+        0,
+        41,
+        2,
+        "CONDITIONING"
+      ],
+      [
+        16,
+        40,
+        0,
+        41,
+        3,
+        "LATENT"
+      ],
+      [
+        17,
+        41,
+        0,
+        42,
+        0,
+        "LATENT"
+      ],
+      [
+        18,
+        13,
+        0,
+        42,
+        1,
+        "VAE"
+      ],
+      [
+        19,
+        42,
+        0,
+        43,
+        0,
+        "IMAGE"
+      ]
+    ],
+    "groups": [
+      {
+        "id": 1,
+        "title": "常用操作区",
+        "bounding": [
+          10,
+          10,
+          1390,
+          580
+        ],
+        "color": "#3f789e",
+        "font_size": 24,
+        "flags": {}
+      },
+      {
+        "id": 2,
+        "title": "模型加载与 LoRA · 完整连线",
+        "bounding": [
+          10,
+          600,
+          1450,
+          460
+        ],
+        "color": "#7460a0",
+        "font_size": 24,
+        "flags": {}
+      }
+    ],
+    "config": {},
+    "extra": {
+      "ds": {
+        "scale": 0.55,
+        "offset": [
+          100,
+          100
+        ]
+      }
+    },
+    "version": 0.4
+  },
+  "Anima Aesthetic v1.1": {
+    "id": "b28efb99-85dd-4914-9535-7231176c3908",
+    "revision": 0,
+    "last_node_id": 50,
+    "last_link_id": 15,
+    "nodes": [
+      {
+        "id": 1,
+        "type": "LocalDrawExpandedControls",
+        "title": "① 常用设置 · 模型 / LoRA / 步数",
+        "pos": [
+          40,
+          80
+        ],
+        "size": [
+          390,
+          400
+        ],
+        "flags": {},
+        "order": 0,
+        "mode": 0,
+        "inputs": [],
+        "outputs": [],
+        "properties": {
+          "Node name for S&R": "LocalDrawExpandedControls",
+          "ld_role": "controls",
+          "ld_branch": false
+        },
+        "widgets_values": [
+          "Anima Aesthetic v1.1",
+          "不使用 LoRA",
+          0.7,
+          "不使用 LoRA",
+          0.7,
+          "不使用 LoRA",
+          0.7,
+          0,
+          0,
+          832,
+          1216,
+          1
+        ],
+        "color": "#223",
+        "bgcolor": "#335"
+      },
+      {
+        "id": 10,
+        "type": "UNETLoader",
+        "title": "底模 · Anima Aesthetic v1.1",
+        "pos": [
+          40,
+          650
+        ],
+        "size": [
+          340,
+          110
+        ],
+        "flags": {},
+        "order": 1,
+        "mode": 0,
+        "inputs": [],
+        "outputs": [
+          {
+            "name": "MODEL",
+            "type": "MODEL",
+            "links": [
+              1
+            ]
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "UNETLoader",
+          "ld_role": "loader",
+          "ld_branch": true
+        },
+        "widgets_values": [
+          "anima-aesthetic-v1.1.safetensors",
+          "default"
+        ]
+      },
+      {
+        "id": 11,
+        "type": "CLIPLoader",
+        "title": "文本编码器 · 自动匹配",
+        "pos": [
+          40,
+          790
+        ],
+        "size": [
+          340,
+          115
+        ],
+        "flags": {},
+        "order": 2,
+        "mode": 0,
+        "inputs": [],
+        "outputs": [
+          {
+            "name": "CLIP",
+            "type": "CLIP",
+            "links": [
+              2
+            ]
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "CLIPLoader",
+          "ld_role": "clip",
+          "ld_branch": true
+        },
+        "widgets_values": [
+          "qwen_3_06b_base.safetensors",
+          "stable_diffusion",
+          "default"
+        ]
+      },
+      {
+        "id": 13,
+        "type": "VAELoader",
+        "title": "VAE · 自动匹配",
+        "pos": [
+          1480,
+          850
+        ],
+        "size": [
+          340,
+          100
+        ],
+        "flags": {},
+        "order": 3,
+        "mode": 0,
+        "inputs": [],
+        "outputs": [
+          {
+            "name": "VAE",
+            "type": "VAE",
+            "links": [
+              14
+            ]
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "VAELoader",
+          "ld_role": "vae",
+          "ld_branch": true
+        },
+        "widgets_values": [
+          "qwen_image_vae.safetensors"
+        ]
+      },
+      {
+        "id": 20,
+        "type": "LoraLoader",
+        "title": "LoRA 1 · 关闭（旁路）",
+        "pos": [
+          460,
+          650
+        ],
+        "size": [
+          300,
+          230
+        ],
+        "flags": {},
+        "order": 4,
+        "mode": 4,
+        "inputs": [
+          {
+            "name": "model",
+            "type": "MODEL",
+            "link": 1
+          },
+          {
+            "name": "clip",
+            "type": "CLIP",
+            "link": 2
+          }
+        ],
+        "outputs": [
+          {
+            "name": "MODEL",
+            "type": "MODEL",
+            "links": [
+              3
+            ]
+          },
+          {
+            "name": "CLIP",
+            "type": "CLIP",
+            "links": [
+              4
+            ]
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "LoraLoader",
+          "ld_role": "lora_1",
+          "ld_branch": true
+        },
+        "widgets_values": [
+          "anime\\原神\\丝柯克_3016476.safetensors",
+          0.7,
+          0
+        ]
+      },
+      {
+        "id": 21,
+        "type": "LoraLoader",
+        "title": "LoRA 2 · 关闭（旁路）",
+        "pos": [
+          790,
+          650
+        ],
+        "size": [
+          300,
+          230
+        ],
+        "flags": {},
+        "order": 5,
+        "mode": 4,
+        "inputs": [
+          {
+            "name": "model",
+            "type": "MODEL",
+            "link": 3
+          },
+          {
+            "name": "clip",
+            "type": "CLIP",
+            "link": 4
+          }
+        ],
+        "outputs": [
+          {
+            "name": "MODEL",
+            "type": "MODEL",
+            "links": [
+              5
+            ]
+          },
+          {
+            "name": "CLIP",
+            "type": "CLIP",
+            "links": [
+              6
+            ]
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "LoraLoader",
+          "ld_role": "lora_2",
+          "ld_branch": true
+        },
+        "widgets_values": [
+          "anime\\原神\\丝柯克_3016476.safetensors",
+          0.7,
+          0
+        ]
+      },
+      {
+        "id": 22,
+        "type": "LoraLoader",
+        "title": "LoRA 3 · 关闭（旁路）",
+        "pos": [
+          1120,
+          650
+        ],
+        "size": [
+          300,
+          230
+        ],
+        "flags": {},
+        "order": 6,
+        "mode": 4,
+        "inputs": [
+          {
+            "name": "model",
+            "type": "MODEL",
+            "link": 5
+          },
+          {
+            "name": "clip",
+            "type": "CLIP",
+            "link": 6
+          }
+        ],
+        "outputs": [
+          {
+            "name": "MODEL",
+            "type": "MODEL",
+            "links": [
+              9
+            ]
+          },
+          {
+            "name": "CLIP",
+            "type": "CLIP",
+            "links": [
+              7,
+              8
+            ]
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "LoraLoader",
+          "ld_role": "lora_3",
+          "ld_branch": true
+        },
+        "widgets_values": [
+          "anime\\原神\\丝柯克_3016476.safetensors",
+          0.7,
+          0
+        ]
+      },
+      {
+        "id": 30,
+        "type": "CLIPTextEncode",
+        "title": "② 正向提示词 · 想画什么",
+        "pos": [
+          490,
+          80
+        ],
+        "size": [
+          440,
+          220
+        ],
+        "flags": {},
+        "order": 7,
+        "mode": 0,
+        "inputs": [
+          {
+            "name": "clip",
+            "type": "CLIP",
+            "link": 7
+          }
+        ],
+        "outputs": [
+          {
+            "name": "CONDITIONING",
+            "type": "CONDITIONING",
+            "links": [
+              10
+            ]
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "CLIPTextEncode",
+          "ld_role": "positive",
+          "ld_branch": true
+        },
+        "widgets_values": [
+          "masterpiece, best quality, safe, anime illustration. An adult female traveler with silver hair wears a blue cloak over a white dress. She stands on a stone bridge in a mountain village, warm morning sunlight, mountains in the distance, detailed background."
+        ],
+        "color": "#232",
+        "bgcolor": "#353"
+      },
+      {
+        "id": 31,
+        "type": "CLIPTextEncode",
+        "title": "③ 反向提示词 · 避免什么",
+        "pos": [
+          490,
+          360
+        ],
+        "size": [
+          440,
+          180
+        ],
+        "flags": {},
+        "order": 8,
+        "mode": 0,
+        "inputs": [
+          {
+            "name": "clip",
+            "type": "CLIP",
+            "link": 8
+          }
+        ],
+        "outputs": [
+          {
+            "name": "CONDITIONING",
+            "type": "CONDITIONING",
+            "links": [
+              11
+            ]
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "CLIPTextEncode",
+          "ld_role": "negative",
+          "ld_branch": true
+        },
+        "widgets_values": [
+          "worst quality, low quality, blurry, jpeg artifacts, watermark, signature, text"
+        ],
+        "color": "#322",
+        "bgcolor": "#533"
+      },
+      {
+        "id": 40,
+        "type": "EmptyLatentImage",
+        "title": "④ 画布尺寸与张数",
+        "pos": [
+          1000,
+          440
+        ],
+        "size": [
+          350,
+          120
+        ],
+        "flags": {},
+        "order": 9,
+        "mode": 0,
+        "inputs": [],
+        "outputs": [
+          {
+            "name": "LATENT",
+            "type": "LATENT",
+            "links": [
+              12
+            ]
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "EmptyLatentImage",
+          "ld_role": "latent",
+          "ld_branch": false
+        },
+        "widgets_values": [
+          832,
+          1216,
+          1
+        ]
+      },
+      {
+        "id": 41,
+        "type": "KSampler",
+        "title": "⑤ 采样 · 实际步数 / CFG / 种子",
+        "pos": [
+          1000,
+          80
+        ],
+        "size": [
+          350,
+          330
+        ],
+        "flags": {},
+        "order": 10,
+        "mode": 0,
+        "inputs": [
+          {
+            "name": "model",
+            "type": "MODEL",
+            "link": 9
+          },
+          {
+            "name": "positive",
+            "type": "CONDITIONING",
+            "link": 10
+          },
+          {
+            "name": "negative",
+            "type": "CONDITIONING",
+            "link": 11
+          },
+          {
+            "name": "latent_image",
+            "type": "LATENT",
+            "link": 12
+          }
+        ],
+        "outputs": [
+          {
+            "name": "LATENT",
+            "type": "LATENT",
+            "links": [
+              13
+            ]
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "KSampler",
+          "ld_role": "sampler",
+          "ld_branch": false
+        },
+        "widgets_values": [
+          20261016,
+          "randomize",
+          30,
+          4.0,
+          "er_sde",
+          "simple",
+          1
+        ]
+      },
+      {
+        "id": 42,
+        "type": "VAEDecode",
+        "title": "⑥ VAE 解码 · 潜空间转图片",
+        "pos": [
+          1480,
+          650
+        ],
+        "size": [
+          340,
+          100
+        ],
+        "flags": {},
+        "order": 11,
+        "mode": 0,
+        "inputs": [
+          {
+            "name": "samples",
+            "type": "LATENT",
+            "link": 13
+          },
+          {
+            "name": "vae",
+            "type": "VAE",
+            "link": 14
+          }
+        ],
+        "outputs": [
+          {
+            "name": "IMAGE",
+            "type": "IMAGE",
+            "links": [
+              15
+            ]
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "VAEDecode",
+          "ld_role": "decode",
+          "ld_branch": false
+        },
+        "widgets_values": []
+      },
+      {
+        "id": 43,
+        "type": "SaveImage",
+        "title": "⑦ 图片预览 · 自动保存",
+        "pos": [
+          1480,
+          80
+        ],
+        "size": [
+          440,
+          500
+        ],
+        "flags": {},
+        "order": 12,
+        "mode": 0,
+        "inputs": [
+          {
+            "name": "images",
+            "type": "IMAGE",
+            "link": 15
+          }
+        ],
+        "outputs": [
+          {
+            "name": "images",
+            "type": "IMAGE",
+            "links": []
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "SaveImage",
+          "ld_role": "save",
+          "ld_branch": false
+        },
+        "widgets_values": [
+          "FullNodes/image"
+        ]
+      },
+      {
+        "id": 50,
+        "type": "Note",
+        "title": "操作说明 · 所有生成步骤均已展开",
+        "pos": [
+          460,
+          940
+        ],
+        "size": [
+          960,
+          110
+        ],
+        "flags": {},
+        "order": 13,
+        "mode": 0,
+        "inputs": [],
+        "outputs": [],
+        "properties": {
+          "Node name for S&R": "Note",
+          "ld_role": "note",
+          "ld_branch": false
+        },
+        "widgets_values": [
+          "先在①选择模型、LoRA与常用参数，再填写正反提示词，点击运行。\n步数 / CFG = 0：使用模型推荐值，实际数值见⑤。\n①只同步设置，不参与生成。下方每个节点都可检查与修改。\nLoRA选择“不使用”时，该节点变为紫色旁路。\n切换模型会替换配套加载、LoRA及编码节点；保留提示词、尺寸和手动步数。\nLoRA触发词请写入正向提示词。Krea2不使用反向提示词。"
+        ]
+      }
+    ],
+    "links": [
+      [
+        1,
+        10,
+        0,
+        20,
+        0,
+        "MODEL"
+      ],
+      [
+        2,
+        11,
+        0,
+        20,
+        1,
+        "CLIP"
+      ],
+      [
+        3,
+        20,
+        0,
+        21,
+        0,
+        "MODEL"
+      ],
+      [
+        4,
+        20,
+        1,
+        21,
+        1,
+        "CLIP"
+      ],
+      [
+        5,
+        21,
+        0,
+        22,
+        0,
+        "MODEL"
+      ],
+      [
+        6,
+        21,
+        1,
+        22,
+        1,
+        "CLIP"
+      ],
+      [
+        7,
+        22,
+        1,
+        30,
+        0,
+        "CLIP"
+      ],
+      [
+        8,
+        22,
+        1,
+        31,
+        0,
+        "CLIP"
+      ],
+      [
+        9,
+        22,
+        0,
+        41,
+        0,
+        "MODEL"
+      ],
+      [
+        10,
+        30,
+        0,
+        41,
+        1,
+        "CONDITIONING"
+      ],
+      [
+        11,
+        31,
+        0,
+        41,
+        2,
+        "CONDITIONING"
+      ],
+      [
+        12,
+        40,
+        0,
+        41,
+        3,
+        "LATENT"
+      ],
+      [
+        13,
+        41,
+        0,
+        42,
+        0,
+        "LATENT"
+      ],
+      [
+        14,
+        13,
+        0,
+        42,
+        1,
+        "VAE"
+      ],
+      [
+        15,
+        42,
+        0,
+        43,
+        0,
+        "IMAGE"
+      ]
+    ],
+    "groups": [
+      {
+        "id": 1,
+        "title": "常用操作区",
+        "bounding": [
+          10,
+          10,
+          1390,
+          580
+        ],
+        "color": "#3f789e",
+        "font_size": 24,
+        "flags": {}
+      },
+      {
+        "id": 2,
+        "title": "模型加载与 LoRA · 完整连线",
+        "bounding": [
+          10,
+          600,
+          1450,
+          460
+        ],
+        "color": "#7460a0",
+        "font_size": 24,
+        "flags": {}
+      }
+    ],
+    "config": {},
+    "extra": {
+      "ds": {
+        "scale": 0.55,
+        "offset": [
+          100,
+          100
+        ]
+      }
+    },
+    "version": 0.4
+  },
+  "Anima Delta Mix v6": {
+    "id": "b28efb99-85dd-4914-9535-7231176c3908",
+    "revision": 0,
+    "last_node_id": 50,
+    "last_link_id": 15,
+    "nodes": [
+      {
+        "id": 1,
+        "type": "LocalDrawExpandedControls",
+        "title": "① 常用设置 · 模型 / LoRA / 步数",
+        "pos": [
+          40,
+          80
+        ],
+        "size": [
+          390,
+          400
+        ],
+        "flags": {},
+        "order": 0,
+        "mode": 0,
+        "inputs": [],
+        "outputs": [],
+        "properties": {
+          "Node name for S&R": "LocalDrawExpandedControls",
+          "ld_role": "controls",
+          "ld_branch": false
+        },
+        "widgets_values": [
+          "Anima Delta Mix v6",
+          "不使用 LoRA",
+          0.7,
+          "不使用 LoRA",
+          0.7,
+          "不使用 LoRA",
+          0.7,
+          0,
+          0,
+          832,
+          1216,
+          1
+        ],
+        "color": "#223",
+        "bgcolor": "#335"
+      },
+      {
+        "id": 10,
+        "type": "UNETLoader",
+        "title": "底模 · Anima Delta Mix v6",
+        "pos": [
+          40,
+          650
+        ],
+        "size": [
+          340,
+          110
+        ],
+        "flags": {},
+        "order": 1,
+        "mode": 0,
+        "inputs": [],
+        "outputs": [
+          {
+            "name": "MODEL",
+            "type": "MODEL",
+            "links": [
+              1
+            ]
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "UNETLoader",
+          "ld_role": "loader",
+          "ld_branch": true
+        },
+        "widgets_values": [
+          "animaDeltaMix38BQwen0_deltaMixV60.safetensors",
+          "default"
+        ]
+      },
+      {
+        "id": 11,
+        "type": "CLIPLoader",
+        "title": "文本编码器 · 自动匹配",
+        "pos": [
+          40,
+          790
+        ],
+        "size": [
+          340,
+          115
+        ],
+        "flags": {},
+        "order": 2,
+        "mode": 0,
+        "inputs": [],
+        "outputs": [
+          {
+            "name": "CLIP",
+            "type": "CLIP",
+            "links": [
+              2
+            ]
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "CLIPLoader",
+          "ld_role": "clip",
+          "ld_branch": true
+        },
+        "widgets_values": [
+          "qwen_3_06b_base.safetensors",
+          "stable_diffusion",
+          "default"
+        ]
+      },
+      {
+        "id": 13,
+        "type": "VAELoader",
+        "title": "VAE · 自动匹配",
+        "pos": [
+          1480,
+          850
+        ],
+        "size": [
+          340,
+          100
+        ],
+        "flags": {},
+        "order": 3,
+        "mode": 0,
+        "inputs": [],
+        "outputs": [
+          {
+            "name": "VAE",
+            "type": "VAE",
+            "links": [
+              14
+            ]
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "VAELoader",
+          "ld_role": "vae",
+          "ld_branch": true
+        },
+        "widgets_values": [
+          "qwen_image_vae.safetensors"
+        ]
+      },
+      {
+        "id": 20,
+        "type": "DeltaMixQ35LoraLoader",
+        "title": "LoRA 1 · 关闭（旁路）",
+        "pos": [
+          460,
+          650
+        ],
+        "size": [
+          300,
+          230
+        ],
+        "flags": {},
+        "order": 4,
+        "mode": 4,
+        "inputs": [
+          {
+            "name": "model",
+            "type": "MODEL",
+            "link": 1
+          },
+          {
+            "name": "clip",
+            "type": "CLIP",
+            "link": 2
+          }
+        ],
+        "outputs": [
+          {
+            "name": "model",
+            "type": "MODEL",
+            "links": [
+              3
+            ]
+          },
+          {
+            "name": "clip",
+            "type": "CLIP",
+            "links": [
+              4
+            ]
+          },
+          {
+            "name": "log",
+            "type": "STRING",
+            "links": []
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "DeltaMixQ35LoraLoader",
+          "ld_role": "lora_1",
+          "ld_branch": true
+        },
+        "widgets_values": [
+          "anime\\原神\\丝柯克_3016476.safetensors",
+          0.7,
+          true,
+          true,
+          0
+        ]
+      },
+      {
+        "id": 21,
+        "type": "DeltaMixQ35LoraLoader",
+        "title": "LoRA 2 · 关闭（旁路）",
+        "pos": [
+          790,
+          650
+        ],
+        "size": [
+          300,
+          230
+        ],
+        "flags": {},
+        "order": 5,
+        "mode": 4,
+        "inputs": [
+          {
+            "name": "model",
+            "type": "MODEL",
+            "link": 3
+          },
+          {
+            "name": "clip",
+            "type": "CLIP",
+            "link": 4
+          }
+        ],
+        "outputs": [
+          {
+            "name": "model",
+            "type": "MODEL",
+            "links": [
+              5
+            ]
+          },
+          {
+            "name": "clip",
+            "type": "CLIP",
+            "links": [
+              6
+            ]
+          },
+          {
+            "name": "log",
+            "type": "STRING",
+            "links": []
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "DeltaMixQ35LoraLoader",
+          "ld_role": "lora_2",
+          "ld_branch": true
+        },
+        "widgets_values": [
+          "anime\\原神\\丝柯克_3016476.safetensors",
+          0.7,
+          true,
+          true,
+          0
+        ]
+      },
+      {
+        "id": 22,
+        "type": "DeltaMixQ35LoraLoader",
+        "title": "LoRA 3 · 关闭（旁路）",
+        "pos": [
+          1120,
+          650
+        ],
+        "size": [
+          300,
+          230
+        ],
+        "flags": {},
+        "order": 6,
+        "mode": 4,
+        "inputs": [
+          {
+            "name": "model",
+            "type": "MODEL",
+            "link": 5
+          },
+          {
+            "name": "clip",
+            "type": "CLIP",
+            "link": 6
+          }
+        ],
+        "outputs": [
+          {
+            "name": "model",
+            "type": "MODEL",
+            "links": [
+              9
+            ]
+          },
+          {
+            "name": "clip",
+            "type": "CLIP",
+            "links": [
+              7,
+              8
+            ]
+          },
+          {
+            "name": "log",
+            "type": "STRING",
+            "links": []
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "DeltaMixQ35LoraLoader",
+          "ld_role": "lora_3",
+          "ld_branch": true
+        },
+        "widgets_values": [
+          "anime\\原神\\丝柯克_3016476.safetensors",
+          0.7,
+          true,
+          true,
+          0
+        ]
+      },
+      {
+        "id": 30,
+        "type": "CLIPTextEncode",
+        "title": "② 正向提示词 · 想画什么",
+        "pos": [
+          490,
+          80
+        ],
+        "size": [
+          440,
+          220
+        ],
+        "flags": {},
+        "order": 7,
+        "mode": 0,
+        "inputs": [
+          {
+            "name": "clip",
+            "type": "CLIP",
+            "link": 7
+          }
+        ],
+        "outputs": [
+          {
+            "name": "CONDITIONING",
+            "type": "CONDITIONING",
+            "links": [
+              10
+            ]
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "CLIPTextEncode",
+          "ld_role": "positive",
+          "ld_branch": true
+        },
+        "widgets_values": [
+          "masterpiece, best quality, safe, anime illustration. An adult female traveler with silver hair wears a blue cloak over a white dress. She stands on a stone bridge in a mountain village, warm morning sunlight, mountains in the distance, detailed background."
+        ],
+        "color": "#232",
+        "bgcolor": "#353"
+      },
+      {
+        "id": 31,
+        "type": "CLIPTextEncode",
+        "title": "③ 反向提示词 · 避免什么",
+        "pos": [
+          490,
+          360
+        ],
+        "size": [
+          440,
+          180
+        ],
+        "flags": {},
+        "order": 8,
+        "mode": 0,
+        "inputs": [
+          {
+            "name": "clip",
+            "type": "CLIP",
+            "link": 8
+          }
+        ],
+        "outputs": [
+          {
+            "name": "CONDITIONING",
+            "type": "CONDITIONING",
+            "links": [
+              11
+            ]
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "CLIPTextEncode",
+          "ld_role": "negative",
+          "ld_branch": true
+        },
+        "widgets_values": [
+          "worst quality, low quality, blurry, jpeg artifacts, watermark, signature, text"
+        ],
+        "color": "#322",
+        "bgcolor": "#533"
+      },
+      {
+        "id": 40,
+        "type": "EmptyLatentImage",
+        "title": "④ 画布尺寸与张数",
+        "pos": [
+          1000,
+          440
+        ],
+        "size": [
+          350,
+          120
+        ],
+        "flags": {},
+        "order": 9,
+        "mode": 0,
+        "inputs": [],
+        "outputs": [
+          {
+            "name": "LATENT",
+            "type": "LATENT",
+            "links": [
+              12
+            ]
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "EmptyLatentImage",
+          "ld_role": "latent",
+          "ld_branch": false
+        },
+        "widgets_values": [
+          832,
+          1216,
+          1
+        ]
+      },
+      {
+        "id": 41,
+        "type": "KSampler",
+        "title": "⑤ 采样 · 实际步数 / CFG / 种子",
+        "pos": [
+          1000,
+          80
+        ],
+        "size": [
+          350,
+          330
+        ],
+        "flags": {},
+        "order": 10,
+        "mode": 0,
+        "inputs": [
+          {
+            "name": "model",
+            "type": "MODEL",
+            "link": 9
+          },
+          {
+            "name": "positive",
+            "type": "CONDITIONING",
+            "link": 10
+          },
+          {
+            "name": "negative",
+            "type": "CONDITIONING",
+            "link": 11
+          },
+          {
+            "name": "latent_image",
+            "type": "LATENT",
+            "link": 12
+          }
+        ],
+        "outputs": [
+          {
+            "name": "LATENT",
+            "type": "LATENT",
+            "links": [
+              13
+            ]
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "KSampler",
+          "ld_role": "sampler",
+          "ld_branch": false
+        },
+        "widgets_values": [
+          20261016,
+          "randomize",
+          35,
+          4.5,
+          "dpmpp_2m",
+          "sgm_uniform",
+          1
+        ]
+      },
+      {
+        "id": 42,
+        "type": "VAEDecode",
+        "title": "⑥ VAE 解码 · 潜空间转图片",
+        "pos": [
+          1480,
+          650
+        ],
+        "size": [
+          340,
+          100
+        ],
+        "flags": {},
+        "order": 11,
+        "mode": 0,
+        "inputs": [
+          {
+            "name": "samples",
+            "type": "LATENT",
+            "link": 13
+          },
+          {
+            "name": "vae",
+            "type": "VAE",
+            "link": 14
+          }
+        ],
+        "outputs": [
+          {
+            "name": "IMAGE",
+            "type": "IMAGE",
+            "links": [
+              15
+            ]
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "VAEDecode",
+          "ld_role": "decode",
+          "ld_branch": false
+        },
+        "widgets_values": []
+      },
+      {
+        "id": 43,
+        "type": "SaveImage",
+        "title": "⑦ 图片预览 · 自动保存",
+        "pos": [
+          1480,
+          80
+        ],
+        "size": [
+          440,
+          500
+        ],
+        "flags": {},
+        "order": 12,
+        "mode": 0,
+        "inputs": [
+          {
+            "name": "images",
+            "type": "IMAGE",
+            "link": 15
+          }
+        ],
+        "outputs": [
+          {
+            "name": "images",
+            "type": "IMAGE",
+            "links": []
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "SaveImage",
+          "ld_role": "save",
+          "ld_branch": false
+        },
+        "widgets_values": [
+          "FullNodes/image"
+        ]
+      },
+      {
+        "id": 50,
+        "type": "Note",
+        "title": "操作说明 · 所有生成步骤均已展开",
+        "pos": [
+          460,
+          940
+        ],
+        "size": [
+          960,
+          110
+        ],
+        "flags": {},
+        "order": 13,
+        "mode": 0,
+        "inputs": [],
+        "outputs": [],
+        "properties": {
+          "Node name for S&R": "Note",
+          "ld_role": "note",
+          "ld_branch": false
+        },
+        "widgets_values": [
+          "先在①选择模型、LoRA与常用参数，再填写正反提示词，点击运行。\n步数 / CFG = 0：使用模型推荐值，实际数值见⑤。\n①只同步设置，不参与生成。下方每个节点都可检查与修改。\nLoRA选择“不使用”时，该节点变为紫色旁路。\n切换模型会替换配套加载、LoRA及编码节点；保留提示词、尺寸和手动步数。\nLoRA触发词请写入正向提示词。Krea2不使用反向提示词。"
+        ]
+      }
+    ],
+    "links": [
+      [
+        1,
+        10,
+        0,
+        20,
+        0,
+        "MODEL"
+      ],
+      [
+        2,
+        11,
+        0,
+        20,
+        1,
+        "CLIP"
+      ],
+      [
+        3,
+        20,
+        0,
+        21,
+        0,
+        "MODEL"
+      ],
+      [
+        4,
+        20,
+        1,
+        21,
+        1,
+        "CLIP"
+      ],
+      [
+        5,
+        21,
+        0,
+        22,
+        0,
+        "MODEL"
+      ],
+      [
+        6,
+        21,
+        1,
+        22,
+        1,
+        "CLIP"
+      ],
+      [
+        7,
+        22,
+        1,
+        30,
+        0,
+        "CLIP"
+      ],
+      [
+        8,
+        22,
+        1,
+        31,
+        0,
+        "CLIP"
+      ],
+      [
+        9,
+        22,
+        0,
+        41,
+        0,
+        "MODEL"
+      ],
+      [
+        10,
+        30,
+        0,
+        41,
+        1,
+        "CONDITIONING"
+      ],
+      [
+        11,
+        31,
+        0,
+        41,
+        2,
+        "CONDITIONING"
+      ],
+      [
+        12,
+        40,
+        0,
+        41,
+        3,
+        "LATENT"
+      ],
+      [
+        13,
+        41,
+        0,
+        42,
+        0,
+        "LATENT"
+      ],
+      [
+        14,
+        13,
+        0,
+        42,
+        1,
+        "VAE"
+      ],
+      [
+        15,
+        42,
+        0,
+        43,
+        0,
+        "IMAGE"
+      ]
+    ],
+    "groups": [
+      {
+        "id": 1,
+        "title": "常用操作区",
+        "bounding": [
+          10,
+          10,
+          1390,
+          580
+        ],
+        "color": "#3f789e",
+        "font_size": 24,
+        "flags": {}
+      },
+      {
+        "id": 2,
+        "title": "模型加载与 LoRA · 完整连线",
+        "bounding": [
+          10,
+          600,
+          1450,
+          460
+        ],
+        "color": "#7460a0",
+        "font_size": 24,
+        "flags": {}
+      }
+    ],
+    "config": {},
+    "extra": {
+      "ds": {
+        "scale": 0.55,
+        "offset": [
+          100,
+          100
+        ]
+      }
+    },
+    "version": 0.4
+  },
+  "Krea2 Turbo": {
+    "id": "b28efb99-85dd-4914-9535-7231176c3908",
+    "revision": 0,
+    "last_node_id": 50,
+    "last_link_id": 16,
+    "nodes": [
+      {
+        "id": 1,
+        "type": "LocalDrawExpandedControls",
+        "title": "① 常用设置 · 模型 / LoRA / 步数",
+        "pos": [
+          40,
+          80
+        ],
+        "size": [
+          390,
+          400
+        ],
+        "flags": {},
+        "order": 0,
+        "mode": 0,
+        "inputs": [],
+        "outputs": [],
+        "properties": {
+          "Node name for S&R": "LocalDrawExpandedControls",
+          "ld_role": "controls",
+          "ld_branch": false
+        },
+        "widgets_values": [
+          "Krea2 Turbo",
+          "不使用 LoRA",
+          0.7,
+          "不使用 LoRA",
+          0.7,
+          "不使用 LoRA",
+          0.7,
+          0,
+          0,
+          832,
+          1216,
+          1
+        ],
+        "color": "#223",
+        "bgcolor": "#335"
+      },
+      {
+        "id": 10,
+        "type": "UNETLoader",
+        "title": "底模 · Krea2 Turbo",
+        "pos": [
+          40,
+          650
+        ],
+        "size": [
+          340,
+          110
+        ],
+        "flags": {},
+        "order": 1,
+        "mode": 0,
+        "inputs": [],
+        "outputs": [
+          {
+            "name": "MODEL",
+            "type": "MODEL",
+            "links": [
+              1
+            ]
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "UNETLoader",
+          "ld_role": "loader",
+          "ld_branch": true
+        },
+        "widgets_values": [
+          "krea2_turbo_fp8_scaled.safetensors",
+          "default"
+        ]
+      },
+      {
+        "id": 11,
+        "type": "CLIPLoader",
+        "title": "文本编码器 · 自动匹配",
+        "pos": [
+          40,
+          790
+        ],
+        "size": [
+          340,
+          115
+        ],
+        "flags": {},
+        "order": 2,
+        "mode": 0,
+        "inputs": [],
+        "outputs": [
+          {
+            "name": "CLIP",
+            "type": "CLIP",
+            "links": [
+              2
+            ]
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "CLIPLoader",
+          "ld_role": "clip",
+          "ld_branch": true
+        },
+        "widgets_values": [
+          "qwen3vl_4b_fp8_scaled.safetensors",
+          "krea2",
+          "default"
+        ]
+      },
+      {
+        "id": 13,
+        "type": "VAELoader",
+        "title": "VAE · 自动匹配",
+        "pos": [
+          1480,
+          850
+        ],
+        "size": [
+          340,
+          100
+        ],
+        "flags": {},
+        "order": 3,
+        "mode": 0,
+        "inputs": [],
+        "outputs": [
+          {
+            "name": "VAE",
+            "type": "VAE",
+            "links": [
+              15
+            ]
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "VAELoader",
+          "ld_role": "vae",
+          "ld_branch": true
+        },
+        "widgets_values": [
+          "qwen_image_vae.safetensors"
+        ]
+      },
+      {
+        "id": 20,
+        "type": "LoraLoader",
+        "title": "LoRA 1 · 关闭（旁路）",
+        "pos": [
+          460,
+          650
+        ],
+        "size": [
+          300,
+          230
+        ],
+        "flags": {},
+        "order": 4,
+        "mode": 4,
+        "inputs": [
+          {
+            "name": "model",
+            "type": "MODEL",
+            "link": 1
+          },
+          {
+            "name": "clip",
+            "type": "CLIP",
+            "link": 2
+          }
+        ],
+        "outputs": [
+          {
+            "name": "MODEL",
+            "type": "MODEL",
+            "links": [
+              3
+            ]
+          },
+          {
+            "name": "CLIP",
+            "type": "CLIP",
+            "links": [
+              4
+            ]
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "LoraLoader",
+          "ld_role": "lora_1",
+          "ld_branch": true
+        },
+        "widgets_values": [
+          "krea2\\原神\\Cos服装\\八重神子_3343041.safetensors",
+          0.7,
+          0
+        ]
+      },
+      {
+        "id": 21,
+        "type": "LoraLoader",
+        "title": "LoRA 2 · 关闭（旁路）",
+        "pos": [
+          790,
+          650
+        ],
+        "size": [
+          300,
+          230
+        ],
+        "flags": {},
+        "order": 5,
+        "mode": 4,
+        "inputs": [
+          {
+            "name": "model",
+            "type": "MODEL",
+            "link": 3
+          },
+          {
+            "name": "clip",
+            "type": "CLIP",
+            "link": 4
+          }
+        ],
+        "outputs": [
+          {
+            "name": "MODEL",
+            "type": "MODEL",
+            "links": [
+              5
+            ]
+          },
+          {
+            "name": "CLIP",
+            "type": "CLIP",
+            "links": [
+              6
+            ]
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "LoraLoader",
+          "ld_role": "lora_2",
+          "ld_branch": true
+        },
+        "widgets_values": [
+          "krea2\\原神\\Cos服装\\八重神子_3343041.safetensors",
+          0.7,
+          0
+        ]
+      },
+      {
+        "id": 22,
+        "type": "LoraLoader",
+        "title": "LoRA 3 · 关闭（旁路）",
+        "pos": [
+          1120,
+          650
+        ],
+        "size": [
+          300,
+          230
+        ],
+        "flags": {},
+        "order": 6,
+        "mode": 4,
+        "inputs": [
+          {
+            "name": "model",
+            "type": "MODEL",
+            "link": 5
+          },
+          {
+            "name": "clip",
+            "type": "CLIP",
+            "link": 6
+          }
+        ],
+        "outputs": [
+          {
+            "name": "MODEL",
+            "type": "MODEL",
+            "links": [
+              10
+            ]
+          },
+          {
+            "name": "CLIP",
+            "type": "CLIP",
+            "links": [
+              7,
+              8
+            ]
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "LoraLoader",
+          "ld_role": "lora_3",
+          "ld_branch": true
+        },
+        "widgets_values": [
+          "krea2\\原神\\Cos服装\\八重神子_3343041.safetensors",
+          0.7,
+          0
+        ]
+      },
+      {
+        "id": 30,
+        "type": "CLIPTextEncode",
+        "title": "② 正向提示词 · 想画什么",
+        "pos": [
+          490,
+          80
+        ],
+        "size": [
+          440,
+          220
+        ],
+        "flags": {},
+        "order": 7,
+        "mode": 0,
+        "inputs": [
+          {
+            "name": "clip",
+            "type": "CLIP",
+            "link": 7
+          }
+        ],
+        "outputs": [
+          {
+            "name": "CONDITIONING",
+            "type": "CONDITIONING",
+            "links": [
+              9,
+              11
+            ]
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "CLIPTextEncode",
+          "ld_role": "positive",
+          "ld_branch": true
+        },
+        "widgets_values": [
+          "masterpiece, best quality, safe, anime illustration. An adult female traveler with silver hair wears a blue cloak over a white dress. She stands on a stone bridge in a mountain village, warm morning sunlight, mountains in the distance, detailed background."
+        ],
+        "color": "#232",
+        "bgcolor": "#353"
+      },
+      {
+        "id": 31,
+        "type": "CLIPTextEncode",
+        "title": "反向提示词 · Krea2 不使用此框",
+        "pos": [
+          490,
+          360
+        ],
+        "size": [
+          440,
+          180
+        ],
+        "flags": {},
+        "order": 8,
+        "mode": 0,
+        "inputs": [
+          {
+            "name": "clip",
+            "type": "CLIP",
+            "link": 8
+          }
+        ],
+        "outputs": [
+          {
+            "name": "CONDITIONING",
+            "type": "CONDITIONING",
+            "links": []
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "CLIPTextEncode",
+          "ld_role": "negative",
+          "ld_branch": true
+        },
+        "widgets_values": [
+          "worst quality, low quality, blurry, jpeg artifacts, watermark, signature, text"
+        ],
+        "color": "#322",
+        "bgcolor": "#533"
+      },
+      {
+        "id": 32,
+        "type": "ConditioningZeroOut",
+        "title": "Krea2 · 使用零负向条件",
+        "pos": [
+          1000,
+          570
+        ],
+        "size": [
+          350,
+          65
+        ],
+        "flags": {},
+        "order": 9,
+        "mode": 0,
+        "inputs": [
+          {
+            "name": "conditioning",
+            "type": "CONDITIONING",
+            "link": 9
+          }
+        ],
+        "outputs": [
+          {
+            "name": "CONDITIONING",
+            "type": "CONDITIONING",
+            "links": [
+              12
+            ]
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "ConditioningZeroOut",
+          "ld_role": "zero_negative",
+          "ld_branch": true
+        },
+        "widgets_values": []
+      },
+      {
+        "id": 40,
+        "type": "EmptyLatentImage",
+        "title": "④ 画布尺寸与张数",
+        "pos": [
+          1000,
+          440
+        ],
+        "size": [
+          350,
+          120
+        ],
+        "flags": {},
+        "order": 10,
+        "mode": 0,
+        "inputs": [],
+        "outputs": [
+          {
+            "name": "LATENT",
+            "type": "LATENT",
+            "links": [
+              13
+            ]
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "EmptyLatentImage",
+          "ld_role": "latent",
+          "ld_branch": false
+        },
+        "widgets_values": [
+          832,
+          1216,
+          1
+        ]
+      },
+      {
+        "id": 41,
+        "type": "KSampler",
+        "title": "⑤ 采样 · 实际步数 / CFG / 种子",
+        "pos": [
+          1000,
+          80
+        ],
+        "size": [
+          350,
+          330
+        ],
+        "flags": {},
+        "order": 11,
+        "mode": 0,
+        "inputs": [
+          {
+            "name": "model",
+            "type": "MODEL",
+            "link": 10
+          },
+          {
+            "name": "positive",
+            "type": "CONDITIONING",
+            "link": 11
+          },
+          {
+            "name": "negative",
+            "type": "CONDITIONING",
+            "link": 12
+          },
+          {
+            "name": "latent_image",
+            "type": "LATENT",
+            "link": 13
+          }
+        ],
+        "outputs": [
+          {
+            "name": "LATENT",
+            "type": "LATENT",
+            "links": [
+              14
+            ]
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "KSampler",
+          "ld_role": "sampler",
+          "ld_branch": false
+        },
+        "widgets_values": [
+          20261016,
+          "randomize",
+          8,
+          1.0,
+          "euler",
+          "simple",
+          1
+        ]
+      },
+      {
+        "id": 42,
+        "type": "VAEDecode",
+        "title": "⑥ VAE 解码 · 潜空间转图片",
+        "pos": [
+          1480,
+          650
+        ],
+        "size": [
+          340,
+          100
+        ],
+        "flags": {},
+        "order": 12,
+        "mode": 0,
+        "inputs": [
+          {
+            "name": "samples",
+            "type": "LATENT",
+            "link": 14
+          },
+          {
+            "name": "vae",
+            "type": "VAE",
+            "link": 15
+          }
+        ],
+        "outputs": [
+          {
+            "name": "IMAGE",
+            "type": "IMAGE",
+            "links": [
+              16
+            ]
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "VAEDecode",
+          "ld_role": "decode",
+          "ld_branch": false
+        },
+        "widgets_values": []
+      },
+      {
+        "id": 43,
+        "type": "SaveImage",
+        "title": "⑦ 图片预览 · 自动保存",
+        "pos": [
+          1480,
+          80
+        ],
+        "size": [
+          440,
+          500
+        ],
+        "flags": {},
+        "order": 13,
+        "mode": 0,
+        "inputs": [
+          {
+            "name": "images",
+            "type": "IMAGE",
+            "link": 16
+          }
+        ],
+        "outputs": [
+          {
+            "name": "images",
+            "type": "IMAGE",
+            "links": []
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "SaveImage",
+          "ld_role": "save",
+          "ld_branch": false
+        },
+        "widgets_values": [
+          "FullNodes/image"
+        ]
+      },
+      {
+        "id": 50,
+        "type": "Note",
+        "title": "操作说明 · 所有生成步骤均已展开",
+        "pos": [
+          460,
+          940
+        ],
+        "size": [
+          960,
+          110
+        ],
+        "flags": {},
+        "order": 14,
+        "mode": 0,
+        "inputs": [],
+        "outputs": [],
+        "properties": {
+          "Node name for S&R": "Note",
+          "ld_role": "note",
+          "ld_branch": false
+        },
+        "widgets_values": [
+          "先在①选择模型、LoRA与常用参数，再填写正反提示词，点击运行。\n步数 / CFG = 0：使用模型推荐值，实际数值见⑤。\n①只同步设置，不参与生成。下方每个节点都可检查与修改。\nLoRA选择“不使用”时，该节点变为紫色旁路。\n切换模型会替换配套加载、LoRA及编码节点；保留提示词、尺寸和手动步数。\nLoRA触发词请写入正向提示词。Krea2不使用反向提示词。"
+        ]
+      }
+    ],
+    "links": [
+      [
+        1,
+        10,
+        0,
+        20,
+        0,
+        "MODEL"
+      ],
+      [
+        2,
+        11,
+        0,
+        20,
+        1,
+        "CLIP"
+      ],
+      [
+        3,
+        20,
+        0,
+        21,
+        0,
+        "MODEL"
+      ],
+      [
+        4,
+        20,
+        1,
+        21,
+        1,
+        "CLIP"
+      ],
+      [
+        5,
+        21,
+        0,
+        22,
+        0,
+        "MODEL"
+      ],
+      [
+        6,
+        21,
+        1,
+        22,
+        1,
+        "CLIP"
+      ],
+      [
+        7,
+        22,
+        1,
+        30,
+        0,
+        "CLIP"
+      ],
+      [
+        8,
+        22,
+        1,
+        31,
+        0,
+        "CLIP"
+      ],
+      [
+        9,
+        30,
+        0,
+        32,
+        0,
+        "CONDITIONING"
+      ],
+      [
+        10,
+        22,
+        0,
+        41,
+        0,
+        "MODEL"
+      ],
+      [
+        11,
+        30,
+        0,
+        41,
+        1,
+        "CONDITIONING"
+      ],
+      [
+        12,
+        32,
+        0,
+        41,
+        2,
+        "CONDITIONING"
+      ],
+      [
+        13,
+        40,
+        0,
+        41,
+        3,
+        "LATENT"
+      ],
+      [
+        14,
+        41,
+        0,
+        42,
+        0,
+        "LATENT"
+      ],
+      [
+        15,
+        13,
+        0,
+        42,
+        1,
+        "VAE"
+      ],
+      [
+        16,
+        42,
+        0,
+        43,
+        0,
+        "IMAGE"
+      ]
+    ],
+    "groups": [
+      {
+        "id": 1,
+        "title": "常用操作区",
+        "bounding": [
+          10,
+          10,
+          1390,
+          580
+        ],
+        "color": "#3f789e",
+        "font_size": 24,
+        "flags": {}
+      },
+      {
+        "id": 2,
+        "title": "模型加载与 LoRA · 完整连线",
+        "bounding": [
+          10,
+          600,
+          1450,
+          460
+        ],
+        "color": "#7460a0",
+        "font_size": 24,
+        "flags": {}
+      }
+    ],
+    "config": {},
+    "extra": {
+      "ds": {
+        "scale": 0.55,
+        "offset": [
+          100,
+          100
+        ]
+      }
+    },
+    "version": 0.4
+  },
+  "Illustrious XL v2.0": {
+    "id": "b28efb99-85dd-4914-9535-7231176c3908",
+    "revision": 0,
+    "last_node_id": 50,
+    "last_link_id": 15,
+    "nodes": [
+      {
+        "id": 1,
+        "type": "LocalDrawExpandedControls",
+        "title": "① 常用设置 · 模型 / LoRA / 步数",
+        "pos": [
+          40,
+          80
+        ],
+        "size": [
+          390,
+          400
+        ],
+        "flags": {},
+        "order": 0,
+        "mode": 0,
+        "inputs": [],
+        "outputs": [],
+        "properties": {
+          "Node name for S&R": "LocalDrawExpandedControls",
+          "ld_role": "controls",
+          "ld_branch": false
+        },
+        "widgets_values": [
+          "Illustrious XL v2.0",
+          "不使用 LoRA",
+          0.7,
+          "不使用 LoRA",
+          0.7,
+          "不使用 LoRA",
+          0.7,
+          0,
+          0,
+          832,
+          1216,
+          1
+        ],
+        "color": "#223",
+        "bgcolor": "#335"
+      },
+      {
+        "id": 10,
+        "type": "CheckpointLoaderSimple",
+        "title": "底模 · 自带 CLIP 与 VAE",
+        "pos": [
+          40,
+          650
+        ],
+        "size": [
+          340,
+          110
+        ],
+        "flags": {},
+        "order": 1,
+        "mode": 0,
+        "inputs": [],
+        "outputs": [
+          {
+            "name": "MODEL",
+            "type": "MODEL",
+            "links": [
+              1
+            ]
+          },
+          {
+            "name": "CLIP",
+            "type": "CLIP",
+            "links": [
+              2
+            ]
+          },
+          {
+            "name": "VAE",
+            "type": "VAE",
+            "links": [
+              14
+            ]
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "CheckpointLoaderSimple",
+          "ld_role": "loader",
+          "ld_branch": true
+        },
+        "widgets_values": [
+          "Illustrious-XL-v2.0.safetensors"
+        ]
+      },
+      {
+        "id": 20,
+        "type": "LoraLoader",
+        "title": "LoRA 1 · 关闭（旁路）",
+        "pos": [
+          460,
+          650
+        ],
+        "size": [
+          300,
+          230
+        ],
+        "flags": {},
+        "order": 2,
+        "mode": 4,
+        "inputs": [
+          {
+            "name": "model",
+            "type": "MODEL",
+            "link": 1
+          },
+          {
+            "name": "clip",
+            "type": "CLIP",
+            "link": 2
+          }
+        ],
+        "outputs": [
+          {
+            "name": "MODEL",
+            "type": "MODEL",
+            "links": [
+              3
+            ]
+          },
+          {
+            "name": "CLIP",
+            "type": "CLIP",
+            "links": [
+              4
+            ]
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "LoraLoader",
+          "ld_role": "lora_1",
+          "ld_branch": true
+        },
+        "widgets_values": [
+          "sdxl\\原神\\七七_Qiqi_from_Genshin_Impact_IL.safetensors",
+          0.7,
+          0.7
+        ]
+      },
+      {
+        "id": 21,
+        "type": "LoraLoader",
+        "title": "LoRA 2 · 关闭（旁路）",
+        "pos": [
+          790,
+          650
+        ],
+        "size": [
+          300,
+          230
+        ],
+        "flags": {},
+        "order": 3,
+        "mode": 4,
+        "inputs": [
+          {
+            "name": "model",
+            "type": "MODEL",
+            "link": 3
+          },
+          {
+            "name": "clip",
+            "type": "CLIP",
+            "link": 4
+          }
+        ],
+        "outputs": [
+          {
+            "name": "MODEL",
+            "type": "MODEL",
+            "links": [
+              5
+            ]
+          },
+          {
+            "name": "CLIP",
+            "type": "CLIP",
+            "links": [
+              6
+            ]
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "LoraLoader",
+          "ld_role": "lora_2",
+          "ld_branch": true
+        },
+        "widgets_values": [
+          "sdxl\\原神\\七七_Qiqi_from_Genshin_Impact_IL.safetensors",
+          0.7,
+          0.7
+        ]
+      },
+      {
+        "id": 22,
+        "type": "LoraLoader",
+        "title": "LoRA 3 · 关闭（旁路）",
+        "pos": [
+          1120,
+          650
+        ],
+        "size": [
+          300,
+          230
+        ],
+        "flags": {},
+        "order": 4,
+        "mode": 4,
+        "inputs": [
+          {
+            "name": "model",
+            "type": "MODEL",
+            "link": 5
+          },
+          {
+            "name": "clip",
+            "type": "CLIP",
+            "link": 6
+          }
+        ],
+        "outputs": [
+          {
+            "name": "MODEL",
+            "type": "MODEL",
+            "links": [
+              9
+            ]
+          },
+          {
+            "name": "CLIP",
+            "type": "CLIP",
+            "links": [
+              7,
+              8
+            ]
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "LoraLoader",
+          "ld_role": "lora_3",
+          "ld_branch": true
+        },
+        "widgets_values": [
+          "sdxl\\原神\\七七_Qiqi_from_Genshin_Impact_IL.safetensors",
+          0.7,
+          0.7
+        ]
+      },
+      {
+        "id": 30,
+        "type": "CLIPTextEncode",
+        "title": "② 正向提示词 · 想画什么",
+        "pos": [
+          490,
+          80
+        ],
+        "size": [
+          440,
+          220
+        ],
+        "flags": {},
+        "order": 5,
+        "mode": 0,
+        "inputs": [
+          {
+            "name": "clip",
+            "type": "CLIP",
+            "link": 7
+          }
+        ],
+        "outputs": [
+          {
+            "name": "CONDITIONING",
+            "type": "CONDITIONING",
+            "links": [
+              10
+            ]
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "CLIPTextEncode",
+          "ld_role": "positive",
+          "ld_branch": true
+        },
+        "widgets_values": [
+          "masterpiece, best quality, safe, anime illustration. An adult female traveler with silver hair wears a blue cloak over a white dress. She stands on a stone bridge in a mountain village, warm morning sunlight, mountains in the distance, detailed background."
+        ],
+        "color": "#232",
+        "bgcolor": "#353"
+      },
+      {
+        "id": 31,
+        "type": "CLIPTextEncode",
+        "title": "③ 反向提示词 · 避免什么",
+        "pos": [
+          490,
+          360
+        ],
+        "size": [
+          440,
+          180
+        ],
+        "flags": {},
+        "order": 6,
+        "mode": 0,
+        "inputs": [
+          {
+            "name": "clip",
+            "type": "CLIP",
+            "link": 8
+          }
+        ],
+        "outputs": [
+          {
+            "name": "CONDITIONING",
+            "type": "CONDITIONING",
+            "links": [
+              11
+            ]
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "CLIPTextEncode",
+          "ld_role": "negative",
+          "ld_branch": true
+        },
+        "widgets_values": [
+          "worst quality, low quality, blurry, jpeg artifacts, watermark, signature, text"
+        ],
+        "color": "#322",
+        "bgcolor": "#533"
+      },
+      {
+        "id": 40,
+        "type": "EmptyLatentImage",
+        "title": "④ 画布尺寸与张数",
+        "pos": [
+          1000,
+          440
+        ],
+        "size": [
+          350,
+          120
+        ],
+        "flags": {},
+        "order": 7,
+        "mode": 0,
+        "inputs": [],
+        "outputs": [
+          {
+            "name": "LATENT",
+            "type": "LATENT",
+            "links": [
+              12
+            ]
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "EmptyLatentImage",
+          "ld_role": "latent",
+          "ld_branch": false
+        },
+        "widgets_values": [
+          832,
+          1216,
+          1
+        ]
+      },
+      {
+        "id": 41,
+        "type": "KSampler",
+        "title": "⑤ 采样 · 实际步数 / CFG / 种子",
+        "pos": [
+          1000,
+          80
+        ],
+        "size": [
+          350,
+          330
+        ],
+        "flags": {},
+        "order": 8,
+        "mode": 0,
+        "inputs": [
+          {
+            "name": "model",
+            "type": "MODEL",
+            "link": 9
+          },
+          {
+            "name": "positive",
+            "type": "CONDITIONING",
+            "link": 10
+          },
+          {
+            "name": "negative",
+            "type": "CONDITIONING",
+            "link": 11
+          },
+          {
+            "name": "latent_image",
+            "type": "LATENT",
+            "link": 12
+          }
+        ],
+        "outputs": [
+          {
+            "name": "LATENT",
+            "type": "LATENT",
+            "links": [
+              13
+            ]
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "KSampler",
+          "ld_role": "sampler",
+          "ld_branch": false
+        },
+        "widgets_values": [
+          20261016,
+          "randomize",
+          28,
+          6.0,
+          "euler_ancestral",
+          "normal",
+          1
+        ]
+      },
+      {
+        "id": 42,
+        "type": "VAEDecode",
+        "title": "⑥ VAE 解码 · 潜空间转图片",
+        "pos": [
+          1480,
+          650
+        ],
+        "size": [
+          340,
+          100
+        ],
+        "flags": {},
+        "order": 9,
+        "mode": 0,
+        "inputs": [
+          {
+            "name": "samples",
+            "type": "LATENT",
+            "link": 13
+          },
+          {
+            "name": "vae",
+            "type": "VAE",
+            "link": 14
+          }
+        ],
+        "outputs": [
+          {
+            "name": "IMAGE",
+            "type": "IMAGE",
+            "links": [
+              15
+            ]
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "VAEDecode",
+          "ld_role": "decode",
+          "ld_branch": false
+        },
+        "widgets_values": []
+      },
+      {
+        "id": 43,
+        "type": "SaveImage",
+        "title": "⑦ 图片预览 · 自动保存",
+        "pos": [
+          1480,
+          80
+        ],
+        "size": [
+          440,
+          500
+        ],
+        "flags": {},
+        "order": 10,
+        "mode": 0,
+        "inputs": [
+          {
+            "name": "images",
+            "type": "IMAGE",
+            "link": 15
+          }
+        ],
+        "outputs": [
+          {
+            "name": "images",
+            "type": "IMAGE",
+            "links": []
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "SaveImage",
+          "ld_role": "save",
+          "ld_branch": false
+        },
+        "widgets_values": [
+          "FullNodes/image"
+        ]
+      },
+      {
+        "id": 50,
+        "type": "Note",
+        "title": "操作说明 · 所有生成步骤均已展开",
+        "pos": [
+          460,
+          940
+        ],
+        "size": [
+          960,
+          110
+        ],
+        "flags": {},
+        "order": 11,
+        "mode": 0,
+        "inputs": [],
+        "outputs": [],
+        "properties": {
+          "Node name for S&R": "Note",
+          "ld_role": "note",
+          "ld_branch": false
+        },
+        "widgets_values": [
+          "先在①选择模型、LoRA与常用参数，再填写正反提示词，点击运行。\n步数 / CFG = 0：使用模型推荐值，实际数值见⑤。\n①只同步设置，不参与生成。下方每个节点都可检查与修改。\nLoRA选择“不使用”时，该节点变为紫色旁路。\n切换模型会替换配套加载、LoRA及编码节点；保留提示词、尺寸和手动步数。\nLoRA触发词请写入正向提示词。Krea2不使用反向提示词。"
+        ]
+      }
+    ],
+    "links": [
+      [
+        1,
+        10,
+        0,
+        20,
+        0,
+        "MODEL"
+      ],
+      [
+        2,
+        10,
+        1,
+        20,
+        1,
+        "CLIP"
+      ],
+      [
+        3,
+        20,
+        0,
+        21,
+        0,
+        "MODEL"
+      ],
+      [
+        4,
+        20,
+        1,
+        21,
+        1,
+        "CLIP"
+      ],
+      [
+        5,
+        21,
+        0,
+        22,
+        0,
+        "MODEL"
+      ],
+      [
+        6,
+        21,
+        1,
+        22,
+        1,
+        "CLIP"
+      ],
+      [
+        7,
+        22,
+        1,
+        30,
+        0,
+        "CLIP"
+      ],
+      [
+        8,
+        22,
+        1,
+        31,
+        0,
+        "CLIP"
+      ],
+      [
+        9,
+        22,
+        0,
+        41,
+        0,
+        "MODEL"
+      ],
+      [
+        10,
+        30,
+        0,
+        41,
+        1,
+        "CONDITIONING"
+      ],
+      [
+        11,
+        31,
+        0,
+        41,
+        2,
+        "CONDITIONING"
+      ],
+      [
+        12,
+        40,
+        0,
+        41,
+        3,
+        "LATENT"
+      ],
+      [
+        13,
+        41,
+        0,
+        42,
+        0,
+        "LATENT"
+      ],
+      [
+        14,
+        10,
+        2,
+        42,
+        1,
+        "VAE"
+      ],
+      [
+        15,
+        42,
+        0,
+        43,
+        0,
+        "IMAGE"
+      ]
+    ],
+    "groups": [
+      {
+        "id": 1,
+        "title": "常用操作区",
+        "bounding": [
+          10,
+          10,
+          1390,
+          580
+        ],
+        "color": "#3f789e",
+        "font_size": 24,
+        "flags": {}
+      },
+      {
+        "id": 2,
+        "title": "模型加载与 LoRA · 完整连线",
+        "bounding": [
+          10,
+          600,
+          1450,
+          460
+        ],
+        "color": "#7460a0",
+        "font_size": 24,
+        "flags": {}
+      }
+    ],
+    "config": {},
+    "extra": {
+      "ds": {
+        "scale": 0.55,
+        "offset": [
+          100,
+          100
+        ]
+      }
+    },
+    "version": 0.4
+  },
+  "NoobAI XL v1.1": {
+    "id": "b28efb99-85dd-4914-9535-7231176c3908",
+    "revision": 0,
+    "last_node_id": 50,
+    "last_link_id": 15,
+    "nodes": [
+      {
+        "id": 1,
+        "type": "LocalDrawExpandedControls",
+        "title": "① 常用设置 · 模型 / LoRA / 步数",
+        "pos": [
+          40,
+          80
+        ],
+        "size": [
+          390,
+          400
+        ],
+        "flags": {},
+        "order": 0,
+        "mode": 0,
+        "inputs": [],
+        "outputs": [],
+        "properties": {
+          "Node name for S&R": "LocalDrawExpandedControls",
+          "ld_role": "controls",
+          "ld_branch": false
+        },
+        "widgets_values": [
+          "NoobAI XL v1.1",
+          "不使用 LoRA",
+          0.7,
+          "不使用 LoRA",
+          0.7,
+          "不使用 LoRA",
+          0.7,
+          0,
+          0,
+          832,
+          1216,
+          1
+        ],
+        "color": "#223",
+        "bgcolor": "#335"
+      },
+      {
+        "id": 10,
+        "type": "CheckpointLoaderSimple",
+        "title": "底模 · 自带 CLIP 与 VAE",
+        "pos": [
+          40,
+          650
+        ],
+        "size": [
+          340,
+          110
+        ],
+        "flags": {},
+        "order": 1,
+        "mode": 0,
+        "inputs": [],
+        "outputs": [
+          {
+            "name": "MODEL",
+            "type": "MODEL",
+            "links": [
+              1
+            ]
+          },
+          {
+            "name": "CLIP",
+            "type": "CLIP",
+            "links": [
+              2
+            ]
+          },
+          {
+            "name": "VAE",
+            "type": "VAE",
+            "links": [
+              14
+            ]
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "CheckpointLoaderSimple",
+          "ld_role": "loader",
+          "ld_branch": true
+        },
+        "widgets_values": [
+          "NoobAI-XL-v1.1.safetensors"
+        ]
+      },
+      {
+        "id": 20,
+        "type": "LoraLoader",
+        "title": "LoRA 1 · 关闭（旁路）",
+        "pos": [
+          460,
+          650
+        ],
+        "size": [
+          300,
+          230
+        ],
+        "flags": {},
+        "order": 2,
+        "mode": 4,
+        "inputs": [
+          {
+            "name": "model",
+            "type": "MODEL",
+            "link": 1
+          },
+          {
+            "name": "clip",
+            "type": "CLIP",
+            "link": 2
+          }
+        ],
+        "outputs": [
+          {
+            "name": "MODEL",
+            "type": "MODEL",
+            "links": [
+              3
+            ]
+          },
+          {
+            "name": "CLIP",
+            "type": "CLIP",
+            "links": [
+              4
+            ]
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "LoraLoader",
+          "ld_role": "lora_1",
+          "ld_branch": true
+        },
+        "widgets_values": [
+          "sdxl\\原神\\七七_Qiqi_from_Genshin_Impact_IL.safetensors",
+          0.7,
+          0.7
+        ]
+      },
+      {
+        "id": 21,
+        "type": "LoraLoader",
+        "title": "LoRA 2 · 关闭（旁路）",
+        "pos": [
+          790,
+          650
+        ],
+        "size": [
+          300,
+          230
+        ],
+        "flags": {},
+        "order": 3,
+        "mode": 4,
+        "inputs": [
+          {
+            "name": "model",
+            "type": "MODEL",
+            "link": 3
+          },
+          {
+            "name": "clip",
+            "type": "CLIP",
+            "link": 4
+          }
+        ],
+        "outputs": [
+          {
+            "name": "MODEL",
+            "type": "MODEL",
+            "links": [
+              5
+            ]
+          },
+          {
+            "name": "CLIP",
+            "type": "CLIP",
+            "links": [
+              6
+            ]
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "LoraLoader",
+          "ld_role": "lora_2",
+          "ld_branch": true
+        },
+        "widgets_values": [
+          "sdxl\\原神\\七七_Qiqi_from_Genshin_Impact_IL.safetensors",
+          0.7,
+          0.7
+        ]
+      },
+      {
+        "id": 22,
+        "type": "LoraLoader",
+        "title": "LoRA 3 · 关闭（旁路）",
+        "pos": [
+          1120,
+          650
+        ],
+        "size": [
+          300,
+          230
+        ],
+        "flags": {},
+        "order": 4,
+        "mode": 4,
+        "inputs": [
+          {
+            "name": "model",
+            "type": "MODEL",
+            "link": 5
+          },
+          {
+            "name": "clip",
+            "type": "CLIP",
+            "link": 6
+          }
+        ],
+        "outputs": [
+          {
+            "name": "MODEL",
+            "type": "MODEL",
+            "links": [
+              9
+            ]
+          },
+          {
+            "name": "CLIP",
+            "type": "CLIP",
+            "links": [
+              7,
+              8
+            ]
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "LoraLoader",
+          "ld_role": "lora_3",
+          "ld_branch": true
+        },
+        "widgets_values": [
+          "sdxl\\原神\\七七_Qiqi_from_Genshin_Impact_IL.safetensors",
+          0.7,
+          0.7
+        ]
+      },
+      {
+        "id": 30,
+        "type": "CLIPTextEncode",
+        "title": "② 正向提示词 · 想画什么",
+        "pos": [
+          490,
+          80
+        ],
+        "size": [
+          440,
+          220
+        ],
+        "flags": {},
+        "order": 5,
+        "mode": 0,
+        "inputs": [
+          {
+            "name": "clip",
+            "type": "CLIP",
+            "link": 7
+          }
+        ],
+        "outputs": [
+          {
+            "name": "CONDITIONING",
+            "type": "CONDITIONING",
+            "links": [
+              10
+            ]
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "CLIPTextEncode",
+          "ld_role": "positive",
+          "ld_branch": true
+        },
+        "widgets_values": [
+          "masterpiece, best quality, safe, anime illustration. An adult female traveler with silver hair wears a blue cloak over a white dress. She stands on a stone bridge in a mountain village, warm morning sunlight, mountains in the distance, detailed background."
+        ],
+        "color": "#232",
+        "bgcolor": "#353"
+      },
+      {
+        "id": 31,
+        "type": "CLIPTextEncode",
+        "title": "③ 反向提示词 · 避免什么",
+        "pos": [
+          490,
+          360
+        ],
+        "size": [
+          440,
+          180
+        ],
+        "flags": {},
+        "order": 6,
+        "mode": 0,
+        "inputs": [
+          {
+            "name": "clip",
+            "type": "CLIP",
+            "link": 8
+          }
+        ],
+        "outputs": [
+          {
+            "name": "CONDITIONING",
+            "type": "CONDITIONING",
+            "links": [
+              11
+            ]
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "CLIPTextEncode",
+          "ld_role": "negative",
+          "ld_branch": true
+        },
+        "widgets_values": [
+          "worst quality, low quality, blurry, jpeg artifacts, watermark, signature, text"
+        ],
+        "color": "#322",
+        "bgcolor": "#533"
+      },
+      {
+        "id": 40,
+        "type": "EmptyLatentImage",
+        "title": "④ 画布尺寸与张数",
+        "pos": [
+          1000,
+          440
+        ],
+        "size": [
+          350,
+          120
+        ],
+        "flags": {},
+        "order": 7,
+        "mode": 0,
+        "inputs": [],
+        "outputs": [
+          {
+            "name": "LATENT",
+            "type": "LATENT",
+            "links": [
+              12
+            ]
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "EmptyLatentImage",
+          "ld_role": "latent",
+          "ld_branch": false
+        },
+        "widgets_values": [
+          832,
+          1216,
+          1
+        ]
+      },
+      {
+        "id": 41,
+        "type": "KSampler",
+        "title": "⑤ 采样 · 实际步数 / CFG / 种子",
+        "pos": [
+          1000,
+          80
+        ],
+        "size": [
+          350,
+          330
+        ],
+        "flags": {},
+        "order": 8,
+        "mode": 0,
+        "inputs": [
+          {
+            "name": "model",
+            "type": "MODEL",
+            "link": 9
+          },
+          {
+            "name": "positive",
+            "type": "CONDITIONING",
+            "link": 10
+          },
+          {
+            "name": "negative",
+            "type": "CONDITIONING",
+            "link": 11
+          },
+          {
+            "name": "latent_image",
+            "type": "LATENT",
+            "link": 12
+          }
+        ],
+        "outputs": [
+          {
+            "name": "LATENT",
+            "type": "LATENT",
+            "links": [
+              13
+            ]
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "KSampler",
+          "ld_role": "sampler",
+          "ld_branch": false
+        },
+        "widgets_values": [
+          20261016,
+          "randomize",
+          28,
+          6.0,
+          "euler_ancestral",
+          "normal",
+          1
+        ]
+      },
+      {
+        "id": 42,
+        "type": "VAEDecode",
+        "title": "⑥ VAE 解码 · 潜空间转图片",
+        "pos": [
+          1480,
+          650
+        ],
+        "size": [
+          340,
+          100
+        ],
+        "flags": {},
+        "order": 9,
+        "mode": 0,
+        "inputs": [
+          {
+            "name": "samples",
+            "type": "LATENT",
+            "link": 13
+          },
+          {
+            "name": "vae",
+            "type": "VAE",
+            "link": 14
+          }
+        ],
+        "outputs": [
+          {
+            "name": "IMAGE",
+            "type": "IMAGE",
+            "links": [
+              15
+            ]
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "VAEDecode",
+          "ld_role": "decode",
+          "ld_branch": false
+        },
+        "widgets_values": []
+      },
+      {
+        "id": 43,
+        "type": "SaveImage",
+        "title": "⑦ 图片预览 · 自动保存",
+        "pos": [
+          1480,
+          80
+        ],
+        "size": [
+          440,
+          500
+        ],
+        "flags": {},
+        "order": 10,
+        "mode": 0,
+        "inputs": [
+          {
+            "name": "images",
+            "type": "IMAGE",
+            "link": 15
+          }
+        ],
+        "outputs": [
+          {
+            "name": "images",
+            "type": "IMAGE",
+            "links": []
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "SaveImage",
+          "ld_role": "save",
+          "ld_branch": false
+        },
+        "widgets_values": [
+          "FullNodes/image"
+        ]
+      },
+      {
+        "id": 50,
+        "type": "Note",
+        "title": "操作说明 · 所有生成步骤均已展开",
+        "pos": [
+          460,
+          940
+        ],
+        "size": [
+          960,
+          110
+        ],
+        "flags": {},
+        "order": 11,
+        "mode": 0,
+        "inputs": [],
+        "outputs": [],
+        "properties": {
+          "Node name for S&R": "Note",
+          "ld_role": "note",
+          "ld_branch": false
+        },
+        "widgets_values": [
+          "先在①选择模型、LoRA与常用参数，再填写正反提示词，点击运行。\n步数 / CFG = 0：使用模型推荐值，实际数值见⑤。\n①只同步设置，不参与生成。下方每个节点都可检查与修改。\nLoRA选择“不使用”时，该节点变为紫色旁路。\n切换模型会替换配套加载、LoRA及编码节点；保留提示词、尺寸和手动步数。\nLoRA触发词请写入正向提示词。Krea2不使用反向提示词。"
+        ]
+      }
+    ],
+    "links": [
+      [
+        1,
+        10,
+        0,
+        20,
+        0,
+        "MODEL"
+      ],
+      [
+        2,
+        10,
+        1,
+        20,
+        1,
+        "CLIP"
+      ],
+      [
+        3,
+        20,
+        0,
+        21,
+        0,
+        "MODEL"
+      ],
+      [
+        4,
+        20,
+        1,
+        21,
+        1,
+        "CLIP"
+      ],
+      [
+        5,
+        21,
+        0,
+        22,
+        0,
+        "MODEL"
+      ],
+      [
+        6,
+        21,
+        1,
+        22,
+        1,
+        "CLIP"
+      ],
+      [
+        7,
+        22,
+        1,
+        30,
+        0,
+        "CLIP"
+      ],
+      [
+        8,
+        22,
+        1,
+        31,
+        0,
+        "CLIP"
+      ],
+      [
+        9,
+        22,
+        0,
+        41,
+        0,
+        "MODEL"
+      ],
+      [
+        10,
+        30,
+        0,
+        41,
+        1,
+        "CONDITIONING"
+      ],
+      [
+        11,
+        31,
+        0,
+        41,
+        2,
+        "CONDITIONING"
+      ],
+      [
+        12,
+        40,
+        0,
+        41,
+        3,
+        "LATENT"
+      ],
+      [
+        13,
+        41,
+        0,
+        42,
+        0,
+        "LATENT"
+      ],
+      [
+        14,
+        10,
+        2,
+        42,
+        1,
+        "VAE"
+      ],
+      [
+        15,
+        42,
+        0,
+        43,
+        0,
+        "IMAGE"
+      ]
+    ],
+    "groups": [
+      {
+        "id": 1,
+        "title": "常用操作区",
+        "bounding": [
+          10,
+          10,
+          1390,
+          580
+        ],
+        "color": "#3f789e",
+        "font_size": 24,
+        "flags": {}
+      },
+      {
+        "id": 2,
+        "title": "模型加载与 LoRA · 完整连线",
+        "bounding": [
+          10,
+          600,
+          1450,
+          460
+        ],
+        "color": "#7460a0",
+        "font_size": 24,
+        "flags": {}
+      }
+    ],
+    "config": {},
+    "extra": {
+      "ds": {
+        "scale": 0.55,
+        "offset": [
+          100,
+          100
+        ]
+      }
+    },
+    "version": 0.4
+  },
+  "Animagine XL 3.1": {
+    "id": "b28efb99-85dd-4914-9535-7231176c3908",
+    "revision": 0,
+    "last_node_id": 50,
+    "last_link_id": 15,
+    "nodes": [
+      {
+        "id": 1,
+        "type": "LocalDrawExpandedControls",
+        "title": "① 常用设置 · 模型 / LoRA / 步数",
+        "pos": [
+          40,
+          80
+        ],
+        "size": [
+          390,
+          400
+        ],
+        "flags": {},
+        "order": 0,
+        "mode": 0,
+        "inputs": [],
+        "outputs": [],
+        "properties": {
+          "Node name for S&R": "LocalDrawExpandedControls",
+          "ld_role": "controls",
+          "ld_branch": false
+        },
+        "widgets_values": [
+          "Animagine XL 3.1",
+          "不使用 LoRA",
+          0.7,
+          "不使用 LoRA",
+          0.7,
+          "不使用 LoRA",
+          0.7,
+          0,
+          0,
+          832,
+          1216,
+          1
+        ],
+        "color": "#223",
+        "bgcolor": "#335"
+      },
+      {
+        "id": 10,
+        "type": "CheckpointLoaderSimple",
+        "title": "底模 · 自带 CLIP 与 VAE",
+        "pos": [
+          40,
+          650
+        ],
+        "size": [
+          340,
+          110
+        ],
+        "flags": {},
+        "order": 1,
+        "mode": 0,
+        "inputs": [],
+        "outputs": [
+          {
+            "name": "MODEL",
+            "type": "MODEL",
+            "links": [
+              1
+            ]
+          },
+          {
+            "name": "CLIP",
+            "type": "CLIP",
+            "links": [
+              2
+            ]
+          },
+          {
+            "name": "VAE",
+            "type": "VAE",
+            "links": [
+              14
+            ]
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "CheckpointLoaderSimple",
+          "ld_role": "loader",
+          "ld_branch": true
+        },
+        "widgets_values": [
+          "animagine-xl-3.1.safetensors"
+        ]
+      },
+      {
+        "id": 20,
+        "type": "LoraLoader",
+        "title": "LoRA 1 · 关闭（旁路）",
+        "pos": [
+          460,
+          650
+        ],
+        "size": [
+          300,
+          230
+        ],
+        "flags": {},
+        "order": 2,
+        "mode": 4,
+        "inputs": [
+          {
+            "name": "model",
+            "type": "MODEL",
+            "link": 1
+          },
+          {
+            "name": "clip",
+            "type": "CLIP",
+            "link": 2
+          }
+        ],
+        "outputs": [
+          {
+            "name": "MODEL",
+            "type": "MODEL",
+            "links": [
+              3
+            ]
+          },
+          {
+            "name": "CLIP",
+            "type": "CLIP",
+            "links": [
+              4
+            ]
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "LoraLoader",
+          "ld_role": "lora_1",
+          "ld_branch": true
+        },
+        "widgets_values": [
+          "sdxl\\原神\\七七_Qiqi_from_Genshin_Impact_IL.safetensors",
+          0.7,
+          0.7
+        ]
+      },
+      {
+        "id": 21,
+        "type": "LoraLoader",
+        "title": "LoRA 2 · 关闭（旁路）",
+        "pos": [
+          790,
+          650
+        ],
+        "size": [
+          300,
+          230
+        ],
+        "flags": {},
+        "order": 3,
+        "mode": 4,
+        "inputs": [
+          {
+            "name": "model",
+            "type": "MODEL",
+            "link": 3
+          },
+          {
+            "name": "clip",
+            "type": "CLIP",
+            "link": 4
+          }
+        ],
+        "outputs": [
+          {
+            "name": "MODEL",
+            "type": "MODEL",
+            "links": [
+              5
+            ]
+          },
+          {
+            "name": "CLIP",
+            "type": "CLIP",
+            "links": [
+              6
+            ]
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "LoraLoader",
+          "ld_role": "lora_2",
+          "ld_branch": true
+        },
+        "widgets_values": [
+          "sdxl\\原神\\七七_Qiqi_from_Genshin_Impact_IL.safetensors",
+          0.7,
+          0.7
+        ]
+      },
+      {
+        "id": 22,
+        "type": "LoraLoader",
+        "title": "LoRA 3 · 关闭（旁路）",
+        "pos": [
+          1120,
+          650
+        ],
+        "size": [
+          300,
+          230
+        ],
+        "flags": {},
+        "order": 4,
+        "mode": 4,
+        "inputs": [
+          {
+            "name": "model",
+            "type": "MODEL",
+            "link": 5
+          },
+          {
+            "name": "clip",
+            "type": "CLIP",
+            "link": 6
+          }
+        ],
+        "outputs": [
+          {
+            "name": "MODEL",
+            "type": "MODEL",
+            "links": [
+              9
+            ]
+          },
+          {
+            "name": "CLIP",
+            "type": "CLIP",
+            "links": [
+              7,
+              8
+            ]
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "LoraLoader",
+          "ld_role": "lora_3",
+          "ld_branch": true
+        },
+        "widgets_values": [
+          "sdxl\\原神\\七七_Qiqi_from_Genshin_Impact_IL.safetensors",
+          0.7,
+          0.7
+        ]
+      },
+      {
+        "id": 30,
+        "type": "CLIPTextEncode",
+        "title": "② 正向提示词 · 想画什么",
+        "pos": [
+          490,
+          80
+        ],
+        "size": [
+          440,
+          220
+        ],
+        "flags": {},
+        "order": 5,
+        "mode": 0,
+        "inputs": [
+          {
+            "name": "clip",
+            "type": "CLIP",
+            "link": 7
+          }
+        ],
+        "outputs": [
+          {
+            "name": "CONDITIONING",
+            "type": "CONDITIONING",
+            "links": [
+              10
+            ]
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "CLIPTextEncode",
+          "ld_role": "positive",
+          "ld_branch": true
+        },
+        "widgets_values": [
+          "masterpiece, best quality, safe, anime illustration. An adult female traveler with silver hair wears a blue cloak over a white dress. She stands on a stone bridge in a mountain village, warm morning sunlight, mountains in the distance, detailed background."
+        ],
+        "color": "#232",
+        "bgcolor": "#353"
+      },
+      {
+        "id": 31,
+        "type": "CLIPTextEncode",
+        "title": "③ 反向提示词 · 避免什么",
+        "pos": [
+          490,
+          360
+        ],
+        "size": [
+          440,
+          180
+        ],
+        "flags": {},
+        "order": 6,
+        "mode": 0,
+        "inputs": [
+          {
+            "name": "clip",
+            "type": "CLIP",
+            "link": 8
+          }
+        ],
+        "outputs": [
+          {
+            "name": "CONDITIONING",
+            "type": "CONDITIONING",
+            "links": [
+              11
+            ]
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "CLIPTextEncode",
+          "ld_role": "negative",
+          "ld_branch": true
+        },
+        "widgets_values": [
+          "worst quality, low quality, blurry, jpeg artifacts, watermark, signature, text"
+        ],
+        "color": "#322",
+        "bgcolor": "#533"
+      },
+      {
+        "id": 40,
+        "type": "EmptyLatentImage",
+        "title": "④ 画布尺寸与张数",
+        "pos": [
+          1000,
+          440
+        ],
+        "size": [
+          350,
+          120
+        ],
+        "flags": {},
+        "order": 7,
+        "mode": 0,
+        "inputs": [],
+        "outputs": [
+          {
+            "name": "LATENT",
+            "type": "LATENT",
+            "links": [
+              12
+            ]
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "EmptyLatentImage",
+          "ld_role": "latent",
+          "ld_branch": false
+        },
+        "widgets_values": [
+          832,
+          1216,
+          1
+        ]
+      },
+      {
+        "id": 41,
+        "type": "KSampler",
+        "title": "⑤ 采样 · 实际步数 / CFG / 种子",
+        "pos": [
+          1000,
+          80
+        ],
+        "size": [
+          350,
+          330
+        ],
+        "flags": {},
+        "order": 8,
+        "mode": 0,
+        "inputs": [
+          {
+            "name": "model",
+            "type": "MODEL",
+            "link": 9
+          },
+          {
+            "name": "positive",
+            "type": "CONDITIONING",
+            "link": 10
+          },
+          {
+            "name": "negative",
+            "type": "CONDITIONING",
+            "link": 11
+          },
+          {
+            "name": "latent_image",
+            "type": "LATENT",
+            "link": 12
+          }
+        ],
+        "outputs": [
+          {
+            "name": "LATENT",
+            "type": "LATENT",
+            "links": [
+              13
+            ]
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "KSampler",
+          "ld_role": "sampler",
+          "ld_branch": false
+        },
+        "widgets_values": [
+          20261016,
+          "randomize",
+          28,
+          6.0,
+          "euler_ancestral",
+          "normal",
+          1
+        ]
+      },
+      {
+        "id": 42,
+        "type": "VAEDecode",
+        "title": "⑥ VAE 解码 · 潜空间转图片",
+        "pos": [
+          1480,
+          650
+        ],
+        "size": [
+          340,
+          100
+        ],
+        "flags": {},
+        "order": 9,
+        "mode": 0,
+        "inputs": [
+          {
+            "name": "samples",
+            "type": "LATENT",
+            "link": 13
+          },
+          {
+            "name": "vae",
+            "type": "VAE",
+            "link": 14
+          }
+        ],
+        "outputs": [
+          {
+            "name": "IMAGE",
+            "type": "IMAGE",
+            "links": [
+              15
+            ]
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "VAEDecode",
+          "ld_role": "decode",
+          "ld_branch": false
+        },
+        "widgets_values": []
+      },
+      {
+        "id": 43,
+        "type": "SaveImage",
+        "title": "⑦ 图片预览 · 自动保存",
+        "pos": [
+          1480,
+          80
+        ],
+        "size": [
+          440,
+          500
+        ],
+        "flags": {},
+        "order": 10,
+        "mode": 0,
+        "inputs": [
+          {
+            "name": "images",
+            "type": "IMAGE",
+            "link": 15
+          }
+        ],
+        "outputs": [
+          {
+            "name": "images",
+            "type": "IMAGE",
+            "links": []
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "SaveImage",
+          "ld_role": "save",
+          "ld_branch": false
+        },
+        "widgets_values": [
+          "FullNodes/image"
+        ]
+      },
+      {
+        "id": 50,
+        "type": "Note",
+        "title": "操作说明 · 所有生成步骤均已展开",
+        "pos": [
+          460,
+          940
+        ],
+        "size": [
+          960,
+          110
+        ],
+        "flags": {},
+        "order": 11,
+        "mode": 0,
+        "inputs": [],
+        "outputs": [],
+        "properties": {
+          "Node name for S&R": "Note",
+          "ld_role": "note",
+          "ld_branch": false
+        },
+        "widgets_values": [
+          "先在①选择模型、LoRA与常用参数，再填写正反提示词，点击运行。\n步数 / CFG = 0：使用模型推荐值，实际数值见⑤。\n①只同步设置，不参与生成。下方每个节点都可检查与修改。\nLoRA选择“不使用”时，该节点变为紫色旁路。\n切换模型会替换配套加载、LoRA及编码节点；保留提示词、尺寸和手动步数。\nLoRA触发词请写入正向提示词。Krea2不使用反向提示词。"
+        ]
+      }
+    ],
+    "links": [
+      [
+        1,
+        10,
+        0,
+        20,
+        0,
+        "MODEL"
+      ],
+      [
+        2,
+        10,
+        1,
+        20,
+        1,
+        "CLIP"
+      ],
+      [
+        3,
+        20,
+        0,
+        21,
+        0,
+        "MODEL"
+      ],
+      [
+        4,
+        20,
+        1,
+        21,
+        1,
+        "CLIP"
+      ],
+      [
+        5,
+        21,
+        0,
+        22,
+        0,
+        "MODEL"
+      ],
+      [
+        6,
+        21,
+        1,
+        22,
+        1,
+        "CLIP"
+      ],
+      [
+        7,
+        22,
+        1,
+        30,
+        0,
+        "CLIP"
+      ],
+      [
+        8,
+        22,
+        1,
+        31,
+        0,
+        "CLIP"
+      ],
+      [
+        9,
+        22,
+        0,
+        41,
+        0,
+        "MODEL"
+      ],
+      [
+        10,
+        30,
+        0,
+        41,
+        1,
+        "CONDITIONING"
+      ],
+      [
+        11,
+        31,
+        0,
+        41,
+        2,
+        "CONDITIONING"
+      ],
+      [
+        12,
+        40,
+        0,
+        41,
+        3,
+        "LATENT"
+      ],
+      [
+        13,
+        41,
+        0,
+        42,
+        0,
+        "LATENT"
+      ],
+      [
+        14,
+        10,
+        2,
+        42,
+        1,
+        "VAE"
+      ],
+      [
+        15,
+        42,
+        0,
+        43,
+        0,
+        "IMAGE"
+      ]
+    ],
+    "groups": [
+      {
+        "id": 1,
+        "title": "常用操作区",
+        "bounding": [
+          10,
+          10,
+          1390,
+          580
+        ],
+        "color": "#3f789e",
+        "font_size": 24,
+        "flags": {}
+      },
+      {
+        "id": 2,
+        "title": "模型加载与 LoRA · 完整连线",
+        "bounding": [
+          10,
+          600,
+          1450,
+          460
+        ],
+        "color": "#7460a0",
+        "font_size": 24,
+        "flags": {}
+      }
+    ],
+    "config": {},
+    "extra": {
+      "ds": {
+        "scale": 0.55,
+        "offset": [
+          100,
+          100
+        ]
+      }
+    },
+    "version": 0.4
+  },
+  "Animagine XL 4.0 Opt": {
+    "id": "b28efb99-85dd-4914-9535-7231176c3908",
+    "revision": 0,
+    "last_node_id": 50,
+    "last_link_id": 15,
+    "nodes": [
+      {
+        "id": 1,
+        "type": "LocalDrawExpandedControls",
+        "title": "① 常用设置 · 模型 / LoRA / 步数",
+        "pos": [
+          40,
+          80
+        ],
+        "size": [
+          390,
+          400
+        ],
+        "flags": {},
+        "order": 0,
+        "mode": 0,
+        "inputs": [],
+        "outputs": [],
+        "properties": {
+          "Node name for S&R": "LocalDrawExpandedControls",
+          "ld_role": "controls",
+          "ld_branch": false
+        },
+        "widgets_values": [
+          "Animagine XL 4.0 Opt",
+          "不使用 LoRA",
+          0.7,
+          "不使用 LoRA",
+          0.7,
+          "不使用 LoRA",
+          0.7,
+          0,
+          0,
+          832,
+          1216,
+          1
+        ],
+        "color": "#223",
+        "bgcolor": "#335"
+      },
+      {
+        "id": 10,
+        "type": "CheckpointLoaderSimple",
+        "title": "底模 · 自带 CLIP 与 VAE",
+        "pos": [
+          40,
+          650
+        ],
+        "size": [
+          340,
+          110
+        ],
+        "flags": {},
+        "order": 1,
+        "mode": 0,
+        "inputs": [],
+        "outputs": [
+          {
+            "name": "MODEL",
+            "type": "MODEL",
+            "links": [
+              1
+            ]
+          },
+          {
+            "name": "CLIP",
+            "type": "CLIP",
+            "links": [
+              2
+            ]
+          },
+          {
+            "name": "VAE",
+            "type": "VAE",
+            "links": [
+              14
+            ]
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "CheckpointLoaderSimple",
+          "ld_role": "loader",
+          "ld_branch": true
+        },
+        "widgets_values": [
+          "animagine-xl-4.0-opt.safetensors"
+        ]
+      },
+      {
+        "id": 20,
+        "type": "LoraLoader",
+        "title": "LoRA 1 · 关闭（旁路）",
+        "pos": [
+          460,
+          650
+        ],
+        "size": [
+          300,
+          230
+        ],
+        "flags": {},
+        "order": 2,
+        "mode": 4,
+        "inputs": [
+          {
+            "name": "model",
+            "type": "MODEL",
+            "link": 1
+          },
+          {
+            "name": "clip",
+            "type": "CLIP",
+            "link": 2
+          }
+        ],
+        "outputs": [
+          {
+            "name": "MODEL",
+            "type": "MODEL",
+            "links": [
+              3
+            ]
+          },
+          {
+            "name": "CLIP",
+            "type": "CLIP",
+            "links": [
+              4
+            ]
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "LoraLoader",
+          "ld_role": "lora_1",
+          "ld_branch": true
+        },
+        "widgets_values": [
+          "sdxl\\原神\\七七_Qiqi_from_Genshin_Impact_IL.safetensors",
+          0.7,
+          0.7
+        ]
+      },
+      {
+        "id": 21,
+        "type": "LoraLoader",
+        "title": "LoRA 2 · 关闭（旁路）",
+        "pos": [
+          790,
+          650
+        ],
+        "size": [
+          300,
+          230
+        ],
+        "flags": {},
+        "order": 3,
+        "mode": 4,
+        "inputs": [
+          {
+            "name": "model",
+            "type": "MODEL",
+            "link": 3
+          },
+          {
+            "name": "clip",
+            "type": "CLIP",
+            "link": 4
+          }
+        ],
+        "outputs": [
+          {
+            "name": "MODEL",
+            "type": "MODEL",
+            "links": [
+              5
+            ]
+          },
+          {
+            "name": "CLIP",
+            "type": "CLIP",
+            "links": [
+              6
+            ]
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "LoraLoader",
+          "ld_role": "lora_2",
+          "ld_branch": true
+        },
+        "widgets_values": [
+          "sdxl\\原神\\七七_Qiqi_from_Genshin_Impact_IL.safetensors",
+          0.7,
+          0.7
+        ]
+      },
+      {
+        "id": 22,
+        "type": "LoraLoader",
+        "title": "LoRA 3 · 关闭（旁路）",
+        "pos": [
+          1120,
+          650
+        ],
+        "size": [
+          300,
+          230
+        ],
+        "flags": {},
+        "order": 4,
+        "mode": 4,
+        "inputs": [
+          {
+            "name": "model",
+            "type": "MODEL",
+            "link": 5
+          },
+          {
+            "name": "clip",
+            "type": "CLIP",
+            "link": 6
+          }
+        ],
+        "outputs": [
+          {
+            "name": "MODEL",
+            "type": "MODEL",
+            "links": [
+              9
+            ]
+          },
+          {
+            "name": "CLIP",
+            "type": "CLIP",
+            "links": [
+              7,
+              8
+            ]
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "LoraLoader",
+          "ld_role": "lora_3",
+          "ld_branch": true
+        },
+        "widgets_values": [
+          "sdxl\\原神\\七七_Qiqi_from_Genshin_Impact_IL.safetensors",
+          0.7,
+          0.7
+        ]
+      },
+      {
+        "id": 30,
+        "type": "CLIPTextEncode",
+        "title": "② 正向提示词 · 想画什么",
+        "pos": [
+          490,
+          80
+        ],
+        "size": [
+          440,
+          220
+        ],
+        "flags": {},
+        "order": 5,
+        "mode": 0,
+        "inputs": [
+          {
+            "name": "clip",
+            "type": "CLIP",
+            "link": 7
+          }
+        ],
+        "outputs": [
+          {
+            "name": "CONDITIONING",
+            "type": "CONDITIONING",
+            "links": [
+              10
+            ]
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "CLIPTextEncode",
+          "ld_role": "positive",
+          "ld_branch": true
+        },
+        "widgets_values": [
+          "masterpiece, best quality, safe, anime illustration. An adult female traveler with silver hair wears a blue cloak over a white dress. She stands on a stone bridge in a mountain village, warm morning sunlight, mountains in the distance, detailed background."
+        ],
+        "color": "#232",
+        "bgcolor": "#353"
+      },
+      {
+        "id": 31,
+        "type": "CLIPTextEncode",
+        "title": "③ 反向提示词 · 避免什么",
+        "pos": [
+          490,
+          360
+        ],
+        "size": [
+          440,
+          180
+        ],
+        "flags": {},
+        "order": 6,
+        "mode": 0,
+        "inputs": [
+          {
+            "name": "clip",
+            "type": "CLIP",
+            "link": 8
+          }
+        ],
+        "outputs": [
+          {
+            "name": "CONDITIONING",
+            "type": "CONDITIONING",
+            "links": [
+              11
+            ]
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "CLIPTextEncode",
+          "ld_role": "negative",
+          "ld_branch": true
+        },
+        "widgets_values": [
+          "worst quality, low quality, blurry, jpeg artifacts, watermark, signature, text"
+        ],
+        "color": "#322",
+        "bgcolor": "#533"
+      },
+      {
+        "id": 40,
+        "type": "EmptyLatentImage",
+        "title": "④ 画布尺寸与张数",
+        "pos": [
+          1000,
+          440
+        ],
+        "size": [
+          350,
+          120
+        ],
+        "flags": {},
+        "order": 7,
+        "mode": 0,
+        "inputs": [],
+        "outputs": [
+          {
+            "name": "LATENT",
+            "type": "LATENT",
+            "links": [
+              12
+            ]
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "EmptyLatentImage",
+          "ld_role": "latent",
+          "ld_branch": false
+        },
+        "widgets_values": [
+          832,
+          1216,
+          1
+        ]
+      },
+      {
+        "id": 41,
+        "type": "KSampler",
+        "title": "⑤ 采样 · 实际步数 / CFG / 种子",
+        "pos": [
+          1000,
+          80
+        ],
+        "size": [
+          350,
+          330
+        ],
+        "flags": {},
+        "order": 8,
+        "mode": 0,
+        "inputs": [
+          {
+            "name": "model",
+            "type": "MODEL",
+            "link": 9
+          },
+          {
+            "name": "positive",
+            "type": "CONDITIONING",
+            "link": 10
+          },
+          {
+            "name": "negative",
+            "type": "CONDITIONING",
+            "link": 11
+          },
+          {
+            "name": "latent_image",
+            "type": "LATENT",
+            "link": 12
+          }
+        ],
+        "outputs": [
+          {
+            "name": "LATENT",
+            "type": "LATENT",
+            "links": [
+              13
+            ]
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "KSampler",
+          "ld_role": "sampler",
+          "ld_branch": false
+        },
+        "widgets_values": [
+          20261016,
+          "randomize",
+          28,
+          6.0,
+          "euler_ancestral",
+          "normal",
+          1
+        ]
+      },
+      {
+        "id": 42,
+        "type": "VAEDecode",
+        "title": "⑥ VAE 解码 · 潜空间转图片",
+        "pos": [
+          1480,
+          650
+        ],
+        "size": [
+          340,
+          100
+        ],
+        "flags": {},
+        "order": 9,
+        "mode": 0,
+        "inputs": [
+          {
+            "name": "samples",
+            "type": "LATENT",
+            "link": 13
+          },
+          {
+            "name": "vae",
+            "type": "VAE",
+            "link": 14
+          }
+        ],
+        "outputs": [
+          {
+            "name": "IMAGE",
+            "type": "IMAGE",
+            "links": [
+              15
+            ]
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "VAEDecode",
+          "ld_role": "decode",
+          "ld_branch": false
+        },
+        "widgets_values": []
+      },
+      {
+        "id": 43,
+        "type": "SaveImage",
+        "title": "⑦ 图片预览 · 自动保存",
+        "pos": [
+          1480,
+          80
+        ],
+        "size": [
+          440,
+          500
+        ],
+        "flags": {},
+        "order": 10,
+        "mode": 0,
+        "inputs": [
+          {
+            "name": "images",
+            "type": "IMAGE",
+            "link": 15
+          }
+        ],
+        "outputs": [
+          {
+            "name": "images",
+            "type": "IMAGE",
+            "links": []
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "SaveImage",
+          "ld_role": "save",
+          "ld_branch": false
+        },
+        "widgets_values": [
+          "FullNodes/image"
+        ]
+      },
+      {
+        "id": 50,
+        "type": "Note",
+        "title": "操作说明 · 所有生成步骤均已展开",
+        "pos": [
+          460,
+          940
+        ],
+        "size": [
+          960,
+          110
+        ],
+        "flags": {},
+        "order": 11,
+        "mode": 0,
+        "inputs": [],
+        "outputs": [],
+        "properties": {
+          "Node name for S&R": "Note",
+          "ld_role": "note",
+          "ld_branch": false
+        },
+        "widgets_values": [
+          "先在①选择模型、LoRA与常用参数，再填写正反提示词，点击运行。\n步数 / CFG = 0：使用模型推荐值，实际数值见⑤。\n①只同步设置，不参与生成。下方每个节点都可检查与修改。\nLoRA选择“不使用”时，该节点变为紫色旁路。\n切换模型会替换配套加载、LoRA及编码节点；保留提示词、尺寸和手动步数。\nLoRA触发词请写入正向提示词。Krea2不使用反向提示词。"
+        ]
+      }
+    ],
+    "links": [
+      [
+        1,
+        10,
+        0,
+        20,
+        0,
+        "MODEL"
+      ],
+      [
+        2,
+        10,
+        1,
+        20,
+        1,
+        "CLIP"
+      ],
+      [
+        3,
+        20,
+        0,
+        21,
+        0,
+        "MODEL"
+      ],
+      [
+        4,
+        20,
+        1,
+        21,
+        1,
+        "CLIP"
+      ],
+      [
+        5,
+        21,
+        0,
+        22,
+        0,
+        "MODEL"
+      ],
+      [
+        6,
+        21,
+        1,
+        22,
+        1,
+        "CLIP"
+      ],
+      [
+        7,
+        22,
+        1,
+        30,
+        0,
+        "CLIP"
+      ],
+      [
+        8,
+        22,
+        1,
+        31,
+        0,
+        "CLIP"
+      ],
+      [
+        9,
+        22,
+        0,
+        41,
+        0,
+        "MODEL"
+      ],
+      [
+        10,
+        30,
+        0,
+        41,
+        1,
+        "CONDITIONING"
+      ],
+      [
+        11,
+        31,
+        0,
+        41,
+        2,
+        "CONDITIONING"
+      ],
+      [
+        12,
+        40,
+        0,
+        41,
+        3,
+        "LATENT"
+      ],
+      [
+        13,
+        41,
+        0,
+        42,
+        0,
+        "LATENT"
+      ],
+      [
+        14,
+        10,
+        2,
+        42,
+        1,
+        "VAE"
+      ],
+      [
+        15,
+        42,
+        0,
+        43,
+        0,
+        "IMAGE"
+      ]
+    ],
+    "groups": [
+      {
+        "id": 1,
+        "title": "常用操作区",
+        "bounding": [
+          10,
+          10,
+          1390,
+          580
+        ],
+        "color": "#3f789e",
+        "font_size": 24,
+        "flags": {}
+      },
+      {
+        "id": 2,
+        "title": "模型加载与 LoRA · 完整连线",
+        "bounding": [
+          10,
+          600,
+          1450,
+          460
+        ],
+        "color": "#7460a0",
+        "font_size": 24,
+        "flags": {}
+      }
+    ],
+    "config": {},
+    "extra": {
+      "ds": {
+        "scale": 0.55,
+        "offset": [
+          100,
+          100
+        ]
+      }
+    },
+    "version": 0.4
+  },
+  "Pony Diffusion V6 XL": {
+    "id": "b28efb99-85dd-4914-9535-7231176c3908",
+    "revision": 0,
+    "last_node_id": 50,
+    "last_link_id": 15,
+    "nodes": [
+      {
+        "id": 1,
+        "type": "LocalDrawExpandedControls",
+        "title": "① 常用设置 · 模型 / LoRA / 步数",
+        "pos": [
+          40,
+          80
+        ],
+        "size": [
+          390,
+          400
+        ],
+        "flags": {},
+        "order": 0,
+        "mode": 0,
+        "inputs": [],
+        "outputs": [],
+        "properties": {
+          "Node name for S&R": "LocalDrawExpandedControls",
+          "ld_role": "controls",
+          "ld_branch": false
+        },
+        "widgets_values": [
+          "Pony Diffusion V6 XL",
+          "不使用 LoRA",
+          0.7,
+          "不使用 LoRA",
+          0.7,
+          "不使用 LoRA",
+          0.7,
+          0,
+          0,
+          832,
+          1216,
+          1
+        ],
+        "color": "#223",
+        "bgcolor": "#335"
+      },
+      {
+        "id": 10,
+        "type": "CheckpointLoaderSimple",
+        "title": "底模 · 自带 CLIP 与 VAE",
+        "pos": [
+          40,
+          650
+        ],
+        "size": [
+          340,
+          110
+        ],
+        "flags": {},
+        "order": 1,
+        "mode": 0,
+        "inputs": [],
+        "outputs": [
+          {
+            "name": "MODEL",
+            "type": "MODEL",
+            "links": [
+              1
+            ]
+          },
+          {
+            "name": "CLIP",
+            "type": "CLIP",
+            "links": [
+              2
+            ]
+          },
+          {
+            "name": "VAE",
+            "type": "VAE",
+            "links": [
+              14
+            ]
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "CheckpointLoaderSimple",
+          "ld_role": "loader",
+          "ld_branch": true
+        },
+        "widgets_values": [
+          "ponyDiffusionV6XL_v6StartWithThisOne.safetensors"
+        ]
+      },
+      {
+        "id": 20,
+        "type": "LoraLoader",
+        "title": "LoRA 1 · 关闭（旁路）",
+        "pos": [
+          460,
+          650
+        ],
+        "size": [
+          300,
+          230
+        ],
+        "flags": {},
+        "order": 2,
+        "mode": 4,
+        "inputs": [
+          {
+            "name": "model",
+            "type": "MODEL",
+            "link": 1
+          },
+          {
+            "name": "clip",
+            "type": "CLIP",
+            "link": 2
+          }
+        ],
+        "outputs": [
+          {
+            "name": "MODEL",
+            "type": "MODEL",
+            "links": [
+              3
+            ]
+          },
+          {
+            "name": "CLIP",
+            "type": "CLIP",
+            "links": [
+              4
+            ]
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "LoraLoader",
+          "ld_role": "lora_1",
+          "ld_branch": true
+        },
+        "widgets_values": [
+          "sdxl\\原神\\七七_Qiqi_from_Genshin_Impact_IL.safetensors",
+          0.7,
+          0.7
+        ]
+      },
+      {
+        "id": 21,
+        "type": "LoraLoader",
+        "title": "LoRA 2 · 关闭（旁路）",
+        "pos": [
+          790,
+          650
+        ],
+        "size": [
+          300,
+          230
+        ],
+        "flags": {},
+        "order": 3,
+        "mode": 4,
+        "inputs": [
+          {
+            "name": "model",
+            "type": "MODEL",
+            "link": 3
+          },
+          {
+            "name": "clip",
+            "type": "CLIP",
+            "link": 4
+          }
+        ],
+        "outputs": [
+          {
+            "name": "MODEL",
+            "type": "MODEL",
+            "links": [
+              5
+            ]
+          },
+          {
+            "name": "CLIP",
+            "type": "CLIP",
+            "links": [
+              6
+            ]
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "LoraLoader",
+          "ld_role": "lora_2",
+          "ld_branch": true
+        },
+        "widgets_values": [
+          "sdxl\\原神\\七七_Qiqi_from_Genshin_Impact_IL.safetensors",
+          0.7,
+          0.7
+        ]
+      },
+      {
+        "id": 22,
+        "type": "LoraLoader",
+        "title": "LoRA 3 · 关闭（旁路）",
+        "pos": [
+          1120,
+          650
+        ],
+        "size": [
+          300,
+          230
+        ],
+        "flags": {},
+        "order": 4,
+        "mode": 4,
+        "inputs": [
+          {
+            "name": "model",
+            "type": "MODEL",
+            "link": 5
+          },
+          {
+            "name": "clip",
+            "type": "CLIP",
+            "link": 6
+          }
+        ],
+        "outputs": [
+          {
+            "name": "MODEL",
+            "type": "MODEL",
+            "links": [
+              9
+            ]
+          },
+          {
+            "name": "CLIP",
+            "type": "CLIP",
+            "links": [
+              7,
+              8
+            ]
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "LoraLoader",
+          "ld_role": "lora_3",
+          "ld_branch": true
+        },
+        "widgets_values": [
+          "sdxl\\原神\\七七_Qiqi_from_Genshin_Impact_IL.safetensors",
+          0.7,
+          0.7
+        ]
+      },
+      {
+        "id": 30,
+        "type": "CLIPTextEncode",
+        "title": "② 正向提示词 · 想画什么",
+        "pos": [
+          490,
+          80
+        ],
+        "size": [
+          440,
+          220
+        ],
+        "flags": {},
+        "order": 5,
+        "mode": 0,
+        "inputs": [
+          {
+            "name": "clip",
+            "type": "CLIP",
+            "link": 7
+          }
+        ],
+        "outputs": [
+          {
+            "name": "CONDITIONING",
+            "type": "CONDITIONING",
+            "links": [
+              10
+            ]
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "CLIPTextEncode",
+          "ld_role": "positive",
+          "ld_branch": true
+        },
+        "widgets_values": [
+          "masterpiece, best quality, safe, anime illustration. An adult female traveler with silver hair wears a blue cloak over a white dress. She stands on a stone bridge in a mountain village, warm morning sunlight, mountains in the distance, detailed background."
+        ],
+        "color": "#232",
+        "bgcolor": "#353"
+      },
+      {
+        "id": 31,
+        "type": "CLIPTextEncode",
+        "title": "③ 反向提示词 · 避免什么",
+        "pos": [
+          490,
+          360
+        ],
+        "size": [
+          440,
+          180
+        ],
+        "flags": {},
+        "order": 6,
+        "mode": 0,
+        "inputs": [
+          {
+            "name": "clip",
+            "type": "CLIP",
+            "link": 8
+          }
+        ],
+        "outputs": [
+          {
+            "name": "CONDITIONING",
+            "type": "CONDITIONING",
+            "links": [
+              11
+            ]
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "CLIPTextEncode",
+          "ld_role": "negative",
+          "ld_branch": true
+        },
+        "widgets_values": [
+          "worst quality, low quality, blurry, jpeg artifacts, watermark, signature, text"
+        ],
+        "color": "#322",
+        "bgcolor": "#533"
+      },
+      {
+        "id": 40,
+        "type": "EmptyLatentImage",
+        "title": "④ 画布尺寸与张数",
+        "pos": [
+          1000,
+          440
+        ],
+        "size": [
+          350,
+          120
+        ],
+        "flags": {},
+        "order": 7,
+        "mode": 0,
+        "inputs": [],
+        "outputs": [
+          {
+            "name": "LATENT",
+            "type": "LATENT",
+            "links": [
+              12
+            ]
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "EmptyLatentImage",
+          "ld_role": "latent",
+          "ld_branch": false
+        },
+        "widgets_values": [
+          832,
+          1216,
+          1
+        ]
+      },
+      {
+        "id": 41,
+        "type": "KSampler",
+        "title": "⑤ 采样 · 实际步数 / CFG / 种子",
+        "pos": [
+          1000,
+          80
+        ],
+        "size": [
+          350,
+          330
+        ],
+        "flags": {},
+        "order": 8,
+        "mode": 0,
+        "inputs": [
+          {
+            "name": "model",
+            "type": "MODEL",
+            "link": 9
+          },
+          {
+            "name": "positive",
+            "type": "CONDITIONING",
+            "link": 10
+          },
+          {
+            "name": "negative",
+            "type": "CONDITIONING",
+            "link": 11
+          },
+          {
+            "name": "latent_image",
+            "type": "LATENT",
+            "link": 12
+          }
+        ],
+        "outputs": [
+          {
+            "name": "LATENT",
+            "type": "LATENT",
+            "links": [
+              13
+            ]
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "KSampler",
+          "ld_role": "sampler",
+          "ld_branch": false
+        },
+        "widgets_values": [
+          20261016,
+          "randomize",
+          28,
+          6.0,
+          "euler_ancestral",
+          "normal",
+          1
+        ]
+      },
+      {
+        "id": 42,
+        "type": "VAEDecode",
+        "title": "⑥ VAE 解码 · 潜空间转图片",
+        "pos": [
+          1480,
+          650
+        ],
+        "size": [
+          340,
+          100
+        ],
+        "flags": {},
+        "order": 9,
+        "mode": 0,
+        "inputs": [
+          {
+            "name": "samples",
+            "type": "LATENT",
+            "link": 13
+          },
+          {
+            "name": "vae",
+            "type": "VAE",
+            "link": 14
+          }
+        ],
+        "outputs": [
+          {
+            "name": "IMAGE",
+            "type": "IMAGE",
+            "links": [
+              15
+            ]
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "VAEDecode",
+          "ld_role": "decode",
+          "ld_branch": false
+        },
+        "widgets_values": []
+      },
+      {
+        "id": 43,
+        "type": "SaveImage",
+        "title": "⑦ 图片预览 · 自动保存",
+        "pos": [
+          1480,
+          80
+        ],
+        "size": [
+          440,
+          500
+        ],
+        "flags": {},
+        "order": 10,
+        "mode": 0,
+        "inputs": [
+          {
+            "name": "images",
+            "type": "IMAGE",
+            "link": 15
+          }
+        ],
+        "outputs": [
+          {
+            "name": "images",
+            "type": "IMAGE",
+            "links": []
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "SaveImage",
+          "ld_role": "save",
+          "ld_branch": false
+        },
+        "widgets_values": [
+          "FullNodes/image"
+        ]
+      },
+      {
+        "id": 50,
+        "type": "Note",
+        "title": "操作说明 · 所有生成步骤均已展开",
+        "pos": [
+          460,
+          940
+        ],
+        "size": [
+          960,
+          110
+        ],
+        "flags": {},
+        "order": 11,
+        "mode": 0,
+        "inputs": [],
+        "outputs": [],
+        "properties": {
+          "Node name for S&R": "Note",
+          "ld_role": "note",
+          "ld_branch": false
+        },
+        "widgets_values": [
+          "先在①选择模型、LoRA与常用参数，再填写正反提示词，点击运行。\n步数 / CFG = 0：使用模型推荐值，实际数值见⑤。\n①只同步设置，不参与生成。下方每个节点都可检查与修改。\nLoRA选择“不使用”时，该节点变为紫色旁路。\n切换模型会替换配套加载、LoRA及编码节点；保留提示词、尺寸和手动步数。\nLoRA触发词请写入正向提示词。Krea2不使用反向提示词。"
+        ]
+      }
+    ],
+    "links": [
+      [
+        1,
+        10,
+        0,
+        20,
+        0,
+        "MODEL"
+      ],
+      [
+        2,
+        10,
+        1,
+        20,
+        1,
+        "CLIP"
+      ],
+      [
+        3,
+        20,
+        0,
+        21,
+        0,
+        "MODEL"
+      ],
+      [
+        4,
+        20,
+        1,
+        21,
+        1,
+        "CLIP"
+      ],
+      [
+        5,
+        21,
+        0,
+        22,
+        0,
+        "MODEL"
+      ],
+      [
+        6,
+        21,
+        1,
+        22,
+        1,
+        "CLIP"
+      ],
+      [
+        7,
+        22,
+        1,
+        30,
+        0,
+        "CLIP"
+      ],
+      [
+        8,
+        22,
+        1,
+        31,
+        0,
+        "CLIP"
+      ],
+      [
+        9,
+        22,
+        0,
+        41,
+        0,
+        "MODEL"
+      ],
+      [
+        10,
+        30,
+        0,
+        41,
+        1,
+        "CONDITIONING"
+      ],
+      [
+        11,
+        31,
+        0,
+        41,
+        2,
+        "CONDITIONING"
+      ],
+      [
+        12,
+        40,
+        0,
+        41,
+        3,
+        "LATENT"
+      ],
+      [
+        13,
+        41,
+        0,
+        42,
+        0,
+        "LATENT"
+      ],
+      [
+        14,
+        10,
+        2,
+        42,
+        1,
+        "VAE"
+      ],
+      [
+        15,
+        42,
+        0,
+        43,
+        0,
+        "IMAGE"
+      ]
+    ],
+    "groups": [
+      {
+        "id": 1,
+        "title": "常用操作区",
+        "bounding": [
+          10,
+          10,
+          1390,
+          580
+        ],
+        "color": "#3f789e",
+        "font_size": 24,
+        "flags": {}
+      },
+      {
+        "id": 2,
+        "title": "模型加载与 LoRA · 完整连线",
+        "bounding": [
+          10,
+          600,
+          1450,
+          460
+        ],
+        "color": "#7460a0",
+        "font_size": 24,
+        "flags": {}
+      }
+    ],
+    "config": {},
+    "extra": {
+      "ds": {
+        "scale": 0.55,
+        "offset": [
+          100,
+          100
+        ]
+      }
+    },
+    "version": 0.4
+  },
+  "WAI Illustrious v17": {
+    "id": "b28efb99-85dd-4914-9535-7231176c3908",
+    "revision": 0,
+    "last_node_id": 50,
+    "last_link_id": 15,
+    "nodes": [
+      {
+        "id": 1,
+        "type": "LocalDrawExpandedControls",
+        "title": "① 常用设置 · 模型 / LoRA / 步数",
+        "pos": [
+          40,
+          80
+        ],
+        "size": [
+          390,
+          400
+        ],
+        "flags": {},
+        "order": 0,
+        "mode": 0,
+        "inputs": [],
+        "outputs": [],
+        "properties": {
+          "Node name for S&R": "LocalDrawExpandedControls",
+          "ld_role": "controls",
+          "ld_branch": false
+        },
+        "widgets_values": [
+          "WAI Illustrious v17",
+          "不使用 LoRA",
+          0.7,
+          "不使用 LoRA",
+          0.7,
+          "不使用 LoRA",
+          0.7,
+          0,
+          0,
+          832,
+          1216,
+          1
+        ],
+        "color": "#223",
+        "bgcolor": "#335"
+      },
+      {
+        "id": 10,
+        "type": "CheckpointLoaderSimple",
+        "title": "底模 · 自带 CLIP 与 VAE",
+        "pos": [
+          40,
+          650
+        ],
+        "size": [
+          340,
+          110
+        ],
+        "flags": {},
+        "order": 1,
+        "mode": 0,
+        "inputs": [],
+        "outputs": [
+          {
+            "name": "MODEL",
+            "type": "MODEL",
+            "links": [
+              1
+            ]
+          },
+          {
+            "name": "CLIP",
+            "type": "CLIP",
+            "links": [
+              2
+            ]
+          },
+          {
+            "name": "VAE",
+            "type": "VAE",
+            "links": [
+              14
+            ]
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "CheckpointLoaderSimple",
+          "ld_role": "loader",
+          "ld_branch": true
+        },
+        "widgets_values": [
+          "waiIllustriousSDXL_v170.safetensors"
+        ]
+      },
+      {
+        "id": 20,
+        "type": "LoraLoader",
+        "title": "LoRA 1 · 关闭（旁路）",
+        "pos": [
+          460,
+          650
+        ],
+        "size": [
+          300,
+          230
+        ],
+        "flags": {},
+        "order": 2,
+        "mode": 4,
+        "inputs": [
+          {
+            "name": "model",
+            "type": "MODEL",
+            "link": 1
+          },
+          {
+            "name": "clip",
+            "type": "CLIP",
+            "link": 2
+          }
+        ],
+        "outputs": [
+          {
+            "name": "MODEL",
+            "type": "MODEL",
+            "links": [
+              3
+            ]
+          },
+          {
+            "name": "CLIP",
+            "type": "CLIP",
+            "links": [
+              4
+            ]
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "LoraLoader",
+          "ld_role": "lora_1",
+          "ld_branch": true
+        },
+        "widgets_values": [
+          "sdxl\\原神\\七七_Qiqi_from_Genshin_Impact_IL.safetensors",
+          0.7,
+          0.7
+        ]
+      },
+      {
+        "id": 21,
+        "type": "LoraLoader",
+        "title": "LoRA 2 · 关闭（旁路）",
+        "pos": [
+          790,
+          650
+        ],
+        "size": [
+          300,
+          230
+        ],
+        "flags": {},
+        "order": 3,
+        "mode": 4,
+        "inputs": [
+          {
+            "name": "model",
+            "type": "MODEL",
+            "link": 3
+          },
+          {
+            "name": "clip",
+            "type": "CLIP",
+            "link": 4
+          }
+        ],
+        "outputs": [
+          {
+            "name": "MODEL",
+            "type": "MODEL",
+            "links": [
+              5
+            ]
+          },
+          {
+            "name": "CLIP",
+            "type": "CLIP",
+            "links": [
+              6
+            ]
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "LoraLoader",
+          "ld_role": "lora_2",
+          "ld_branch": true
+        },
+        "widgets_values": [
+          "sdxl\\原神\\七七_Qiqi_from_Genshin_Impact_IL.safetensors",
+          0.7,
+          0.7
+        ]
+      },
+      {
+        "id": 22,
+        "type": "LoraLoader",
+        "title": "LoRA 3 · 关闭（旁路）",
+        "pos": [
+          1120,
+          650
+        ],
+        "size": [
+          300,
+          230
+        ],
+        "flags": {},
+        "order": 4,
+        "mode": 4,
+        "inputs": [
+          {
+            "name": "model",
+            "type": "MODEL",
+            "link": 5
+          },
+          {
+            "name": "clip",
+            "type": "CLIP",
+            "link": 6
+          }
+        ],
+        "outputs": [
+          {
+            "name": "MODEL",
+            "type": "MODEL",
+            "links": [
+              9
+            ]
+          },
+          {
+            "name": "CLIP",
+            "type": "CLIP",
+            "links": [
+              7,
+              8
+            ]
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "LoraLoader",
+          "ld_role": "lora_3",
+          "ld_branch": true
+        },
+        "widgets_values": [
+          "sdxl\\原神\\七七_Qiqi_from_Genshin_Impact_IL.safetensors",
+          0.7,
+          0.7
+        ]
+      },
+      {
+        "id": 30,
+        "type": "CLIPTextEncode",
+        "title": "② 正向提示词 · 想画什么",
+        "pos": [
+          490,
+          80
+        ],
+        "size": [
+          440,
+          220
+        ],
+        "flags": {},
+        "order": 5,
+        "mode": 0,
+        "inputs": [
+          {
+            "name": "clip",
+            "type": "CLIP",
+            "link": 7
+          }
+        ],
+        "outputs": [
+          {
+            "name": "CONDITIONING",
+            "type": "CONDITIONING",
+            "links": [
+              10
+            ]
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "CLIPTextEncode",
+          "ld_role": "positive",
+          "ld_branch": true
+        },
+        "widgets_values": [
+          "masterpiece, best quality, safe, anime illustration. An adult female traveler with silver hair wears a blue cloak over a white dress. She stands on a stone bridge in a mountain village, warm morning sunlight, mountains in the distance, detailed background."
+        ],
+        "color": "#232",
+        "bgcolor": "#353"
+      },
+      {
+        "id": 31,
+        "type": "CLIPTextEncode",
+        "title": "③ 反向提示词 · 避免什么",
+        "pos": [
+          490,
+          360
+        ],
+        "size": [
+          440,
+          180
+        ],
+        "flags": {},
+        "order": 6,
+        "mode": 0,
+        "inputs": [
+          {
+            "name": "clip",
+            "type": "CLIP",
+            "link": 8
+          }
+        ],
+        "outputs": [
+          {
+            "name": "CONDITIONING",
+            "type": "CONDITIONING",
+            "links": [
+              11
+            ]
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "CLIPTextEncode",
+          "ld_role": "negative",
+          "ld_branch": true
+        },
+        "widgets_values": [
+          "worst quality, low quality, blurry, jpeg artifacts, watermark, signature, text"
+        ],
+        "color": "#322",
+        "bgcolor": "#533"
+      },
+      {
+        "id": 40,
+        "type": "EmptyLatentImage",
+        "title": "④ 画布尺寸与张数",
+        "pos": [
+          1000,
+          440
+        ],
+        "size": [
+          350,
+          120
+        ],
+        "flags": {},
+        "order": 7,
+        "mode": 0,
+        "inputs": [],
+        "outputs": [
+          {
+            "name": "LATENT",
+            "type": "LATENT",
+            "links": [
+              12
+            ]
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "EmptyLatentImage",
+          "ld_role": "latent",
+          "ld_branch": false
+        },
+        "widgets_values": [
+          832,
+          1216,
+          1
+        ]
+      },
+      {
+        "id": 41,
+        "type": "KSampler",
+        "title": "⑤ 采样 · 实际步数 / CFG / 种子",
+        "pos": [
+          1000,
+          80
+        ],
+        "size": [
+          350,
+          330
+        ],
+        "flags": {},
+        "order": 8,
+        "mode": 0,
+        "inputs": [
+          {
+            "name": "model",
+            "type": "MODEL",
+            "link": 9
+          },
+          {
+            "name": "positive",
+            "type": "CONDITIONING",
+            "link": 10
+          },
+          {
+            "name": "negative",
+            "type": "CONDITIONING",
+            "link": 11
+          },
+          {
+            "name": "latent_image",
+            "type": "LATENT",
+            "link": 12
+          }
+        ],
+        "outputs": [
+          {
+            "name": "LATENT",
+            "type": "LATENT",
+            "links": [
+              13
+            ]
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "KSampler",
+          "ld_role": "sampler",
+          "ld_branch": false
+        },
+        "widgets_values": [
+          20261016,
+          "randomize",
+          28,
+          6.0,
+          "euler_ancestral",
+          "normal",
+          1
+        ]
+      },
+      {
+        "id": 42,
+        "type": "VAEDecode",
+        "title": "⑥ VAE 解码 · 潜空间转图片",
+        "pos": [
+          1480,
+          650
+        ],
+        "size": [
+          340,
+          100
+        ],
+        "flags": {},
+        "order": 9,
+        "mode": 0,
+        "inputs": [
+          {
+            "name": "samples",
+            "type": "LATENT",
+            "link": 13
+          },
+          {
+            "name": "vae",
+            "type": "VAE",
+            "link": 14
+          }
+        ],
+        "outputs": [
+          {
+            "name": "IMAGE",
+            "type": "IMAGE",
+            "links": [
+              15
+            ]
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "VAEDecode",
+          "ld_role": "decode",
+          "ld_branch": false
+        },
+        "widgets_values": []
+      },
+      {
+        "id": 43,
+        "type": "SaveImage",
+        "title": "⑦ 图片预览 · 自动保存",
+        "pos": [
+          1480,
+          80
+        ],
+        "size": [
+          440,
+          500
+        ],
+        "flags": {},
+        "order": 10,
+        "mode": 0,
+        "inputs": [
+          {
+            "name": "images",
+            "type": "IMAGE",
+            "link": 15
+          }
+        ],
+        "outputs": [
+          {
+            "name": "images",
+            "type": "IMAGE",
+            "links": []
+          }
+        ],
+        "properties": {
+          "Node name for S&R": "SaveImage",
+          "ld_role": "save",
+          "ld_branch": false
+        },
+        "widgets_values": [
+          "FullNodes/image"
+        ]
+      },
+      {
+        "id": 50,
+        "type": "Note",
+        "title": "操作说明 · 所有生成步骤均已展开",
+        "pos": [
+          460,
+          940
+        ],
+        "size": [
+          960,
+          110
+        ],
+        "flags": {},
+        "order": 11,
+        "mode": 0,
+        "inputs": [],
+        "outputs": [],
+        "properties": {
+          "Node name for S&R": "Note",
+          "ld_role": "note",
+          "ld_branch": false
+        },
+        "widgets_values": [
+          "先在①选择模型、LoRA与常用参数，再填写正反提示词，点击运行。\n步数 / CFG = 0：使用模型推荐值，实际数值见⑤。\n①只同步设置，不参与生成。下方每个节点都可检查与修改。\nLoRA选择“不使用”时，该节点变为紫色旁路。\n切换模型会替换配套加载、LoRA及编码节点；保留提示词、尺寸和手动步数。\nLoRA触发词请写入正向提示词。Krea2不使用反向提示词。"
+        ]
+      }
+    ],
+    "links": [
+      [
+        1,
+        10,
+        0,
+        20,
+        0,
+        "MODEL"
+      ],
+      [
+        2,
+        10,
+        1,
+        20,
+        1,
+        "CLIP"
+      ],
+      [
+        3,
+        20,
+        0,
+        21,
+        0,
+        "MODEL"
+      ],
+      [
+        4,
+        20,
+        1,
+        21,
+        1,
+        "CLIP"
+      ],
+      [
+        5,
+        21,
+        0,
+        22,
+        0,
+        "MODEL"
+      ],
+      [
+        6,
+        21,
+        1,
+        22,
+        1,
+        "CLIP"
+      ],
+      [
+        7,
+        22,
+        1,
+        30,
+        0,
+        "CLIP"
+      ],
+      [
+        8,
+        22,
+        1,
+        31,
+        0,
+        "CLIP"
+      ],
+      [
+        9,
+        22,
+        0,
+        41,
+        0,
+        "MODEL"
+      ],
+      [
+        10,
+        30,
+        0,
+        41,
+        1,
+        "CONDITIONING"
+      ],
+      [
+        11,
+        31,
+        0,
+        41,
+        2,
+        "CONDITIONING"
+      ],
+      [
+        12,
+        40,
+        0,
+        41,
+        3,
+        "LATENT"
+      ],
+      [
+        13,
+        41,
+        0,
+        42,
+        0,
+        "LATENT"
+      ],
+      [
+        14,
+        10,
+        2,
+        42,
+        1,
+        "VAE"
+      ],
+      [
+        15,
+        42,
+        0,
+        43,
+        0,
+        "IMAGE"
+      ]
+    ],
+    "groups": [
+      {
+        "id": 1,
+        "title": "常用操作区",
+        "bounding": [
+          10,
+          10,
+          1390,
+          580
+        ],
+        "color": "#3f789e",
+        "font_size": 24,
+        "flags": {}
+      },
+      {
+        "id": 2,
+        "title": "模型加载与 LoRA · 完整连线",
+        "bounding": [
+          10,
+          600,
+          1450,
+          460
+        ],
+        "color": "#7460a0",
+        "font_size": 24,
+        "flags": {}
+      }
+    ],
+    "config": {},
+    "extra": {
+      "ds": {
+        "scale": 0.55,
+        "offset": [
+          100,
+          100
+        ]
+      }
+    },
+    "version": 0.4
+  }
+}

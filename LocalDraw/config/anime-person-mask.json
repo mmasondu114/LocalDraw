@@ -1,0 +1,8 @@
+{
+  "model": "models/person_detection/anime-seg/model.safetensors",
+  "source": "https://huggingface.co/skytnt/anime-seg/resolve/493cb60893f47441b26ec4fb9a306bce9e342982/model.safetensors",
+  "sha256": "3351563ba8b61a01a66bacb79cf36aabce2da62d88b7606a719f573f23fe5d3e",
+  "code_revision": "55d874013a2811cdf59c365059174c7823acf5b4",
+  "code_source": "https://github.com/SkyTNT/anime-segmentation",
+  "size": 1024
+}

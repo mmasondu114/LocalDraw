@@ -2,7 +2,6 @@
 import copy
 import hashlib
 
-from .installed_assets import read_path
 from . import engine as e
 from .paths import ROOT
 
@@ -58,7 +57,7 @@ def pose_conditioning(graph, roots):
 
 def apply(graph, cfg, seed):
     recipe = e.read(ROOT / 'config/hires-fix.json')
-    path = read_path(ROOT, recipe['file'])
+    path = ROOT / recipe['file']
     e.need(path.is_file() and hashlib.sha256(path.read_bytes()).hexdigest() == recipe['sha256'],
            '日漫高清模型未安装完整或校验失败')
     target = [round(cfg[key] * recipe['scale'] / 8) * 8 for key in ('width', 'height')]

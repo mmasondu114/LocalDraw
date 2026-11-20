@@ -1,0 +1,23 @@
+{
+  "enabled": true,
+  "node_repository": "https://github.com/cubiq/ComfyUI_IPAdapter_plus",
+  "node_revision": "a0f451a5113cf9becb0847b92884cb10cbdec0ef",
+  "weight": 0.7,
+  "end_at": 0.8,
+  "models": [
+    {
+      "directory": "models/clip_vision",
+      "name": "CLIP-ViT-H-14-laion2B-s32B-b79K.safetensors",
+      "url": "https://huggingface.co/h94/IP-Adapter/resolve/main/models/image_encoder/model.safetensors",
+      "size": 2528373448,
+      "sha256": "6ca9667da1ca9e0b0f75e46bb030f7e011f44f86cbfb8d5a36590fcd7507b030"
+    },
+    {
+      "directory": "models/ipadapter",
+      "name": "ip-adapter-plus_sdxl_vit-h.safetensors",
+      "url": "https://huggingface.co/h94/IP-Adapter/resolve/main/sdxl_models/ip-adapter-plus_sdxl_vit-h.safetensors",
+      "size": 847517512,
+      "sha256": "3f5062b8400c94b7159665b21ba5c62acdcd7682262743d7f2aefedef00e6581"
+    }
+  ]
+}

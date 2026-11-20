@@ -67,7 +67,7 @@ def filehash(p, progress=None):
 
 
 def _download(folder, workers, url=URL, size=SIZE, sha=SHA, name=NAME, chunk=CHUNK,
-              *, fallback_urls=(), timeout=60, opener=None, on_progress=None):
+              *, fallback_urls=(), timeout=60, opener=None):
     folder = pathlib.Path(folder)
     folder.mkdir(parents=True, exist_ok=True)
     target = folder / name
@@ -136,8 +136,6 @@ def _download(folder, workers, url=URL, size=SIZE, sha=SHA, name=NAME, chunk=CHU
         if idle >= 3 and done_bytes < size:
             note += f"；{idle:.0f}秒无新数据，等待服务器响应"
         progress.show(done_bytes, transferred=network_bytes, note=note, force=force)
-        if on_progress:
-            on_progress("下载中", done_bytes)
 
     def get(i):
         nonlocal completed_bytes, transferred, last_activity
@@ -228,8 +226,6 @@ def _download(folder, workers, url=URL, size=SIZE, sha=SHA, name=NAME, chunk=CHU
     print("下载数据接收完毕。正在合并文件并核对 SHA-256，校验通过后才算完成。", flush=True)
     assembly = ConsoleProgress("合并并校验", size)
     assembled = 0
-    if on_progress:
-        on_progress("合并校验中", 0)
     assembly.show(0, force=True)
     with assembling.open("wb") as out:
         for i in range(count):
@@ -239,14 +235,11 @@ def _download(folder, workers, url=URL, size=SIZE, sha=SHA, name=NAME, chunk=CHU
                     h.update(block)
                     assembled += len(block)
                     assembly.show(assembled)
-                    if on_progress:
-                        on_progress("合并校验中", assembled)
     assembly.show(assembled, force=True)
     if assembling.stat().st_size != size or h.hexdigest() != sha:
-        assembling.unlink(missing_ok=True)
-        for index in range(count):
-            (parts / str(index)).unlink(missing_ok=True)
-        raise RuntimeError("下载校验失败，点击重试可重新获取文件。")
+        raise RuntimeError(
+            "SHA-256 mismatch. No model marked ready. Retain logs and check source/parts before retrying."
+        )
     assembling.replace(target)
     for i in range(count):
         (parts / str(i)).unlink()
@@ -258,7 +251,7 @@ def _download(folder, workers, url=URL, size=SIZE, sha=SHA, name=NAME, chunk=CHU
 
 
 def download(folder, workers, url=URL, size=SIZE, sha=SHA, name=NAME, chunk=CHUNK,
-             *, fallback_urls=(), timeout=60, opener=None, on_progress=None):
+             *, fallback_urls=(), timeout=60, opener=None):
     """An OS lock prevents double-clicking twice from corrupting shared part files."""
     folder = pathlib.Path(folder)
     folder.mkdir(parents=True, exist_ok=True)
@@ -281,7 +274,7 @@ def download(folder, workers, url=URL, size=SIZE, sha=SHA, name=NAME, chunk=CHUN
                 "This model is already downloading in another window."
             ) from exc
         return _download(folder, workers, url, size, sha, name, chunk,
-                         fallback_urls=fallback_urls, timeout=timeout, opener=opener, on_progress=on_progress)
+                         fallback_urls=fallback_urls, timeout=timeout, opener=opener)
 
 
 def main():

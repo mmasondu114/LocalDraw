@@ -1,0 +1,63 @@
+Krea2 / MOSS Image 本地高精度绘图
+
+工作室入口：双击 00-start-studio.bat，打开“提示词出图”，在“绘图模型”中选择：
+Krea2 Turbo · BF16 高精度，或 MOSS-Image SFT · BF16 高精度。
+同样可在漫画绘图设置、导入提示词与夜间任务列表中使用。
+工作室地址：http://127.0.0.1:8765
+Krea2 的负面提示词不参与生成；MOSS 支持正负提示词。
+LoRA 会按模型过滤，不能混用 Anima、SDXL、Krea2、MOSS 的 LoRA。
+
+独立 ComfyUI 入口仍可使用：双击项目根目录的 15-start-krea2-moss.cmd。
+浏览器地址：http://127.0.0.1:8190
+在左侧工作流列表的 Krea2-MOSS 文件夹中，选择一个工作流。
+也可以把项目 workflows 文件夹里的对应 JSON 拖进 ComfyUI。
+修改 CLIPTextEncode 中的正面描述，再点击运行。
+
+高精度模型：
+1. krea2-turbo-bf16-ui.json
+   Krea2 Turbo，官方 12B 级 DiT，BF16 原生精度。
+   配套 Qwen3-VL 4B BF16 文字编码器、Qwen Image VAE。
+   默认 1024×1024，8 步，CFG 1，Euler / simple，每批 1 张。
+   主模型文件约 26.28GB，无法全部常驻 24GB 显存。
+   启动配置会自动将部分权重放在系统内存，保留原生精度，但速度较慢。
+
+2. moss-image-sft-bf16-ui.json
+   MOSS-Image SFT，5B DiT，BF16 原生精度。
+   配套 Qwen3.5 9B BF16 文字编码器、Flux2 VAE。
+   默认 1024×1024，25 步，CFG 2.5，er_sde / simple，每批 1 张。
+   文字编码器和绘图模型分阶段使用显存。
+
+已有快速版本：
+krea2-turbo-fp8-ui.json：保留原来完整参数的 FP8 量化版，速度更实用。
+BF16 与 FP8 的区别是权重精度，不是参数数量。
+RAW / Base 与 Turbo / SFT 不是参数大小档位，本次选择适合直接出图的 Turbo / SFT。
+
+硬件：RTX 5090 D v2 24GB 显存，约 96GB 系统内存。
+先使用默认 1024×1024；更大分辨率的显存需求还取决于提示词长度和批量。
+两个模型按需切换，不建议与另一个大型绘图任务同时运行。
+
+模型位置：
+models/diffusion_models/krea2_turbo_bf16.safetensors
+models/diffusion_models/moss_image_sft_bf16.safetensors
+models/text_encoders/qwen3vl_4b_bf16.safetensors
+models/text_encoders/qwen3.5_9b_bf16.safetensors
+models/vae/qwen_image_vae.safetensors
+models/vae/flux2-vae.safetensors
+
+图片输出位置：runtime/ComfyUI-KreaMoss/output
+安装验证：六个组件均通过来源 SHA-256 校验，总大小约 65.22GB（含已有 VAE）。
+2026-10-24 实际出图：Krea2 BF16 1024×1024、8步，约10.82秒；
+MOSS SFT BF16 1024×1024、25步，约53.67秒。耗时会随提示词和系统负载变化。
+测试图片：Krea2_BF16_00001_.png、MOSS_SFT_BF16_00001_.png。
+独立绘图程序：runtime/ComfyUI-KreaMoss
+独立依赖覆盖层：runtime/kreamoss-venv（共用原 .comfy-venv 的基础库，请保留原环境）
+下载记录与校验结果：data/krea2-moss-bf16
+断点续传入口：16-resume-krea2-moss-download.cmd
+
+工作室已接入两套 BF16 模型，原来的默认模型仍为 Anima Delta Mix v6。
+
+来源：
+https://www.krea.ai/krea-2-open-source
+https://huggingface.co/Comfy-Org/Krea-2
+https://github.com/OpenMOSS/MOSS-Image
+https://huggingface.co/Comfy-Org/MOSS-Image

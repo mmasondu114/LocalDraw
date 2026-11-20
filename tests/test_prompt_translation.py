@@ -33,7 +33,7 @@ class PromptTranslationTests(unittest.TestCase):
         self.assertFalse((self.root / "prompt-translations").exists())
         self.assertEqual(self.app.repo.listing(), [])
         render.assert_not_called()
-        self.app.model.stop.assert_not_called()  # Jobs owns final idle release
+        self.app.model.stop.assert_called_once()
 
     def test_failed_loading_or_translation_unloads_and_does_not_overwrite_input(self):
         for stage in ["load", "generate", "identity", "language", "chat_card"]:
@@ -52,6 +52,6 @@ class PromptTranslationTests(unittest.TestCase):
                            side_effect=RuntimeError("generate failed") if stage == "generate" else None), \
                      self.assertRaises((RuntimeError, ValueError)):
                     quick_sample.translate(self.app, self.request, Mock(), stage)
-                self.app.model.stop.assert_not_called()  # Jobs owns final idle release
+                self.app.model.stop.assert_called_once()
                 self.assertFalse((self.root / "prompt-translations" / stage / "draft.json").exists())
                 self.assertEqual(self.request["text"], "雪地上的全身舞姿")

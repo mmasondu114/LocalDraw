@@ -247,21 +247,14 @@ def story_draft(library, a, logdir, update):
     e.need(5 <= len(original) <= 12000, "请粘贴 5–12000 字符故事，较长作品按章节处理")
     mode = a.get("mode", "structure")
     e.need(mode in ["structure", "expand", "continue"], "未知写作方式")
-    if "character_names" in a:
-        names = a["character_names"]
-        e.need(isinstance(names, list) and all(isinstance(n, str) for n in names), "请选择角色库中的角色")
-        cards = {card["name"]: card for card in library.listing()}
-        e.need(all(n in cards for n in names), "选中的角色已变化，请刷新角色列表")
-        refs = [cards[name] for name in dict.fromkeys(names)]
-    else:
-        refs = library.resolve(original)
+    refs = library.resolve(original)
     prompt = (
         "你是英文漫画编剧。用户只粘贴故事，不填写繁琐表格。根据 mode 整理为完整英文剧本："
         "structure 保留原事件，只整理表达；expand 在原剧情内补动作、对白和情绪；continue 保留原故事并续写。"
         "story 是完整可读剧本，场景描述使用英文，新写对白、旁白和拟声默认使用简体中文，用户明确指定其他语言时遵从用户，不能只给提纲。必须遵守用户文本，不改指定角色、结局和关键事件。"
         "逐段保留动作顺序、对白与说话人、心理和情绪变化、人物动机、因果关系、时间地点、道具状态、伏笔和呼应；"
         "不得用概述代替具体过程，不得因为建议页数少而删减情节。"
-        "使用所选角色卡中的姓名和资料；角色姓名不能改，资料为用户确认版本。"
+        "使用 /角色名 引用所提供的角色卡；角色姓名不能改，资料为用户确认版本。"
         "brief 自动提取标题、题材、方向、必须出现事件和角色资料；panel_mode=flexible，每页允许大小不同的格子。"
         "用户没指定页数时按完整情节容量合理建议 1–80 页，不把长故事硬压成几页；panels_per_page=5 仅为节奏参考。reading_direction 默认 LTR，page_mode 默认 single_page，first_story_page_side=right。"
         "canon 只自动抽取剧本已经需要的人物(C001)、场景(S001)、道具(O001)和 initial_state 状态字典；"
@@ -359,8 +352,7 @@ def story_draft(library, a, logdir, update):
             c["name"] for c in refs
         }:
             character["name"] = character["name"][1:]
-    return {"payload": payload, "original": original, "mode": mode, "metrics": metrics,
-            "explicit_characters": "character_names" in a}
+    return {"payload": payload, "original": original, "mode": mode, "metrics": metrics}
 
 
 def create_story(repo, library, result):
@@ -377,7 +369,7 @@ def create_story(repo, library, result):
     p = {
         "workflow": "direct",
         "script": payload["story"],
-        "brief": payload["brief"] if result.get("explicit_characters") else library.freeze_brief(payload["brief"]),
+        "brief": library.freeze_brief(payload["brief"]),
         "canon": payload["canon"],
         "options": None,
         "outline": payload["outline"],

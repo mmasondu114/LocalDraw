@@ -1,0 +1,84 @@
+{
+  "1": {
+    "class_type": "UNETLoader",
+    "inputs": {
+      "unet_name": "Anima-3.8B.safetensors",
+      "weight_dtype": "default"
+    }
+  },
+  "2": {
+    "class_type": "CLIPLoader",
+    "inputs": {
+      "clip_name": "qwen_3_06b_base.safetensors",
+      "type": "stable_diffusion",
+      "device": "default"
+    }
+  },
+  "3": {
+    "class_type": "AnimaQwen35Loader",
+    "inputs": {
+      "qwen35_model": "qwen35_4b.safetensors"
+    }
+  },
+  "4": {
+    "class_type": "AnimaQwen35UnifiedPrompt",
+    "inputs": {
+      "model": ["1", 0],
+      "native_clip": ["2", 0],
+      "qwen35_clip": ["3", 0],
+      "adapter_name": "Anima-3.8B-expanded_adapter.safetensors",
+      "prompt": "masterpiece, best quality, 1girl, detailed background",
+      "adapter_strength": 1.0
+    }
+  },
+  "5": {
+    "class_type": "CLIPTextEncode",
+    "inputs": {
+      "clip": ["2", 0],
+      "text": "worst quality, low quality"
+    }
+  },
+  "6": {
+    "class_type": "EmptySD3LatentImage",
+    "inputs": {
+      "width": 1024,
+      "height": 1024,
+      "batch_size": 1
+    }
+  },
+  "7": {
+    "class_type": "KSampler",
+    "inputs": {
+      "model": ["1", 0],
+      "seed": 424242,
+      "steps": 32,
+      "cfg": 8.0,
+      "sampler_name": "euler",
+      "scheduler": "beta",
+      "positive": ["4", 0],
+      "negative": ["5", 0],
+      "latent_image": ["6", 0],
+      "denoise": 1.0
+    }
+  },
+  "8": {
+    "class_type": "VAELoader",
+    "inputs": {
+      "vae_name": "qwen_image_vae.safetensors"
+    }
+  },
+  "9": {
+    "class_type": "VAEDecode",
+    "inputs": {
+      "samples": ["7", 0],
+      "vae": ["8", 0]
+    }
+  },
+  "10": {
+    "class_type": "SaveImage",
+    "inputs": {
+      "images": ["9", 0],
+      "filename_prefix": "anima_3_8b"
+    }
+  }
+}

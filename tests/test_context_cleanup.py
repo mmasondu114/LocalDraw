@@ -57,19 +57,15 @@ class ContextCleanupTests(unittest.TestCase):
     def test_manual_model_warmup_stays_loaded(self):
         app=Application.__new__(Application);app.model=Mock()
         self.assertIsNone(app.clear_finished_context({'label':'启动 FlashNext'}))
-        app.model.unload_if_idle.assert_not_called()
-        app.model.unload_if_idle.return_value = {"status":"unloaded"}
-        from types import SimpleNamespace
-        app.night_queue=SimpleNamespace(lock=threading.RLock(), state={"items":[]})
-        app.jobs=SimpleNamespace(lock=threading.RLock(), controls={})
+        app.model.clear_context.assert_not_called()
         app.clear_finished_context({'label':'编写分镜'})
-        app.model.unload_if_idle.assert_called_once()
+        app.model.clear_context.assert_called_once()
     def test_start_button_uses_flashnext_64k_not_27b(self):
         from comic_workflow.paths import settings
         app=Application.__new__(Application);app.model=Mock();app.jobs=Mock()
         observed=[]
         def submit(label,work):
-            self.assertEqual(label,'启动分析模型');work(Mock(),'start');return 'job'
+            self.assertEqual(label,'启动 FlashNext');work(Mock(),'start');return 'job'
         app.jobs.submit.side_effect=submit
         app.model.start.side_effect=lambda **kw:observed.append(settings())
         with patch('comic_workflow.server.comfyui.discover',return_value={'ready':False}):

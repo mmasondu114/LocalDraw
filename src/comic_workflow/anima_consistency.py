@@ -1,7 +1,6 @@
 """Automatic Delta Edit conditioning using the frozen character reference."""
 import hashlib
 from PIL import Image
-from .installed_assets import models as model_directory
 from . import engine as e
 from .paths import ROOT, DATA
 from .character_binding import panel_characters
@@ -19,7 +18,7 @@ def selected_character_reference(project, panel, checkpoint, prefs, *, library=N
         return None
     e.need(checkpoint == CHECKPOINT, '所选角色参考图需要 Anima Delta v6')
     e.need(prefs.get('consistency_lora') is True, '请开启一致性参考后使用所选角色参考图')
-    e.need((model_directory(ROOT) / "loras"/LORA).is_file(), '角色参考所需的 Anima Edit v2 文件未就绪')
+    e.need((ROOT/'models/loras'/LORA).is_file(), '角色参考所需的 Anima Edit v2 文件未就绪')
     character = next((c for c in panel_characters(project, panel) if c['id'] == key), None)
     e.need(character is not None, '参考图角色不在当前作品中')
     image_id = character.get('saved_character', {}).get('reference_image_id')
@@ -91,7 +90,7 @@ def prepare(project, panel, checkpoint, cfg, options, lora_files, *, library=Non
         return skipped('本次独立诊断或专用流程保留原设置')
     weight = cfg.get('consistency_lora_weight', 0.8)
     e.need(type(weight) in (int, float) and 0 < weight <= 2, '一致性 LoRA 强度须大于 0 且不超过 2')
-    e.need(LORA in lora_files and (model_directory(ROOT) / "loras"/LORA).is_file(),
+    e.need(LORA in lora_files and (ROOT/'models/loras'/LORA).is_file(),
            '一致性 LoRA 文件未就绪，请检查 Anima Edit v2 或关闭自动一致性')
     record = {'enabled': True, 'lora': LORA, 'lora_file': lora_files[LORA], 'weight': weight,
               'reference_mode': 'none', 'note': '已加载 LoRA；没有参考图时不锁定具体角色外观'}

@@ -1,0 +1,32 @@
+{
+  "directory": "models/checkpoints",
+  "models": [
+    {
+      "id": "noobai-1.1",
+      "label": "NoobAI XL 1.1",
+      "repo": "Laxhar/noobai-XL-1.1",
+      "revision": "814a274af2b8097c0828819d561ec74c7d0c6cea",
+      "name": "NoobAI-XL-v1.1.safetensors",
+      "size": 7105349958,
+      "sha256": "6681e8e4b134c81f16533acedb0d406d7e5e366e1624b4105178c64d00b05d51"
+    },
+    {
+      "id": "illustrious-2.0",
+      "label": "Illustrious XL 2.0 STABLE",
+      "repo": "OnomaAIResearch/Illustrious-XL-v2.0",
+      "revision": "69459c1fe6f46db41ab31e6114f05acc0e06bcaa",
+      "name": "Illustrious-XL-v2.0.safetensors",
+      "size": 6938040674,
+      "sha256": "c2a1a3eaa13d4c107dc7e00c3fe830cab427aa026362740ea094745b3422a331"
+    },
+    {
+      "id": "animagine-3.1",
+      "label": "Animagine XL 3.1",
+      "repo": "cagliostrolab/animagine-xl-3.1",
+      "revision": "483f0c322568ed13697ed01dd0be07204746d12b",
+      "name": "animagine-xl-3.1.safetensors",
+      "size": 6938325776,
+      "sha256": "e3c47aedb06418c6c331443cd89f2b3b3b34b7ed2102a3d4c4408a8d35aad6b0"
+    }
+  ]
+}

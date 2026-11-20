@@ -1,0 +1,62 @@
+MOSS-Image SFT 加速与画风 LoRA
+整理日期：2026-10-24
+
+适配你已安装的 moss_image_sft_bf16.safetensors。
+下载位置：models/loras/moss_image；加速与画风分别放在两个子文件夹。
+下载来源的固定版本、大小、SHA-256 与校验记录：data/moss-loras。
+
+推荐入口
+双击 15-start-krea2-moss.cmd，打开 http://127.0.0.1:8190。
+在 ComfyUI 左侧工作流列表打开 MOSS-LoRA 文件夹，每个 LoRA 都有独立工作流。
+也可将 workflows/MOSS-LoRA 里的 -ui.json 文件拖入 ComfyUI。
+工作流已经填写当前底模、LoRA、强度、采样参数和示例提示词；改正面提示词即可出图。
+
+在漫画工作室中：选择“MOSS-Image SFT · BF16 高精度”，刷新 LoRA 列表。
+如果工作室在安装前已经启动，请重启工作室，让新的 MOSS 权重识别规则生效。
+中文名称、触发词及强度已记录；加速版的步数和 CFG 请按下表手动调整。
+工作室暂不会因勾选加速 LoRA 自动切换采样参数，优先用配好的 ComfyUI 工作流。
+
+加速（两者选一，不要叠加）
+4步加速：akhaliq v2.0，强度 1.0，4 步，CFG 1.0，Euler / simple。
+8步加速：lodestones DMD latest，强度 0.7，8 步，CFG 1.0，Euler / simple。
+起步分辨率 1024×1024，负面提示词留空，不需要触发词。
+不要沿用原始 MOSS 的 25–50 步和 CFG 2.5–3，否则可能过度处理、模糊。
+少步加速会改变细节和文字表现，不保证与原始多步生成质量相同。
+
+画风
+青年动漫：强度 1.0，30 步，CFG 3；提示词包含 anime character。
+  作者更推荐自然动漫描述；moss_seinen_style 是可选触发词。
+3D动画：强度 0.7，30 步，CFG 3；不强制触发词。
+  可尝试 3d animated character 或 moss_ac_style，加强动画角色效果。
+人像摄影：强度 1.0，30 步，CFG 3；触发词 moss_beauty_style。
+复古水粉：强度 1.0，30 步，CFG 3；触发词 moss_vgouache_style。
+迷幻波普：强度 1.0，30 步，CFG 3；触发词 moss_psychpop_style。
+印象派油画：强度 1.0，50 步，CFG 3；不需要触发词。
+  已按作者设置加入 SkipLayerGuidanceDiTSimple：single layer 22，范围 0–1。
+  现代或偏摄影题材可尝试强度 1.4–1.6。
+以上画风工作流使用 Euler / simple，负面提示词留空。
+如果用普通 LoRA Loader，CLIP 强度为 0；配套工作流使用仅模型 LoRA Loader。
+
+组合使用
+先用单个画风工作流确认效果，再尝试“一个加速 + 一个画风”。
+在加速工作流的 LoRA 节点后串联另一个 Load LoRA（仅模型）节点。
+组合后仍使用加速版的步数与 CFG；画风强度从推荐值开始。
+组合效果依提示词和 LoRA 而异，未经逐组合实测，不能保证画风保留程度。
+
+来源
+4步：https://huggingface.co/akhaliq/MOSS-Image-SFT-4-steps
+8步：https://huggingface.co/lodestones/MOSS-Image-SFT-8-steps-dmd
+动漫：https://huggingface.co/axiomofmind/Moss-image-anime-lora
+3D动画：https://huggingface.co/axiomofmind/Moss-image-animated-lora
+人像：https://huggingface.co/axiomofmind/Moss-image-beauty-lora
+水粉：https://huggingface.co/axiomofmind/Moss-image-gouache-lora
+波普：https://huggingface.co/axiomofmind/Moss-image-psychedelic-lora
+油画：https://huggingface.co/Kandoo/MOSS-Image-Impressionism-LoRA
+
+安装验证
+8/8 文件来源 SHA-256 校验通过，共 2,824,722,024 字节（约 2.82 GB）。
+8/8 LoRA 投影尺寸与本地 MOSS 底模匹配；中文名称和推荐强度已登记。
+4步、8步、青年动漫、印象派油画均通过 1024×1024 实际出图。
+其余4种画风完成文件和结构校验，尚未逐一出图。
+4步测试模型已加载时约 4.96 秒；首次加载和不同提示词的耗时会变化。
+测试图片：runtime/ComfyUI-KreaMoss/output/MOSS-LoRA。

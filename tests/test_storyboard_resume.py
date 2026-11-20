@@ -80,37 +80,6 @@ class StoryboardResumeTests(unittest.TestCase):
         self.assertEqual(saved["status"], "complete")
         self.assertEqual(self.repo.get(self.pid), self.base)
 
-    def test_audit_progress_counts_only_persisted_reviews(self):
-        self.save_partial(8)
-        events = []
-
-        def record(event):
-            if isinstance(event, dict) and event.get("detail_progress"):
-                entries = e.read(self.folder / "bundle.json")["pages"]
-                reviews = [item["metadata"].get("continuity_review") for item in entries.values()]
-                completed = sum(bool(r) and r.get("verdict") != "unavailable" for r in reviews)
-                self.assertEqual(event["detail_progress"]["completed"], completed)
-                events.append(completed)
-
-        with patch("comic_workflow.storyboard_tools.generate", side_effect=self.generate):
-            generate_all(self.app, self.pid, self.request, record, "audit")
-        self.assertEqual(sorted(set(events)), list(range(9)))
-        self.assertEqual(events[-1], 8)
-
-    def test_unavailable_audit_does_not_increment_checked_pages(self):
-        self.save_partial(8)
-
-        def unavailable(project, stage, key, instruction, folder, update):
-            if stage == "audit" and key == "P004":
-                raise ValueError("model unavailable")
-            return self.generate(project, stage, key, instruction, folder, update)
-
-        result = self.run_resume(generate=unavailable)
-        self.assertIn("1 页缺少核对结果", result["completion_message"])
-        saved = e.read(self.folder / "bundle.json")
-        self.assertEqual(saved["status"], "complete")
-        self.assertEqual(saved["pages"]["P004"]["metadata"]["continuity_review"]["verdict"], "unavailable")
-
     def test_second_interruption_keeps_newly_saved_page(self):
         self.save_partial()
         def fail_at_six(*args):

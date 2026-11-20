@@ -1,7 +1,11 @@
 /data/
-models/
+/LocalDraw/data/
+/models/
+/LocalDraw/models/
 .venv/
+.comfy-venv/
 __pycache__/
 *.py[cod]
 *.log
 .env
+*token.txt

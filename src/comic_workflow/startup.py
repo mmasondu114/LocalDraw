@@ -24,7 +24,6 @@ def ready(url):
             isinstance(data, dict)
             and isinstance(data.get("token"), str)
             and bool(data["token"])
-            and data.get("workspace") == str(ROOT)
         )
     except (OSError, ValueError):
         return False

@@ -1,0 +1,7 @@
+# Development-only files excluded from Comfy Registry packages.
+.comfyignore
+tests/
+ui/
+.tmp/
+user/
+.github/

@@ -1,0 +1,10 @@
+delta_mix:
+  base_path: "F:\\ChatGPT\\local_draw\\models"
+  checkpoints: checkpoints
+  diffusion_models: diffusion_models
+  text_encoders: text_encoders
+  vae: vae
+  loras: loras
+delta_nodes:
+  base_path: "F:\\ChatGPT\\local_draw\\runtime"
+  custom_nodes: custom_nodes

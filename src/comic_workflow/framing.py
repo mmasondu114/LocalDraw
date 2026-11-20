@@ -2,7 +2,6 @@
 
 import re
 from PIL import Image, ImageDraw
-from .installed_assets import models as model_directory
 from . import engine as e
 from .paths import ROOT, DATA
 from .schemas import obj, arr, S, enum
@@ -122,7 +121,7 @@ def apply_control(graph, guide, strength=None, control_type="hed/pidi/scribble/t
     if not guide:
         return
     cfg = e.read(ROOT / "config/control-model.json")
-    path = model_directory(ROOT) / "controlnet" / cfg["name"]
+    path = ROOT / "models/controlnet" / cfg["name"]
     e.need(
         path.is_file() and path.stat().st_size == cfg["size"],
         "构图控制模型未安装完整，请运行 09-download-control.bat",

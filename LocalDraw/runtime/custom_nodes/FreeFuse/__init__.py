@@ -1,0 +1,48 @@
+"""
+ComfyUI-FreeFuse (v1.0.14 - with Krea2 support)
+
+Multi-concept LoRA composition with spatial awareness.
+
+Design: Reuse ComfyUI internals as much as possible.
+- Uses load_bypass_lora_for_models() for non-merged LoRA
+- Phase 1 sampler for mask collection
+- FreeFuseMaskApplicator to apply masks to LoRA outputs
+- Phase 2 uses native KSampler
+
+Workflow:
+1. Load model
+2. FreeFuseLoRALoader for each character LoRA
+3. FreeFuseConceptMap to define trigger words
+4. FreeFuseTokenPositions to compute token positions
+5. FreeFusePhase1Sampler to collect attention and generate masks
+6. FreeFuseMaskApplicator to apply masks
+7. Standard KSampler for Phase 2 generation
+"""
+
+from .nodes import (
+    # LoRA loaders
+    FreeFuseLoRALoader,
+    FreeFuseLoRALoaderSimple,
+    # Concept mapping
+    FreeFuseConceptMap,
+    FreeFuseTokenPositions,
+    FreeFuseConceptMapSimple,
+    # Sampling
+    FreeFusePhase1Sampler,
+    # Mask application
+    FreeFuseMaskApplicator,
+    FreeFuseMaskDebug,
+    FreeFuseMaskBankFromImages,
+    FreeFuseMaskTap,
+    FreeFuseMaskReassemble,
+    # Preview
+    FreeFuseMaskPreview,
+    # Mappings
+    NODE_CLASS_MAPPINGS,
+    NODE_DISPLAY_NAME_MAPPINGS,
+)
+
+WEB_DIRECTORY = "./web"
+
+__all__ = ["NODE_CLASS_MAPPINGS", "NODE_DISPLAY_NAME_MAPPINGS", "WEB_DIRECTORY"]
+__version__ = "1.0.14"

@@ -1,7 +1,6 @@
 """Pinned download catalog. Reading availability never downloads or loads a model."""
 
 import json
-from .installed_assets import read_path
 from .paths import ROOT
 
 
@@ -13,6 +12,6 @@ def available():
     cfg = catalog()
     result = []
     for model in cfg["models"]:
-        path = read_path(ROOT, cfg["directory"]) / model["name"]
+        path = ROOT / cfg["directory"] / model["name"]
         result.append({**model, "installed": path.is_file() and path.stat().st_size == model["size"]})
     return result

@@ -1,0 +1,31 @@
+{
+    "name": "bv_nodepack",
+    "private": true,
+    "version": "1.4.3",
+    "type": "module",
+    "scripts": {
+        "build": "vite build",
+        "showcase": "vite --host 127.0.0.1 --open /showcase/index.html",
+        "test": "tsx --test ../tests/*.test.mjs",
+        "typecheck": "tsc -p tsconfig.json --noEmit"
+    },
+    "dependencies": {
+        "flexlayout-react": "0.10.5",
+        "modern-screenshot": "4.7.0",
+        "prismjs": "^1.30.0",
+        "react": "^18.3.1",
+        "react-colorful": "^5.8.0",
+        "react-dom": "^18.3.1",
+        "react-simple-code-editor": "^0.14.1"
+    },
+    "devDependencies": {
+        "@comfyorg/comfyui-frontend-types": "^1.20.2",
+        "@types/prismjs": "^1.26.6",
+        "@types/react": "^18.3.4",
+        "@types/react-dom": "^18.3.0",
+        "@vitejs/plugin-react": "^4.7.0",
+        "tsx": "^4.23.12",
+        "typescript": "^5.6.3",
+        "vite": "^6.4.3"
+    }
+}

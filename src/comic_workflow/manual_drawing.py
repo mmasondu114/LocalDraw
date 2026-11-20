@@ -50,7 +50,7 @@ def saved_texts(repo, pid, project):
     if manual.get("storyboard_hash") == fingerprint:
         for row in manual.get("panels", []):
             key = row["panel_id"]
-            if key not in imported or row.get("edited", manual.get("created", "")) >= imported[key].get("edited", bundle.get("created", "")):
+            if key not in imported or row.get("edited", manual.get("created", "")) >= bundle.get("created", ""):
                 imported[key] = row
     for _, panel in exchange.panels(project):
         key = panel["id"]

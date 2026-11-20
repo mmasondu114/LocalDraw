@@ -169,22 +169,22 @@ def generate_all(app, pid, request, update, jid):
             update({"message": f"已保存第 {n + 1}/{total} 页", "progress": {
                 "completed": len(p["pages"]), "total": total, "unit": "页"}})
         # Audit after all pages are drafted, while the same language model remains loaded.
-        entries = bundle["pages"]
-        reviews = [entry["metadata"].get("continuity_review") for entry in entries.values()]
-        checked = sum(bool(review) and review.get("verdict") != "unavailable" for review in reviews)
-        unavailable = sum(bool(review) and review.get("verdict") == "unavailable" for review in reviews)
-
-        def audit_progress(message, current_page=None):
-            update({"message": message, "progress": {"completed": total, "total": total, "unit": "页"},
-                    "detail_progress": {"completed": checked, "total": len(entries), "unit": "页已核对",
-                                        "unavailable": unavailable, "current_page": current_page}})
-
-        for key, entry in entries.items():
+        for n, (key, entry) in enumerate(bundle["pages"].items()):
             checkpoint()
             e.need(e.digest(app.repo.get(pid)) == bundle["base_hash"], "作品已变化，已保存草稿保留")
             if "continuity_review" in entry["metadata"]:
                 continue
-            audit_progress(f"正在核对 {key}，已核对 {checked}/{len(entries)} 页", key)
+            update(
+                {
+                    "message": f"集中核对分镜 · {n}/{len(bundle['pages'])} 页",
+                    "progress": {"completed": total, "total": total, "unit": "页"},
+                    "detail_progress": {
+                        "completed": n,
+                        "total": len(bundle["pages"]),
+                        "unit": "页已核对",
+                    },
+                }
+            )
             try:
                 audit, metrics = generate(
                     p,
@@ -203,17 +203,14 @@ def generate_all(app, pid, request, update, jid):
                     "reason": str(exc),
                 }
             e.save(folder / "bundle.json", bundle)
-            if entry["metadata"]["continuity_review"].get("verdict") == "unavailable":
-                unavailable += 1
-            else:
-                checked += 1
-            audit_progress(f"{key} 核对结果已保存")
         bundle["status"] = "complete"
-        message = "整部分镜草稿已生成，可集中阅读、修改和确认"
-        if unavailable:
-            message += f"；{unavailable} 页缺少核对结果，请手动检查"
-        audit_progress(message)
-        return {"bundle": bundle["id"], "completion_message": message}
+        update(
+            {
+                "message": "整部分镜草稿已生成，可集中阅读、修改和确认",
+                "progress": {"completed": total, "total": total, "unit": "页"},
+            }
+        )
+        return {"bundle": bundle["id"]}
     except TaskCancelled:
         bundle["status"] = "cancelled"
         raise
@@ -222,6 +219,7 @@ def generate_all(app, pid, request, update, jid):
         raise
     finally:
         e.save(folder / "bundle.json", bundle)
+        app.model.stop()
 
 
 def accept_bundle(repo, pid, key):

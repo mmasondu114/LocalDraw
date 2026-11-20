@@ -1,0 +1,89 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string"
+    },
+    "genre": {
+      "type": "string"
+    },
+    "direction": {
+      "type": "string"
+    },
+    "page_count": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "panels_per_page": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "reading_direction": {
+      "type": "string",
+      "enum": [
+        "LTR",
+        "RTL"
+      ]
+    },
+    "page_mode": {
+      "type": "string",
+      "enum": [
+        "single_page",
+        "print_spreads"
+      ]
+    },
+    "first_story_page_side": {
+      "type": "string",
+      "enum": [
+        "right",
+        "left"
+      ]
+    },
+    "must_include": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 0
+    },
+    "avoid": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 0
+    },
+    "character_material": {
+      "type": "string"
+    },
+    "panel_mode": {
+      "type": "string",
+      "enum": [
+        "fixed",
+        "flexible"
+      ]
+    },
+    "character_refs": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "minItems": 0
+    }
+  },
+  "required": [
+    "title",
+    "genre",
+    "direction",
+    "page_count",
+    "panels_per_page",
+    "reading_direction",
+    "page_mode",
+    "first_story_page_side",
+    "must_include",
+    "avoid",
+    "character_material"
+  ],
+  "additionalProperties": false
+}

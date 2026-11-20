@@ -6,7 +6,6 @@ import json
 import math
 import re
 import shutil
-from .installed_assets import models as model_directory
 from . import engine as e
 from .paths import ROOT
 
@@ -72,7 +71,7 @@ def apply(graph, passes, cfg, negative, add_triggers=True):
 def apply_pose(graph, pose, cfg):
     """Use the author's OpenPose node and the example's Illustrious ControlNet."""
     control = e.read(ROOT/'config/multi-person-control.json')
-    path = model_directory(ROOT) / "controlnet"/control['name']
+    path = ROOT/'models/controlnet'/control['name']
     e.need(path.is_file() and path.stat().st_size==control['size']
            and not path.with_suffix(path.suffix+'.aria2').exists(),
            '多人姿势控制模型未安装完整')

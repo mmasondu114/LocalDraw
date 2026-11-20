@@ -1,0 +1,2693 @@
+[
+  {
+    "label": "原神｜丝柯克",
+    "character_id": "10000114",
+    "game": "原神",
+    "name": "丝柯克",
+    "lora_name": "anime/原神/丝柯克_3016476.safetensors",
+    "triggers": [
+      "skirk, skirk (genshin impact), long hair, bangs, hair ornament, hair between eyes, very long hair, red eyes, white hair, mature female, breasts, 3d",
+      "gloves, dress, cleavage, bare shoulders, elbow gloves, white dress",
+      "thighhighs, gloves, bare shoulders, black gloves, elbow gloves, leotard, clothing cutout, black leotard, two-tone leotard, blue leotard, blue thighhighs, torn clothes, coattails, zettai ryouiki,"
+    ],
+    "sha256": "fdc973b4bc131579e2ccfccbf1a1a543897e83ad8a712fba878291f2afe117fa",
+    "family": "28",
+    "mapping": {
+      "kept": 60,
+      "mapped": 780,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2686519?modelVersionId=3016476"
+  },
+  {
+    "label": "原神｜丽莎",
+    "character_id": "10000006",
+    "game": "原神",
+    "name": "丽莎",
+    "lora_name": "anime/原神/丽莎_3016372.safetensors",
+    "triggers": [
+      "lisa minci, lisa (genshin impact), brown hair, green eyes, long hair, low tied hair, mature female, breasts, 3d",
+      "belt, capelet, cleavage, gloves, hat, hat belt, jewelry, necklace, pendant, purple capelet, purple headwear, vision (genshin impact), witch, witch hat"
+    ],
+    "sha256": "53c328711c7ed7d9516ad6979efa7e1c09c99e4627d1982801296f8f6d5eff73",
+    "family": "28",
+    "mapping": {
+      "kept": 60,
+      "mapped": 780,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2686422?modelVersionId=3016372"
+  },
+  {
+    "label": "原神｜久岐忍",
+    "character_id": "10000065",
+    "game": "原神",
+    "name": "久岐忍",
+    "lora_name": "anime/原神/久岐忍_3016468.safetensors",
+    "triggers": [
+      "shinobu kuki, kuki shinobu, green hair, hair between eyes, ponytail, short hair, purple eyes, mature female, medium breasts, 3d",
+      "shinobu kuki, kuki shinobu, green hair, hair between eyes, ponytail, short hair, purple eyes, mask, black mask, ninja mask, mature female, medium breasts, 3d"
+    ],
+    "sha256": "0286af423a5991856d2e85c9098f69cc8825c33580acfef44d7627c5e0e04c1b",
+    "family": "28",
+    "mapping": {
+      "kept": 60,
+      "mapped": 780,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2686512?modelVersionId=3016468"
+  },
+  {
+    "label": "原神｜九条裟罗",
+    "character_id": "10000056",
+    "game": "原神",
+    "name": "九条裟罗",
+    "lora_name": "anime/原神/九条裟罗_3013706.safetensors",
+    "triggers": [
+      "genshin sara kujou, kujou sara, blue hair, short hair, swept bangs, yellow eyes, mature female, breasts, 3d",
+      "bird mask, gloves, leotard, bracer, detached sleeves, elbow gloves, gloves, japanese clothes, jewelry, leotard, mask, mask on head, obi, pelvic curtain, pendant, sash, sleeveless, vision (genshin impact), wide sleeves,"
+    ],
+    "sha256": "89a3879528987f2b01376baa5649627d9d0beaf658d0137416311b6b0b4b892a",
+    "family": "28",
+    "mapping": {
+      "kept": 60,
+      "mapped": 780,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2683984?modelVersionId=3013706"
+  },
+  {
+    "label": "原神｜云堇",
+    "character_id": "10000064",
+    "game": "原神",
+    "name": "云堇",
+    "lora_name": "anime/原神/云堇_3017800.safetensors",
+    "triggers": [
+      "yun jin, yun jin (genshin impact), black hair, blunt bangs, braid, eyeshadow, long hair, makeup, purple hair, red eyes, red eyeshadow, mature female, medium breasts, 3d",
+      "black footwear, boots, chinese clothes, fur trim, hat, knee boots, long sleeves, pantyhose, pom pom (clothes), purple pantyhose,"
+    ],
+    "sha256": "d92b2becd83b3fe97f13a78ba6a632cd0def3912070f9ee76a0f906ec1db6295",
+    "family": "28",
+    "mapping": {
+      "kept": 60,
+      "mapped": 780,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2687702?modelVersionId=3017800"
+  },
+  {
+    "label": "原神｜五郎",
+    "character_id": "10000055",
+    "game": "原神",
+    "name": "五郎",
+    "lora_name": "anime/原神/五郎_3078885.safetensors",
+    "triggers": [
+      "gorou \\genshin impact\\)"
+    ],
+    "sha256": "ae55e57d91dae7faf8cf8caa41e218a6b8a3ed4cbd21f913fd34fba1e438a9c1",
+    "family": "28",
+    "mapping": {
+      "kept": 64,
+      "mapped": 832,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/950318?modelVersionId=3078885"
+  },
+  {
+    "label": "原神｜伊涅芙",
+    "character_id": "10000116",
+    "game": "原神",
+    "name": "伊涅芙",
+    "lora_name": "anime/原神/伊涅芙_3274981.safetensors",
+    "triggers": [
+      "ineffa \\(genshin impact\\)",
+      "ineffa \\(genshin impact\\), 1girl, mechanical hands, robot joints, mechanical arms, mechanical legs, robot ears, blue hair, blue eyes, blue cape, red cape, black leotard, gold trim",
+      "ineffa \\(genshin impact\\), 1girl, mechanical hands, robot joints, mechanical arms, mechanical legs, robot ears, blue hair, blue eyes"
+    ],
+    "sha256": "b632edd304ae246589492d78fd93d55085196f1443defa0239e2d30606c2b6df",
+    "family": "28",
+    "mapping": {
+      "kept": 60,
+      "mapped": 780,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 588,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2896774?modelVersionId=3274981"
+  },
+  {
+    "label": "原神｜优菈",
+    "character_id": "10000051",
+    "game": "原神",
+    "name": "优菈",
+    "lora_name": "anime/原神/优菈_3011660.safetensors",
+    "triggers": [
+      "genshin eula, eula (genshin impact), bangs, hair ornament, hair between eyes, blue hair, purple eyes, sidelocks, hairband, medium hair, black hairband, mature female, breasts, 3d,",
+      "thighhighs, gloves, long sleeves, necktie, black gloves, cape, leotard, blue necktie, vision (genshin impact),"
+    ],
+    "sha256": "733fead5fef85a95f3b7ba7f8a9f5a132472b2ec1a84c0a57d72ad62cc5b4b26",
+    "family": "28",
+    "mapping": {
+      "kept": 60,
+      "mapped": 780,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2682142?modelVersionId=3011660"
+  },
+  {
+    "label": "原神｜克洛琳德",
+    "character_id": "10000098",
+    "game": "原神",
+    "name": "克洛琳德",
+    "lora_name": "anime/原神/克洛琳德_3013796.safetensors",
+    "triggers": [
+      "genshin clorinde, clorinde (genshin impact), blue hair, purple eyes, short hair, streaked hair, mature female, breasts, 3d,",
+      "skirt, gloves, hat, jacket, pantyhose, white gloves, blue headwear, ascot, pauldrons, brooch, corset,"
+    ],
+    "sha256": "2035c6c54a6f53b9e02a4301f786d20f4b64cd57130eb6ad164f8e6c4fe983a5",
+    "family": "28",
+    "mapping": {
+      "kept": 60,
+      "mapped": 780,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2684066?modelVersionId=3013796"
+  },
+  {
+    "label": "原神｜八重神子",
+    "character_id": "10000058",
+    "game": "原神",
+    "name": "八重神子",
+    "lora_name": "anime/原神/八重神子_3017911.safetensors",
+    "triggers": [
+      "yae miko, animal ears, floppy ears, fox ears, hair between eyes, long hair, pink hair, purple eyes, pink hair, mature female, breasts, 3d,",
+      "bare shoulders, detached sleeves, earrings, hair ornament, high heels, japanese clothes, long sleeves, sideboob, thigh strap, thighs, wide sleeves,"
+    ],
+    "sha256": "12d02372f8536c5ad62b0ed2502c21532c65c7a7475e38949e8ce9b5f41670da",
+    "family": "28",
+    "mapping": {
+      "kept": 60,
+      "mapped": 780,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2687798?modelVersionId=3017911"
+  },
+  {
+    "label": "原神｜兹白",
+    "character_id": "10000126",
+    "game": "原神",
+    "name": "兹白",
+    "lora_name": "anime/原神/兹白_3007528.safetensors",
+    "triggers": [
+      "zibai"
+    ],
+    "sha256": "5b34e5d9f9b2c1ffb9c8713f03b230d0428865cc56ef8b97fe2f71c902ea439a",
+    "family": "28",
+    "mapping": {
+      "kept": 60,
+      "mapped": 780,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2678511?modelVersionId=3007528"
+  },
+  {
+    "label": "原神｜凝光",
+    "character_id": "10000027",
+    "game": "原神",
+    "name": "凝光",
+    "lora_name": "anime/原神/凝光_3016428.safetensors",
+    "triggers": [
+      "ningguang, ningguang (genshin impact), grey hair, hair ornament, hairpin, long hair, parted bangs, red eyes, sidelocks, streaked hair, red hair, mature female, breasts, 3d",
+      "bare shoulders, black gloves, chinese clothes, claw ring, detached sleeves, dress, elbow gloves, frilled sleeves, frills, fur collar, gloves, jewelry, pelvic curtain, sleeveless, sleeveless dress, white dress,"
+    ],
+    "sha256": "5647e88782a9e3c588e78a0eae2d34b1614a0ad0e0b22acb8a0cfa737d3a0430",
+    "family": "28",
+    "mapping": {
+      "kept": 60,
+      "mapped": 780,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2686474?modelVersionId=3016428"
+  },
+  {
+    "label": "原神｜凯亚",
+    "character_id": "10000015",
+    "game": "原神",
+    "name": "凯亚",
+    "lora_name": "anime/原神/凯亚_3243816.safetensors",
+    "triggers": [
+      "G3nsh1nK4eya, 1boy, male Focus, Long hair, blue hair, blue eyes, eyepatch, single braid,"
+    ],
+    "sha256": "85787abe5fd809f2338e810a2db53d0dcb4901fc2e6122e44254da522137f8e6",
+    "family": "28",
+    "mapping": {
+      "kept": 60,
+      "mapped": 780,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/1985074?modelVersionId=3243816"
+  },
+  {
+    "label": "原神｜刻晴",
+    "character_id": "10000042",
+    "game": "原神",
+    "name": "刻晴",
+    "lora_name": "anime/原神/刻晴_3014722.safetensors",
+    "triggers": [
+      "keqing, keqing (genshin impact), braid, cone hair bun, hair bun, hair ornament, long hair, purple eyes, purple hair, mature female, medium breasts, 3d,",
+      "bare shoulders, black pantyhose, detached sleeves, dress, gloves,"
+    ],
+    "sha256": "cab08af53531ae006b0a0ab4765432cf88880f2ba332ab6e71a8598d00c632b5",
+    "family": "28",
+    "mapping": {
+      "kept": 60,
+      "mapped": 780,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2684909?modelVersionId=3014722"
+  },
+  {
+    "label": "原神｜北斗",
+    "character_id": "10000024",
+    "game": "原神",
+    "name": "北斗",
+    "lora_name": "anime/原神/北斗_3013759.safetensors",
+    "triggers": [
+      "genshin beidou, beidou (genshin impact), long hair, bangs, brown hair, black hair, hair ornament, red eyes, hair over one eye, eyepatch, hairpin, one eye covered, mature female, breasts, 3d,",
+      "thighhighs, gloves, cleavage, jewelry, earrings, black gloves, fingerless gloves, fur trim, chinese clothes, vision (genshin impact),"
+    ],
+    "sha256": "5a32dffac4facfd9d025f23c1f32dea8ef99f347335339ad35c7776b58741b55",
+    "family": "28",
+    "mapping": {
+      "kept": 60,
+      "mapped": 780,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2684032?modelVersionId=3013759"
+  },
+  {
+    "label": "原神｜千织",
+    "character_id": "10000094",
+    "game": "原神",
+    "name": "千织",
+    "lora_name": "anime/原神/千织_3013793.safetensors",
+    "triggers": [
+      "genshin chiori, chiori (genshin impact), brown hair, hair ornament, red eyes, flower, hair flower, mature female, medium breasts, 3d,",
+      "gloves, japanese clothes, sash, obi, short sleeves,"
+    ],
+    "sha256": "99f24b1dfe69016b4501f9e55baef4525db96802a3e48042e6a07b4c92063973",
+    "family": "28",
+    "mapping": {
+      "kept": 60,
+      "mapped": 780,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2684062?modelVersionId=3013793"
+  },
+  {
+    "label": "原神｜哥伦比娅",
+    "character_id": "10000125",
+    "game": "原神",
+    "name": "哥伦比娅",
+    "lora_name": "anime/原神/哥伦比娅_3366825.safetensors",
+    "triggers": [
+      "columbinagenshin"
+    ],
+    "sha256": "b0138ed4104d7924356dafac5d5908b32ed71f3264cefd7c0004b53e86986ba7",
+    "family": "28",
+    "mapping": {
+      "kept": 64,
+      "mapped": 832,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2971041?modelVersionId=3366825"
+  },
+  {
+    "label": "原神｜坎蒂丝",
+    "character_id": "10000072",
+    "game": "原神",
+    "name": "坎蒂丝",
+    "lora_name": "anime/原神/坎蒂丝_3013771.safetensors",
+    "triggers": [
+      "genshin candace, candace (genshin impact), bangs, blue eyes, hair ornament, blue hair, yellow eyes, sidelocks, dark skin, dark-skinned female, heterochromia, short hair with long locks, eye of horus, mature female, breasts, 3d,",
+      "navel, jewelry, detached sleeves, nail polish, egyptian clothes,"
+    ],
+    "sha256": "0564d6f7a1c543bd40e6e629ee129ff8bc5e354f1f00e5e03f119ad33d809c61",
+    "family": "28",
+    "mapping": {
+      "kept": 60,
+      "mapped": 780,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2684042?modelVersionId=3013771"
+  },
+  {
+    "label": "原神｜夏沃蕾",
+    "character_id": "10000090",
+    "game": "原神",
+    "name": "夏沃蕾",
+    "lora_name": "anime/原神/夏沃蕾_3013787.safetensors",
+    "triggers": [
+      "genshin chevreuse, chevreuse (genshin impact), long hair, bangs, hair between eyes, purple eyes, purple hair, eyepatch, mature female, small breasts, 3d,",
+      "gloves, hat, dress, bare shoulders, detached sleeves,"
+    ],
+    "sha256": "29984f4e1714f8019421b80b1c7719008c87affb32489e2a2f3831e81ff080d3",
+    "family": "28",
+    "mapping": {
+      "kept": 60,
+      "mapped": 780,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2684057?modelVersionId=3013787"
+  },
+  {
+    "label": "原神｜夏洛蒂",
+    "character_id": "10000088",
+    "game": "原神",
+    "name": "夏洛蒂",
+    "lora_name": "anime/原神/夏洛蒂_3013776.safetensors",
+    "triggers": [
+      "genshin charlotte, charlotte (genshin impact), short hair, pink hair, medium hair, aqua eyes, mature female, small breasts, 3d",
+      "shirt, skirt, long sleeves, gloves, hat, jewelry, bare shoulders, white shirt, detached sleeves, puffy sleeves, belt, white gloves, thigh strap, sideboob, suspenders, gem, brooch, red headwear, vision (genshin impact), cabbie hat, hat feather, white belt, blue gemstone, monocle, red sleeves, puffy detached sleeves, blue brooch"
+    ],
+    "sha256": "3b33310f6e9c4d06fa13ebb01765a692ba8fe4326149b484589019dfe4346f63",
+    "family": "28",
+    "mapping": {
+      "kept": 60,
+      "mapped": 780,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2684046?modelVersionId=3013776"
+  },
+  {
+    "label": "原神｜多莉",
+    "character_id": "10000068",
+    "game": "原神",
+    "name": "多莉",
+    "lora_name": "anime/原神/多莉_3013817.safetensors",
+    "triggers": [
+      "genshin dori, dori (genshin impact), hair ornament, hair between eyes, yellow eyes, pink hair, ahoge, sidelocks, symbol-shaped pupils, sunglasses, short hair with long locks, 3d",
+      "shirt, long sleeves, hair ornament, hat, jewelry, bare shoulders, detached sleeves, sleeveless, pants, puffy sleeves, midriff, stomach, bracelet, crop top, black shirt, sleeveless shirt, sunglasses, ring, puffy long sleeves, white sleeves, tinted eyewear, purple headwear, multiple rings, pince-nez, purple pants, puffy detached sleeves, arabian clothes, puffy pants, harem pants"
+    ],
+    "sha256": "8f1390227074d206878f86c9453bfa49ae55ee80c2b60fc1abe7a0dfb70f494b",
+    "family": "28",
+    "mapping": {
+      "kept": 60,
+      "mapped": 780,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2684084?modelVersionId=3013817"
+  },
+  {
+    "label": "原神｜夜兰",
+    "character_id": "10000060",
+    "game": "原神",
+    "name": "夜兰",
+    "lora_name": "anime/原神/夜兰_3017787.safetensors",
+    "triggers": [
+      "yelan, yelan (genshin impact), black hair, blue hair, eyebrows hidden by hair, green eyes, multicolored hair, short hair, mature female, breasts, 3d",
+      "bare shoulders, black gloves, chinese clothes, cleavage, elbow gloves, jewelry, necklace, straight-on, fur trim,"
+    ],
+    "sha256": "e22fe7d02972be50db1c8cdf20b67b42bc1ce5425c86cb5536a4d7287a71d88c",
+    "family": "28",
+    "mapping": {
+      "kept": 60,
+      "mapped": 780,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2687692?modelVersionId=3017787"
+  },
+  {
+    "label": "原神｜奈芙尔",
+    "character_id": "10000122",
+    "game": "原神",
+    "name": "奈芙尔",
+    "lora_name": "anime/原神/奈芙尔_3011231.safetensors",
+    "triggers": [
+      "nefer"
+    ],
+    "sha256": "9c33602592426a71c20568ed779f113d5ba7e0001d9d219604ef74fafcfcea1e",
+    "family": "28",
+    "mapping": {
+      "kept": 60,
+      "mapped": 780,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2681767?modelVersionId=3011231"
+  },
+  {
+    "label": "原神｜奥黛塔",
+    "character_id": "10000150",
+    "game": "原神",
+    "name": "奥黛塔",
+    "lora_name": "anime/原神/奥黛塔_3219969.safetensors",
+    "triggers": [
+      "odettegenshin"
+    ],
+    "sha256": "60a49099fca5caa65f1a2dc78d142a9e44e2198602e370c6d43fef7b94dea4db",
+    "family": "28",
+    "mapping": {
+      "kept": 60,
+      "mapped": 780,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2851384?modelVersionId=3219969"
+  },
+  {
+    "label": "原神｜妮露",
+    "character_id": "10000070",
+    "game": "原神",
+    "name": "妮露",
+    "lora_name": "anime/原神/妮露_3016422.safetensors",
+    "triggers": [
+      "nilou, nilou (genshin impact), red hair, twintails, blue eyes, long hair, very long hair, mature female, medium breasts, 3d",
+      "blue skirt, bracer, circlet, crop top, dancer, detached sleeves, fake horns, gladiator sandals, gold footwear, gold trim, horns, jewelry, long sleeves, neck ring, puffy long sleeves, puffy sleeves, sandals, skirt, thighlet, thighs, veil, white headwear, white sleeves, white veil,"
+    ],
+    "sha256": "6b798aecb20fa9c3705b8bec93a741b46dad94d57f95030d0443ab211ee95ba8",
+    "family": "28",
+    "mapping": {
+      "kept": 60,
+      "mapped": 780,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2686470?modelVersionId=3016422"
+  },
+  {
+    "label": "原神｜娜维娅",
+    "character_id": "10000091",
+    "game": "原神",
+    "name": "娜维娅",
+    "lora_name": "anime/原神/娜维娅_3016415.safetensors",
+    "triggers": [
+      "navia, navia (genshin impact), long hair, blue eyes, blonde hair, drill hair, mature female, breasts, 3d,",
+      "gloves, hat, dress, jewelry, flower, detached sleeves, black gloves, elbow gloves, black headwear, hat flower, hat feather,"
+    ],
+    "sha256": "c908a2ee88a2172ed27e984baa8497a974e9c801a891ca9a8076214f20892868",
+    "family": "28",
+    "mapping": {
+      "kept": 60,
+      "mapped": 780,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2686463?modelVersionId=3016415"
+  },
+  {
+    "label": "原神｜安柏",
+    "character_id": "10000021",
+    "game": "原神",
+    "name": "安柏",
+    "lora_name": "anime/原神/安柏_3013738.safetensors",
+    "triggers": [
+      "genshin amber, amber (genshin impact), long hair, bangs, brown hair, ribbon, hair between eyes, brown eyes, hair ribbon, sidelocks, hairband, mature female, medium breasts, 3d,",
+      "thighhighs, gloves, long sleeves, cleavage, shorts, white gloves, goggles, goggles around neck,"
+    ],
+    "sha256": "5955296177f2d6b2e113f1015414ba4211cbe18aa15fea28585c3968db34d9a9",
+    "family": "28",
+    "mapping": {
+      "kept": 60,
+      "mapped": 780,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2684011?modelVersionId=3013738"
+  },
+  {
+    "label": "原神｜宵宫",
+    "character_id": "10000049",
+    "game": "原神",
+    "name": "宵宫",
+    "lora_name": "anime/原神/宵宫_3013727.safetensors",
+    "triggers": [
+      "genshin yoimiya, yoimiya (genshin impact), bangs, blonde hair, hair ornament, hair between eyes, ponytail, sidelocks, orange eyes, light brown hair, mature female, medium breasts, 3d,",
+      "thighhighs, gloves, jewelry, japanese clothes, choker, fingerless gloves, kimono, bracelet, sash, tattoo, bandages, obi, rope, asymmetrical legwear, pouch, sarashi, bandaged arm, red choker, arm tattoo, shimenawa, bandaged leg, chest tattoo, hadanugi dousa, orange kimono, single fingerless glove,"
+    ],
+    "sha256": "d24ba9d8d6748442f7501729f0ac898d870970c3129c2448b6676a77ec32a7cb",
+    "family": "28",
+    "mapping": {
+      "kept": 60,
+      "mapped": 780,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2684003?modelVersionId=3013727"
+  },
+  {
+    "label": "原神｜尼可",
+    "character_id": "10000131",
+    "game": "原神",
+    "name": "尼可",
+    "lora_name": "anime/原神/尼可_3237570.safetensors",
+    "triggers": [
+      "nicole reeyn",
+      "beret, ear covers, frilled detached sleeves, layered sleeveless halter dress, white print pantyhose, high heel boots"
+    ],
+    "sha256": "1376e4640f4525f4df9498576d6345148badec293588978d8dc5e5112b5421ba",
+    "family": "28",
+    "mapping": {
+      "kept": 96,
+      "mapped": 1248,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2745612?modelVersionId=3237570"
+  },
+  {
+    "label": "原神｜布伦妮",
+    "character_id": "10000132",
+    "game": "原神",
+    "name": "布伦妮",
+    "lora_name": "anime/原神/布伦妮_2906669.safetensors",
+    "triggers": [
+      "prune \\(genshin impact\\)",
+      "purple hair, purple eyes, short hair, side ponytail,",
+      "bone hair ornament, screw hair ornament, ribbon, hairclip, black choker, black cape, white dress, black shorts, asymmetrical legwear, black thighhighs, single thighhigh, black socks, single sock, black shoes,"
+    ],
+    "sha256": "9c865d66afaf5168192e1ae75049282014424ce5252e540bcc1f97a6512c4296",
+    "family": "28",
+    "mapping": {
+      "kept": 60,
+      "mapped": 780,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 588,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2587424?modelVersionId=2906669"
+  },
+  {
+    "label": "原神｜希诺宁",
+    "character_id": "10000103",
+    "game": "原神",
+    "name": "希诺宁",
+    "lora_name": "anime/原神/希诺宁_3017739.safetensors",
+    "triggers": [
+      "xilonen, xilonen (genshin impact), long hair, blonde hair, hair ornament, animal ears, green eyes, tail, multicolored hair, gradient hair, tiger ears, tiger tail, tiger girl, mature female, large breasts, 3d",
+      "jewelry, bare shoulders, jacket, shorts, off shoulder, bracelet, fur trim, short shorts, sideboob, black shorts, ring, denim shorts,"
+    ],
+    "sha256": "f1b210ffba181081736c49f78f94eae242f3d0e79f17a813b26b97673da52d46",
+    "family": "28",
+    "mapping": {
+      "kept": 60,
+      "mapped": 780,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2687655?modelVersionId=3017739"
+  },
+  {
+    "label": "原神｜恰斯卡",
+    "character_id": "10000104",
+    "game": "原神",
+    "name": "恰斯卡",
+    "lora_name": "anime/原神/恰斯卡_3013780.safetensors",
+    "triggers": [
+      "genshin chasca, chasca (genshin impactt), long hair, blue eyes, braid, red hair, pointy ears, elf, mature female, medium breasts, 3d",
+      "gloves, hat, navel, cleavage, jewelry, bare shoulders, earrings, shorts, black gloves, belt, fingerless gloves, scarf, bracelet, black headwear, thigh strap, single thighhigh, red scarf, hat feather, asymmetrical clothes"
+    ],
+    "sha256": "43d2028e78c73acaa2ae67510faf7f8e0eb2836172f06af453e5d6f57c91a2a0",
+    "family": "28",
+    "mapping": {
+      "kept": 60,
+      "mapped": 780,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2684050?modelVersionId=3013780"
+  },
+  {
+    "label": "原神｜柯莱",
+    "character_id": "10000067",
+    "game": "原神",
+    "name": "柯莱",
+    "lora_name": "anime/原神/柯莱_3013801.safetensors",
+    "triggers": [
+      "genshin collei, collei (genshin impact), bangs, hair ornament, hair between eyes, purple eyes, green hair, mature female, small breasts, 3d,",
+      "thighhighs, long sleeves, jewelry, zettai ryouiki, capelet, vision (genshin impact),"
+    ],
+    "sha256": "908c923536b5069f6d3509033fb28676f87c8832cc954064e620bbd832c28de2",
+    "family": "28",
+    "mapping": {
+      "kept": 60,
+      "mapped": 780,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2684071?modelVersionId=3013801"
+  },
+  {
+    "label": "原神｜桑多涅",
+    "character_id": "10000133",
+    "game": "原神",
+    "name": "桑多涅",
+    "lora_name": "anime/原神/桑多涅_3137259.safetensors",
+    "triggers": [
+      "S4ndr0ne, blue eyes, light brown hair,  hair bun, short hair, blunt bangs, long sidelocks, long twin sidelocks",
+      "maid headdress, white frilled headdress, gold trim, off shoulder dress, long detached sleeves, black detached sleeves, high neck collar, black frilled collar, red gemstone pendant, white corset, corset bodice, gold filigree, black waist cincher, white apron, ornate apron, layered skirt, asymmetrical skirt, overskirt, split skirt, red inner skirt, black outer skirt, back bow, large back bow, waist sash, red sash, white thighhighs, lace thighhighs, black and white outfit, red accents,"
+    ],
+    "sha256": "1d7d094bceb023e4750a3e4eca022753a6b7256c60fb9e9deb94d0ef330df34e",
+    "family": "28",
+    "mapping": {
+      "kept": 64,
+      "mapped": 832,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2768964?modelVersionId=3137259"
+  },
+  {
+    "label": "原神｜梦见月瑞希",
+    "character_id": "10000109",
+    "game": "原神",
+    "name": "梦见月瑞希",
+    "lora_name": "anime/原神/梦见月瑞希_3016399.safetensors",
+    "triggers": [
+      "mizuki yumemizuki, yumemizuki mizuki, long hair, purple eyes, tail, grey hair, hairband, pointy ears, pink eyes, mature female, medium breasts, 3d",
+      "long sleeves, bow, frills, detached sleeves, japanese clothes, wide sleeves, kimono, apron, maid, sash, maid headdress, white apron, waist apron, purple kimono, wa maid"
+    ],
+    "sha256": "7f1f077a9360fc2e746ec4bcdca385535416c4b54786e7de4fb42273dc33ca52",
+    "family": "28",
+    "mapping": {
+      "kept": 60,
+      "mapped": 780,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2686445?modelVersionId=3016399"
+  },
+  {
+    "label": "原神｜沃雅妮莎",
+    "character_id": "10000140",
+    "game": "原神",
+    "name": "沃雅妮莎",
+    "lora_name": "anime/原神/沃雅妮莎_3242376.safetensors",
+    "triggers": [
+      "vodyanitsagenshin"
+    ],
+    "sha256": "fce491441c4e19ec8870845d253197c1344525cc2523d1853194f90e78cae23a",
+    "family": "28",
+    "mapping": {
+      "kept": 60,
+      "mapped": 780,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2869825?modelVersionId=3242376"
+  },
+  {
+    "label": "原神｜法尔伽",
+    "character_id": "10000128",
+    "game": "原神",
+    "name": "法尔伽",
+    "lora_name": "anime/原神/法尔伽_2949122.safetensors",
+    "triggers": [
+      "varkaGI, blonde hair, blue eyes, scar on face",
+      "scar on body",
+      "armor"
+    ],
+    "sha256": "c7aa6ef3777b051eb180f298124a361f62064cc6d34df26a83a74de5092306a0",
+    "family": "28",
+    "mapping": {
+      "kept": 60,
+      "mapped": 780,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2626725?modelVersionId=2949122"
+  },
+  {
+    "label": "原神｜洛恩",
+    "character_id": "10000129",
+    "game": "原神",
+    "name": "洛恩",
+    "lora_name": "anime/原神/洛恩_3132816.safetensors",
+    "triggers": [
+      "lohen \\(genshin impact\\)",
+      "lohen \\(standardized test\\) \\(genshin impact\\)"
+    ],
+    "sha256": "82d6262a0de6bb16ef05573dbb78692c1e0fc510a284cd5a9caeaa97618fbb72",
+    "family": "28",
+    "mapping": {
+      "kept": 64,
+      "mapped": 832,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2781589?modelVersionId=3132816"
+  },
+  {
+    "label": "原神｜温迪",
+    "character_id": "10000022",
+    "game": "原神",
+    "name": "温迪",
+    "lora_name": "anime/原神/温迪_3151061.safetensors",
+    "triggers": [
+      "venti \\(genshin impact\\)",
+      "venti \\(archon\\) \\(genshin impact\\)"
+    ],
+    "sha256": "0fe03a240eaf683c579c5e21a6ec54a273a725bfb90af1a2095cb04dda0772c3",
+    "family": "28",
+    "mapping": {
+      "kept": 64,
+      "mapped": 832,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/968887?modelVersionId=3151061"
+  },
+  {
+    "label": "原神｜烟绯",
+    "character_id": "10000048",
+    "game": "原神",
+    "name": "烟绯",
+    "lora_name": "anime/原神/烟绯_3017755.safetensors",
+    "triggers": [
+      "yanfei, yanfei (genshin impact), antlers, horns, pink hair, long hair, hair between eyes, green eyes, mature female, medium breasts, 3d",
+      "black bra, black shorts, boots, bow, bra, high heels, long sleeves, midriff, navel, red headwear, red skirt, red vest, shorts, skirt, two-tone footwear, vest, yellow bow,"
+    ],
+    "sha256": "f56426786945a77c70feb03cf757c06aec19ad059fdbf372c021d4a9fedab0af",
+    "family": "28",
+    "mapping": {
+      "kept": 60,
+      "mapped": 780,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2687669?modelVersionId=3017755"
+  },
+  {
+    "label": "原神｜爱可菲",
+    "character_id": "10000112",
+    "game": "原神",
+    "name": "爱可菲",
+    "lora_name": "anime/原神/爱可菲_3013830.safetensors",
+    "triggers": [
+      "genshin escoffier, escoffier (genshin impact), long hair, blue eyes, blonde hair, hair ornament, very long hair, ahoge, mature female, breasts, 3d",
+      "dress, thighhighs, hat, sleeveless, white dress, white thighhighs, wrist cuffs, white headwear, chef hat"
+    ],
+    "sha256": "c2683cdb58f015323b0e50c5d6265c925b9502693ddc9297ec3c50cabcaf7cf9",
+    "family": "28",
+    "mapping": {
+      "kept": 60,
+      "mapped": 780,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2684095?modelVersionId=3013830"
+  },
+  {
+    "label": "原神｜玛拉妮",
+    "character_id": "10000102",
+    "game": "原神",
+    "name": "玛拉妮",
+    "lora_name": "anime/原神/玛拉妮_3016402.safetensors",
+    "triggers": [
+      "mualani, mualani (genshin impact), long hair, red eyes, white hair, braid, tan, dark-skin, dark-skinned female, twin braids, hairband, mature female, small breasts, 3d",
+      "skirt, gloves, bow, navel, bare shoulders, midriff, crop top, fingerless gloves,"
+    ],
+    "sha256": "b942daf565c0f0256da81b36235014fe4fecc67a9c4c7ae413de6ef41c54ab12",
+    "family": "28",
+    "mapping": {
+      "kept": 60,
+      "mapped": 780,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2686448?modelVersionId=3016402"
+  },
+  {
+    "label": "原神｜玛薇卡",
+    "character_id": "10000106",
+    "game": "原神",
+    "name": "玛薇卡",
+    "lora_name": "anime/原神/玛薇卡_3016388.safetensors",
+    "triggers": [
+      "mavuika, mavuika (genshin impact), ahoge, long hair, orange eyes, orange hair, red hair, gradient hair, two-tone hair, very long hair, symbol in eye,  mature female, breasts, 3d",
+      "mavuika, mavuika (genshin impact), ahoge, long hair, red eyes, very long hair, blonde hair, symbol in eye, glowing, mature female, breasts, 3d",
+      "choker, biker clothes, bikesuit, black bodysuit, black gloves, cleavage, earrings, gloves, jewelry, long sleeves,"
+    ],
+    "sha256": "cc404b2a29dd530bb6a3b845e4fbf248e540ff8f48d9c8f228ffe3c6dbc75a9b",
+    "family": "28",
+    "mapping": {
+      "kept": 60,
+      "mapped": 780,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2686436?modelVersionId=3016388"
+  },
+  {
+    "label": "原神｜珊瑚宫心海",
+    "character_id": "10000054",
+    "game": "原神",
+    "name": "珊瑚宫心海",
+    "lora_name": "anime/原神/珊瑚宫心海_3013685.safetensors",
+    "triggers": [
+      "genshin kokomi sangonomiya, sangonomiya kokomi, long hair, bangs, hair ornament, purple eyes, pink hair, sidelocks, multicolored hair, blunt bangs, gradient hair, bow-shaped hair, mature female, medium breasts, 3d,",
+      "thighhighs, gloves, long sleeves, bow, frills, detached sleeves, shorts, white gloves, wide sleeves, bowtie, white thighhighs, frilled sleeves, vision (genshin impact),"
+    ],
+    "sha256": "554fceaaa22fd31652a17b8ed3f22aa2fa6a118c6d5585380e53c04c81a5eef2",
+    "family": "28",
+    "mapping": {
+      "kept": 60,
+      "mapped": 780,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2683961?modelVersionId=3013685"
+  },
+  {
+    "label": "原神｜珐露珊",
+    "character_id": "10000076",
+    "game": "原神",
+    "name": "珐露珊",
+    "lora_name": "anime/原神/珐露珊_3013837.safetensors",
+    "triggers": [
+      "genshin faruzan, faruzan (genshin impact), long hair, bangs, hair ornament, twintails, blue hair, ahoge, aqua hair, x hair ornament, cowlick, mature female, small breasts, 3d,",
+      "dress, jewelry, white dress, bracelet, shoulder cutout,"
+    ],
+    "sha256": "b0d6562bd8d62ac4268619754e61358afe4cc07c2b1edac3ab2714804044c5d3",
+    "family": "28",
+    "mapping": {
+      "kept": 60,
+      "mapped": 780,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2684101?modelVersionId=3013837"
+  },
+  {
+    "label": "原神｜班尼特",
+    "character_id": "10000032",
+    "game": "原神",
+    "name": "班尼特",
+    "lora_name": "anime/原神/班尼特_3360277.safetensors",
+    "triggers": [
+      "bennett \\(genshin impact\\)"
+    ],
+    "sha256": "c97f53a351d37e5db7796f329d10c71b2517c08ce383bbe0f4642918ef292f57",
+    "family": "28",
+    "mapping": {
+      "kept": 64,
+      "mapped": 832,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2965676?modelVersionId=3360277"
+  },
+  {
+    "label": "原神｜琳妮特",
+    "character_id": "10000083",
+    "game": "原神",
+    "name": "琳妮特",
+    "lora_name": "anime/原神/琳妮特_3016376.safetensors",
+    "triggers": [
+      "lynette, lynette (geshin impact), animal ear fluff, animal ears, cat ears, facial mark, hair bow, purple eyes, brown hair, star, star on cheek, mature female, medium breasts, 3d",
+      "bow, green bow, hat, leotard, long sleeves, miniskirt, pantyhose, skirt, top hat,"
+    ],
+    "sha256": "fb4acc3e3352ab103cced8ee942f75ba8e0f306bdf775707543a274a2fd9b57d",
+    "family": "28",
+    "mapping": {
+      "kept": 60,
+      "mapped": 780,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2686425?modelVersionId=3016376"
+  },
+  {
+    "label": "原神｜琴",
+    "character_id": "10000003",
+    "game": "原神",
+    "name": "琴",
+    "lora_name": "anime/原神/琴_3013857.safetensors",
+    "triggers": [
+      "genshin jean, jean (genshin impact), long hair, bangs, blue eyes, blonde hair, bow, hair between eyes, ponytail, hair bow, sidelocks, mature female, breasts, 3d,",
+      "gloves, belt, capelet, cleavage, pants, white pants, detached sleeves, detached collar,"
+    ],
+    "sha256": "6a2761a96e935c6b355b83a69638900b504e4e78f1f32b40d255f213157e9f39",
+    "family": "28",
+    "mapping": {
+      "kept": 60,
+      "mapped": 780,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2684120?modelVersionId=3013857"
+  },
+  {
+    "label": "原神｜瓦雷莎",
+    "character_id": "10000111",
+    "game": "原神",
+    "name": "瓦雷莎",
+    "lora_name": "anime/原神/瓦雷莎_3017693.safetensors",
+    "triggers": [
+      "varesa, varesa (geshin impact), long hair, animal ears, twintails, purple eyes, pink hair, ahoge, braid, multicolored hair, hairband, horns, low twintails, cow ears, cow horns, cow girl, mature female, large breasts, 3d",
+      "shirt, skirt, long sleeves, thighhighs, navel, belt, midriff, black skirt, miniskirt, white thighhighs, crop top, sleeves past wrists, single thighhigh, bandaid, asymmetrical legwear, bandaid on leg, bandaid on knee"
+    ],
+    "sha256": "409021c8cea531f00b7c579e744dcd86c76cc3169dda0c610ecd9a15953a547c",
+    "family": "28",
+    "mapping": {
+      "kept": 60,
+      "mapped": 780,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2687612?modelVersionId=3017693"
+  },
+  {
+    "label": "原神｜甘雨",
+    "character_id": "10000037",
+    "game": "原神",
+    "name": "甘雨",
+    "lora_name": "anime/原神/甘雨_3011666.safetensors",
+    "triggers": [
+      "genshin ganyu, ganyu (genshin impact), blue hair, goat horns, horns, long hair, purple eyes, sidelocks, mature female, medium breasts, 3d,",
+      "gloves, bare shoulders, detached sleeves, black gloves, bell, bodysuit, neck bell, black bodysuit, vision (genshin impact), bodystocking, cowbell, chinese knot,"
+    ],
+    "sha256": "eb9f1001175263ec52d37b2322c00c484d85892c75877b36c621ef3a2677af48",
+    "family": "28",
+    "mapping": {
+      "kept": 60,
+      "mapped": 780,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2682146?modelVersionId=3011666"
+  },
+  {
+    "label": "原神｜申鹤",
+    "character_id": "10000063",
+    "game": "原神",
+    "name": "申鹤",
+    "lora_name": "anime/原神/申鹤_3011680.safetensors",
+    "triggers": [
+      "genshin shenhe, shenhe (genshin impact), blue eyes, braided ponytail, earrings, eyelashes, eyeliner, eyes visible through hair, eyeshadow, hair between eyes, makeup, red eyeshadow, sidelocks, single earring, symbol-shaped pupils, tassel, tassel earrings, white hair, long hair, mature female, breasts, 3d,",
+      "bare shoulders, black bodysuit, black gloves, bodysuit, breast curtain, chinese knot, clothing cutout, covered navel, detached sleeves,gloves, gold trim, hip vent, jewelry, long sleeves, partially fingerless gloves, puffy detached sleeves, puffy long sleeves, puffy sleeves, shoulder cutout, side cutout,  stomach cutout, thigh cutout, white sleeves,"
+    ],
+    "sha256": "852447e120a59792f502a2db32aca193ba47e690124f73b187669fe64d1802f5",
+    "family": "28",
+    "mapping": {
+      "kept": 60,
+      "mapped": 780,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2682163?modelVersionId=3011680"
+  },
+  {
+    "label": "原神｜砂糖",
+    "character_id": "10000043",
+    "game": "原神",
+    "name": "砂糖",
+    "lora_name": "anime/原神/砂糖_3017684.safetensors",
+    "triggers": [
+      "sucrose, sucrose (genshin impact), ahoge, animal ears, brown eyes, glasses, gradient hair, hair between eyes, messy hair, multicolored hair, semi-rimless eyewear, short hair, mature female, small breasts, 3d",
+      "frills, fur collar, gem, gloves, green thighhighs, long sleeves, thighhighs, white headwear, zettai ryouiki, skirt, blue skirt,"
+    ],
+    "sha256": "136390bec22d196f9086dd92256de5f4e1330a21ac7f57105cd7098a2b038a28",
+    "family": "28",
+    "mapping": {
+      "kept": 60,
+      "mapped": 780,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2687603?modelVersionId=3017684"
+  },
+  {
+    "label": "原神｜神里绫华",
+    "character_id": "10000002",
+    "game": "原神",
+    "name": "神里绫华",
+    "lora_name": "anime/原神/神里绫华_3011629.safetensors",
+    "triggers": [
+      "genshin ayaka kamisato, ayaka kamisato, kamisato ayaka, blunt bangs, blue eyes, blue hair, hair ornament, hair ribbon, hair tubes, long hair, ponytail, tress ribbon, mature female, medium breasts, 3d,",
+      "arm guards, armor, armored dress, black dress, black gloves, light blue jacket, breastplate, dress, fingerless gloves, flower knot, gloves, neck tassel, open clothes, open jacket, socks,  tabi, tachi-e, bridal gauntlets, choker, japanese armor, japanese clothes, short sleeves,"
+    ],
+    "sha256": "ba1311b569786e7adc02722c61ae0b1219ada36e40b223cac0c9342b187ea4f8",
+    "family": "28",
+    "mapping": {
+      "kept": 60,
+      "mapped": 780,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2682112?modelVersionId=3011629"
+  },
+  {
+    "label": "原神｜空",
+    "character_id": "10000005",
+    "game": "原神",
+    "name": "空",
+    "lora_name": "anime/原神/空_3013733.safetensors",
+    "triggers": [
+      "genshin aether, aether (genshin impact), long hair, bangs, blonde hair, hair between eyes, yellow eyes, braid, male focus, single braid, 3d",
+      "jewelry, short sleeves, earrings, scarf, single earring,"
+    ],
+    "sha256": "66fc2aa760fce0659ee10d96b293ea97192b642dfaa7ac3116bac2e04bc0df76",
+    "family": "28",
+    "mapping": {
+      "kept": 60,
+      "mapped": 780,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2684010?modelVersionId=3013733"
+  },
+  {
+    "label": "原神｜绮良良",
+    "character_id": "10000061",
+    "game": "原神",
+    "name": "绮良良",
+    "lora_name": "anime/原神/绮良良_3014731.safetensors",
+    "triggers": [
+      "kirara, kirara (genshin impact), long hair, brown hair, hair ornament, animal ears, green eyes, tail, ahoge, sidelocks, hairclip, cat ears, cat tail, light brown hair, cat girl, multiple tails, two tails, nekomata, mature female, small breasts, 3d",
+      "skirt, long sleeves, bare shoulders, pleated skirt, detached sleeves, choker, midriff, miniskirt, vest, crop top, blue skirt, black choker, black tank top, nekomata, sleeveless coat"
+    ],
+    "sha256": "9c45a1566aa8a54522e903e21348cff41f1cf07ac05c6869d59897259f71199f",
+    "family": "28",
+    "mapping": {
+      "kept": 60,
+      "mapped": 780,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2684921?modelVersionId=3014731"
+  },
+  {
+    "label": "原神｜罗莎莉亚",
+    "character_id": "10000045",
+    "game": "原神",
+    "name": "罗莎莉亚",
+    "lora_name": "anime/原神/罗莎莉亚_3016453.safetensors",
+    "triggers": [
+      "rosaria, rosaria (genshin impact), short hair, bangs, hair between eyes, purple hair, red hair, multicolored hair, hair over one eye, streaked hair, pale skin, white pupils, mature female, breasts, 3d,",
+      "gloves, bare shoulders, pantyhose, elbow gloves, white gloves, fishnets, nun, fishnet pantyhose, habit,"
+    ],
+    "sha256": "2caa7ef41dda1df4df57a6812f1a5874f6dbab693255c09da9cd4d6832132ff9",
+    "family": "28",
+    "mapping": {
+      "kept": 60,
+      "mapped": 780,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2686496?modelVersionId=3016453"
+  },
+  {
+    "label": "原神｜胡桃",
+    "character_id": "10000046",
+    "game": "原神",
+    "name": "胡桃",
+    "lora_name": "anime/原神/胡桃_3013678.safetensors",
+    "triggers": [
+      "genshin hutao, hu tao (genshin impact), long hair, bangs, brown hair, red eyes, hair between eyes, twintails, sidelocks, symbol-shaped pupils, mature female, small breasts, 3d,",
+      "long sleeves, hat, jewelry, flower, shorts, wide sleeves, coat, chinese clothes, black shorts, ring, black nails, hat ornament, hat flower,"
+    ],
+    "sha256": "2cde66ca86f488d91c661176d983133c010fe4e15ef0f7102c46353d91401ac7",
+    "family": "28",
+    "mapping": {
+      "kept": 60,
+      "mapped": 780,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2683957?modelVersionId=3013678"
+  },
+  {
+    "label": "原神｜艾梅莉埃",
+    "character_id": "10000099",
+    "game": "原神",
+    "name": "艾梅莉埃",
+    "lora_name": "anime/原神/艾梅莉埃_3013822.safetensors",
+    "triggers": [
+      "genshin emilie, emilie (genshin impact), short hair, blonde hair, pink eyes, ahoge, multicolored hair, glasses, gradient hair, semi-rimless eyewear, mature female, medium breasts, 3d",
+      "bare shoulders, black bow, black bowtie, black corset, black gloves, black ribbon, black shirt, bowtie, breast curtains, corset, detached sleeves, fascinator, green hat, green skirt, hat, long sleeves, side slit, skirt, sleeveless, sleeveless shirt,"
+    ],
+    "sha256": "d938e6b1ad5b9065b85cef2808768fef8c798c129d8697b2cfe17477a75611b0",
+    "family": "28",
+    "mapping": {
+      "kept": 60,
+      "mapped": 780,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2684090?modelVersionId=3013822"
+  },
+  {
+    "label": "原神｜芙宁娜",
+    "character_id": "10000089",
+    "game": "原神",
+    "name": "芙宁娜",
+    "lora_name": "anime/原神/芙宁娜_3013674.safetensors",
+    "triggers": [
+      "genshin furina, furina (genshin impact), blue eyes, blue hair, cowlick, ahoge, hair over one eye, light blue hair, short hair, mature female, small breasts, 3d,",
+      "asymmetrical gloves, black gloves, frills, gloves, half gloves, hat, shorts, tailcoat, thigh strap, top hat, white gloves, white shorts,"
+    ],
+    "sha256": "dac1b3bb48d06a06cd11990e5966e60ba696ff798c2b3f489dcd680ae4bba0b1",
+    "family": "28",
+    "mapping": {
+      "kept": 60,
+      "mapped": 780,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2683953?modelVersionId=3013674"
+  },
+  {
+    "label": "原神｜芭芭拉",
+    "character_id": "10000014",
+    "game": "原神",
+    "name": "芭芭拉",
+    "lora_name": "anime/原神/芭芭拉_3013756.safetensors",
+    "triggers": [
+      "genshin barbara, barbara (genshin impact), long hair, bangs, blue eyes, blonde hair, hair between eyes, twintails, sidelocks, drill hair, light brown hair, twin drills, mature female, medium breasts, 3d,",
+      "long sleeves, hat, dress, bow, detached sleeves, white dress, detached collar, vision (genshin impact),"
+    ],
+    "sha256": "5d1a4457f62b514c3ed86a7a95b3e220f55c55fe7054a10f9ef7c1c83ff46537",
+    "family": "28",
+    "mapping": {
+      "kept": 60,
+      "mapped": 780,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2684029?modelVersionId=3013756"
+  },
+  {
+    "label": "原神｜茜特菈莉",
+    "character_id": "10000107",
+    "game": "原神",
+    "name": "茜特菈莉",
+    "lora_name": "anime/原神/茜特菈莉_3011635.safetensors",
+    "triggers": [
+      "genshin citlali, citlali (genshin impact), blue eyes, braid, pink hair, facial mark, forehead mark, long hair, pink pupils, purple hair, gradient hair, hair ornament, twin braids, mature female, medium breasts, 3d",
+      "black leotard, fingerless gloves, gloves, leotard, purple skirt, ribbed leotard, hip vent, turtleneck, bare shoulders, necktie,"
+    ],
+    "sha256": "14cd8434aa395d9036c6f1e16947f50a84668a153b269b65c2874b11c7ee5b27",
+    "family": "28",
+    "mapping": {
+      "kept": 60,
+      "mapped": 780,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2682118?modelVersionId=3011635"
+  },
+  {
+    "label": "原神｜荒泷一斗",
+    "character_id": "10000057",
+    "game": "原神",
+    "name": "荒泷一斗",
+    "lora_name": "anime/原神/荒泷一斗_2947834.safetensors",
+    "triggers": [
+      "arataki itto, horns, white hair, long hair, red horns, red eyes, oni, bodypaint, body markings, spikes, multicolored hair, red hair, thick eyebrows, earrings",
+      "spiked bracelet, spiked choker, fingernails, vision (genshin impact), black nails, chest harness, sleeveless coat, japanese clothes, belt, sandals, shin guards"
+    ],
+    "sha256": "7d5bad5b7c421aa43094e88de3226b874d4e7c388b9007ad4289d6bbbf87f81b",
+    "family": "28",
+    "mapping": {
+      "kept": 96,
+      "mapped": 1248,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2620789?modelVersionId=2947834"
+  },
+  {
+    "label": "原神｜荧",
+    "character_id": "10000007",
+    "game": "原神",
+    "name": "荧",
+    "lora_name": "anime/原神/荧_3013701.safetensors",
+    "triggers": [
+      "genshin lumine, lumine (genshin impact), bangs, blonde hair, hair ornament, hair between eyes, yellow eyes, flower, hair flower, feather hair ornament, mature female, medium breasts, 3d,",
+      "dress, bare shoulders, detached sleeves, scarf, white dress, white footwear, cleavage, detached collar,"
+    ],
+    "sha256": "21d00ec7f4333f960cb1ecb55e8635abfd4d9760e6633fc24bb3a7bb7a6455e5",
+    "family": "28",
+    "mapping": {
+      "kept": 60,
+      "mapped": 780,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2683979?modelVersionId=3013701"
+  },
+  {
+    "label": "原神｜莉奈娅",
+    "character_id": "10000130",
+    "game": "原神",
+    "name": "莉奈娅",
+    "lora_name": "anime/原神/莉奈娅_3080122.safetensors",
+    "triggers": [
+      "Genshin-Linnea,",
+      "a cute girl,pointy elf ears,light pink eyes,peach-colored hair,curved side-tails resembling feathers or wings,one side hair ornament,small breasts,",
+      "wearing her default white and dark-red outfit,small black necktie,halter neck top,pleated mini-skirt,open tailcoat,mechanical red backpack"
+    ],
+    "sha256": "37dce4094a69f5ead208047e04a22492a58674a7aaece4effe74dca9b2279e0e",
+    "family": "28",
+    "mapping": {
+      "kept": 60,
+      "mapped": 780,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 588,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2739003?modelVersionId=3080122"
+  },
+  {
+    "label": "原神｜莫娜",
+    "character_id": "10000041",
+    "game": "原神",
+    "name": "莫娜",
+    "lora_name": "anime/原神/莫娜_3011683.safetensors",
+    "triggers": [
+      "genshin mona megistus, mona (genshin impact), long hair, bangs, hair between eyes, twintails, purple hair, dark blue eyes, mature female, medium breasts, 3d,",
+      "gloves, hat, jewelry, earrings, detached sleeves, choker, black gloves, cape, leotard, witch hat, hat ornament,"
+    ],
+    "sha256": "8851228e1ef67f4b22b21d7477438d0fe1258f65914401ac27b263f624b41c7e",
+    "family": "28",
+    "mapping": {
+      "kept": 60,
+      "mapped": 780,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2682166?modelVersionId=3011683"
+  },
+  {
+    "label": "原神｜莱依拉",
+    "character_id": "10000074",
+    "game": "原神",
+    "name": "莱依拉",
+    "lora_name": "anime/原神/莱依拉_3016360.safetensors",
+    "triggers": [
+      "layla, layla (genshin impact), long hair, bangs, hair between eyes, very long hair, blue hair, yellow eyes, sidelocks, pointy ears, drill hair, twin drills, bright pupils, white pupils, drill locks, mature female, medium breasts, 3d,",
+      "gloves, long sleeves, bare shoulders, jewelry, pantyhose, detached sleeves, black gloves, puffy sleeves, hood, juliet sleeves, hood up, white pantyhose, claw ring,"
+    ],
+    "sha256": "6bd83e77a772fca4764d060a4047de697daa31ba2db54ea6398aaf214dd92dd6",
+    "family": "28",
+    "mapping": {
+      "kept": 60,
+      "mapped": 780,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2686410?modelVersionId=3016360"
+  },
+  {
+    "label": "原神｜菈乌玛",
+    "character_id": "10000119",
+    "game": "原神",
+    "name": "菈乌玛",
+    "lora_name": "anime/原神/菈乌玛_3238576.safetensors",
+    "triggers": [
+      "laumagenshin, violet hair, long hair, loose hair, green eyes, antlers, elf ears, bare shoulders, hair over one eye, green outfit, pelvic curtain, earrings, horn ornaments, flower arm strap, bracelets, rings, footwear, front crossed belts"
+    ],
+    "sha256": "a3a1ba5df11685dedd3bd00efb690a042368a0ed012614f10bd74afdf62c0b47",
+    "family": "28",
+    "mapping": {
+      "kept": 60,
+      "mapped": 780,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2866651?modelVersionId=3238576"
+  },
+  {
+    "label": "原神｜菲米尼",
+    "character_id": "10000085",
+    "game": "原神",
+    "name": "菲米尼",
+    "lora_name": "anime/原神/菲米尼_3343499.safetensors",
+    "triggers": [
+      "freminet,blonde hair,freckles,hair over one eye,long sleeves,gold trim,black headwear,black jacket,blue eyes,black gloves,black shorts,fingerless gloves,parted bangs,asymmetrical bangs,sleeve cuffs,black shirt,black coat,"
+    ],
+    "sha256": "03576e6a6ab0832510fa137b039e8d52a57a1abe84800e7ffe935374b652dbb3",
+    "family": "28",
+    "mapping": {
+      "kept": 60,
+      "mapped": 780,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2952003?modelVersionId=3343499"
+  },
+  {
+    "label": "原神｜菲谢尔",
+    "character_id": "10000031",
+    "game": "原神",
+    "name": "菲谢尔",
+    "lora_name": "anime/原神/菲谢尔_3013665.safetensors",
+    "triggers": [
+      "genshin fischl, fischl (genshin impact), long hair, bangs, blonde hair, ribbon, green eyes, hair ribbon, hair over one eye, two side up, eyepatch, mature female, small breasts, 3d,",
+      "gloves, bow, bare shoulders, black gloves, elbow gloves, bowtie,"
+    ],
+    "sha256": "546086a2a5976c08498dafa30e003bbff01a03eb54a7dbce0ef38b660ed9e482",
+    "family": "28",
+    "mapping": {
+      "kept": 60,
+      "mapped": 780,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2683945?modelVersionId=3013665"
+  },
+  {
+    "label": "原神｜蓝砚",
+    "character_id": "10000108",
+    "game": "原神",
+    "name": "蓝砚",
+    "lora_name": "anime/原神/蓝砚_3016355.safetensors",
+    "triggers": [
+      "lan yan, lan yan (genshin impact), long hair, black hair, hair ornament, purple eyes, hairband, mature female, medium breasts, 3d",
+      "skirt, dress, jewelry, jacket, white dress, necklace, bracelet, bracelet"
+    ],
+    "sha256": "6120b6e663c841c24761c8811232d1d3fdbe29c7afe63577b55b7be327d7abb8",
+    "family": "28",
+    "mapping": {
+      "kept": 60,
+      "mapped": 780,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2686405?modelVersionId=3016355"
+  },
+  {
+    "label": "原神｜薇斯纳",
+    "character_id": "10000143",
+    "game": "原神",
+    "name": "薇斯纳",
+    "lora_name": "anime/原神/薇斯纳_3241836.safetensors",
+    "triggers": [
+      "vesnagenshin"
+    ],
+    "sha256": "5fb3ec59d6e0902f895cf4e21d0ac5caae23575d5bd28629fc9431e866e02adf",
+    "family": "28",
+    "mapping": {
+      "kept": 60,
+      "mapped": 780,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2869374?modelVersionId=3241836"
+  },
+  {
+    "label": "原神｜诺艾尔",
+    "character_id": "10000034",
+    "game": "原神",
+    "name": "诺艾尔",
+    "lora_name": "anime/原神/诺艾尔_3016434.safetensors",
+    "triggers": [
+      "noelle, noelle (genshin impact), braid, flower, hair flower, hair ornament, short hair, silver hair, green eyes, mature female, medium breasts, 3d",
+      "apron, armor, ascot, black pantyhose, black skirt, dress, gauntlets, gold trim, headdress, long sleeves, maid, maid apron, maid headdress, pantyhose, pauldrons, shoulder armor, skirt, strap,"
+    ],
+    "sha256": "294197b7c99a9d88d0af5e7da876f728efc2639827479910035fa893c08154bf",
+    "family": "28",
+    "mapping": {
+      "kept": 60,
+      "mapped": 780,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2686478?modelVersionId=3016434"
+  },
+  {
+    "label": "原神｜辛焱",
+    "character_id": "10000044",
+    "game": "原神",
+    "name": "辛焱",
+    "lora_name": "anime/原神/辛焱_3017745.safetensors",
+    "triggers": [
+      "xinyan, xinyan (genshin impact), black hair, twintails, yellow eyes, multicolored hair, red hair, dark skin, streaked hair, dark-skinned female, spikes, hair ornament, mature female, small breasts, 3d",
+      "shorts, black dress, long sleeves, detached sleeves, kneehighs, thigh strap, chinese clothes, fishnets, fishnet socks"
+    ],
+    "sha256": "9d8bd316fcaa6435a9dc551da3e844a81b52817a1a66edd2359d7245c6ee9d87",
+    "family": "28",
+    "mapping": {
+      "kept": 60,
+      "mapped": 780,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2687661?modelVersionId=3017745"
+  },
+  {
+    "label": "原神｜达达利亚",
+    "character_id": "10000033",
+    "game": "原神",
+    "name": "达达利亚",
+    "lora_name": "anime/原神/达达利亚_3070039.safetensors",
+    "triggers": [
+      "tartaglia,tartaglia \\(genshin impact\\),orange hair,hair between eyes,crossed bangs,short hair,ahoge,blue eyes"
+    ],
+    "sha256": "03fcb5f60428556d5bde96b5c43b6ab50b5c9378b5df409ecc1fd1f2d120f509",
+    "family": "28",
+    "mapping": {
+      "kept": 60,
+      "mapped": 780,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2730799?modelVersionId=3070039"
+  },
+  {
+    "label": "原神｜迪希雅",
+    "character_id": "10000079",
+    "game": "原神",
+    "name": "迪希雅",
+    "lora_name": "anime/原神/迪希雅_3013812.safetensors",
+    "triggers": [
+      "genshin dehya, dehya (genshin impact), long hair, bangs, blue eyes, blonde hair, black hair, hair between eyes, multicolored hair, dark skin, dark-skinned female, streaked hair, animal ears, cat ears, crossed bangs, mature female, breasts, 3d,",
+      "gloves, navel, bare shoulders, jewelry, earrings, black gloves, elbow gloves, midriff, pants, fingerless gloves, stomach, halterneck, black pants, criss-cross halter,"
+    ],
+    "sha256": "3a90e59e613a8421aaf5e8a38facf8ff9837d5cbd1a3ca38430287df1ae5f2ae",
+    "family": "28",
+    "mapping": {
+      "kept": 60,
+      "mapped": 780,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2684079?modelVersionId=3013812"
+  },
+  {
+    "label": "原神｜闲云",
+    "character_id": "10000093",
+    "game": "原神",
+    "name": "闲云",
+    "lora_name": "anime/原神/闲云_3017729.safetensors",
+    "triggers": [
+      "xianyun, xianyun (genshin impact), long hair, black hair, hair ornament, very long hair, blue hair, multicolored hair, green hair, glasses, two-tone hair, aqua eyes, aqua hair, colored inner hair, semi-rimless eyewear, red-framed eyewear, mature female, large breasts, 3d",
+      "long sleeves, gloves, dress, jewelry, earrings, black gloves, black dress, tassel, tassel earrings"
+    ],
+    "sha256": "01bfee4a891a7744b668ae4410236734499e319cba79a63d90a5d9cf2432ae66",
+    "family": "28",
+    "mapping": {
+      "kept": 60,
+      "mapped": 780,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2687648?modelVersionId=3017729"
+  },
+  {
+    "label": "原神｜阿罗夏",
+    "character_id": "10000148",
+    "game": "原神",
+    "name": "阿罗夏",
+    "lora_name": "anime/原神/阿罗夏_3246286.safetensors",
+    "triggers": [
+      "alyoshagh"
+    ],
+    "sha256": "e96d2ba5b13ab5818035967be846e4a78938c6e4aee8de48f0128d1e020643e4",
+    "family": "28",
+    "mapping": {
+      "kept": 60,
+      "mapped": 780,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 588,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2873007?modelVersionId=3246286"
+  },
+  {
+    "label": "原神｜阿蕾奇诺",
+    "character_id": "10000096",
+    "game": "原神",
+    "name": "阿蕾奇诺",
+    "lora_name": "anime/原神/阿蕾奇诺_3013748.safetensors",
+    "triggers": [
+      "genshin arlecchino, arlecchino (genshin impact), short hair, black hair, hair between eyes, white hair, grey hair, multicolored hair, black eyes, two-tone hair, streaked hair, symbol-shaped pupils, red pupils, x-shaped pupils, mature female, large breasts, 3d",
+      "long sleeves, gloves, jacket, black gloves, pants, coat, black pants, suit,"
+    ],
+    "sha256": "d2773fdb4074c0d353f7d7b48e57c3817ab3f42b2121e0586a29c90d83cc0ad5",
+    "family": "28",
+    "mapping": {
+      "kept": 60,
+      "mapped": 780,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2684022?modelVersionId=3013748"
+  },
+  {
+    "label": "原神｜雷电将军",
+    "character_id": "10000052",
+    "game": "原神",
+    "name": "雷电将军",
+    "lora_name": "anime/原神/雷电将军_3017676.safetensors",
+    "triggers": [
+      "raiden shogun, braid, braided ponytail, hair flower, hair ornament, long hair, mole, mole under eye, purple eyes, purple flower, purple hair, single braid, sidelocks, mature female, breasts, 3d,",
+      "black gloves, black thighhighs, bridal gauntlets, cleavage, gloves, gold trim, japanese clothes, kimono, neck ribbon, neck tassel, obiage, obijime, off shoulder, purple kimono, red ribbon, red sash, ribbon, sash, short kimono, tassel, tassel hair ornament, thighhighs, thighs, vision (genshin impact), zettai ryouiki,"
+    ],
+    "sha256": "24122ae858bc2768206fd6076c5f3668a2415b7318c6def9b70971ef0c7d5660",
+    "family": "28",
+    "mapping": {
+      "kept": 60,
+      "mapped": 780,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2687596?modelVersionId=3017676"
+  },
+  {
+    "label": "原神｜香菱",
+    "character_id": "10000023",
+    "game": "原神",
+    "name": "香菱",
+    "lora_name": "anime/原神/香菱_3017706.safetensors",
+    "triggers": [
+      "xiangling, xiangling (genshin impact), blue hair, braid, braided hair rings, hair ornament, hair rings, hairclip, yellow eyes, mature female, small breasts, 3d",
+      "arm strap, bare shoulders, bell, belt, black footwear, black gloves, boots, brown belt, cleavage, cleavage cutout, clothing cutout, dress, fingerless gloves, gloves, high heels, jingle bell, thigh strap,"
+    ],
+    "sha256": "866e319ee1a6b429e99cf78292b58016d04cc8db7ff205ee55d82aedf7edbf9f",
+    "family": "28",
+    "mapping": {
+      "kept": 60,
+      "mapped": 780,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2687625?modelVersionId=3017706"
+  },
+  {
+    "label": "明日方舟｜予愿安洁莉娜",
+    "character_id": "char_1015_aglna2",
+    "game": "明日方舟",
+    "name": "予愿安洁莉娜",
+    "lora_name": "anime/明日方舟/予愿安洁莉娜_3177700.safetensors",
+    "triggers": [
+      "Angelina the mellow wish \\(arknights\\), hairband, black gloves, white dress, red jacket, black thighhighs, black footwear, fox tail,"
+    ],
+    "sha256": "812c883774390dc2f55b8e44f7f9b50e507155fca16b6b82b7b2ad45df801548",
+    "family": "28",
+    "mapping": {
+      "kept": 60,
+      "mapped": 780,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2817330?modelVersionId=3177700"
+  },
+  {
+    "label": "明日方舟｜仇白",
+    "character_id": "char_4082_qiubai",
+    "game": "明日方舟",
+    "name": "仇白",
+    "lora_name": "anime/明日方舟/仇白_3238810.safetensors",
+    "triggers": [
+      "qiubai \\(arknights\\), black dress, black elbow gloves, black belt, earrings, armlet, cape, black shorts, thigh strap, asymmetrical boots,"
+    ],
+    "sha256": "628a37abc86d2b06efb7412dcd8909393324e32727e96339294da5d4a3cb3c28",
+    "family": "28",
+    "mapping": {
+      "kept": 78,
+      "mapped": 1014,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2866845?modelVersionId=3238810"
+  },
+  {
+    "label": "明日方舟｜伊内丝",
+    "character_id": "char_4087_ines",
+    "game": "明日方舟",
+    "name": "伊内丝",
+    "lora_name": "anime/明日方舟/伊内丝_3326346.safetensors",
+    "triggers": [
+      "inesak, baseout",
+      "inesak, melodicout",
+      "inesak, flamingout"
+    ],
+    "sha256": "e9f860d8fc828a31da8e790ef4ea3328710dc8516d275a3da46fe93b2794efba",
+    "family": "28",
+    "mapping": {
+      "kept": 60,
+      "mapped": 780,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2938289?modelVersionId=3326346"
+  },
+  {
+    "label": "明日方舟｜克莱门莎",
+    "character_id": "char_4231_clemnt",
+    "game": "明日方舟",
+    "name": "克莱门莎",
+    "lora_name": "anime/明日方舟/克莱门莎_3396517.safetensors",
+    "triggers": [
+      "clementia_(arknights)",
+      "1girl, solo, short hair, blue hair, horns, pointy ears, tail, hair ornament, earrings",
+      "white dress, white outer coat, brown inner lining, dark bodice, bare shoulders, layered skirt, gold trim, gold arm guards, high heels, strappy sandals",
+      "holding sword, sword"
+    ],
+    "sha256": "d218ce0988e09ea36ce38d5cd84846fffae64e4c47f6912066eb0c78ae8ef2a6",
+    "family": "28",
+    "mapping": {
+      "kept": 60,
+      "mapped": 780,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2994903?modelVersionId=3396517"
+  },
+  {
+    "label": "明日方舟｜凯尔希",
+    "character_id": "char_003_kalts",
+    "game": "明日方舟",
+    "name": "凯尔希",
+    "lora_name": "anime/明日方舟/凯尔希_3171426.safetensors",
+    "triggers": [
+      "kal'tsit (arknights), animal ears, green eyes, cat ears, animal ear fluff, cat girl, short hair, grey hair",
+      "long sleeves, green dress, hood, black jacket, coat, gloves, off-shoulder dress, white shirt"
+    ],
+    "sha256": "357d0dd65f2efecc0d825d4ddbbd3856f393d1dbec57e11ce4a0dc322fbd39a3",
+    "family": "28",
+    "mapping": {
+      "kept": 60,
+      "mapped": 780,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2812190?modelVersionId=3171426"
+  },
+  {
+    "label": "明日方舟｜凯尔希·思衡托",
+    "character_id": "char_1052_kalts2",
+    "game": "明日方舟",
+    "name": "凯尔希·思衡托",
+    "lora_name": "anime/明日方舟/凯尔希·思衡托_3116788.safetensors",
+    "triggers": [
+      "arknights:kal'tsit_esperanta"
+    ],
+    "sha256": "58491959f49f4bc6275092cd3a07aaea996b6d3a04f9b644aa9be51a90f55b47",
+    "family": "28",
+    "mapping": {
+      "kept": 60,
+      "mapped": 780,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2585162?modelVersionId=3116788"
+  },
+  {
+    "label": "明日方舟｜卡涅利安",
+    "character_id": "char_426_billro",
+    "game": "明日方舟",
+    "name": "卡涅利安",
+    "lora_name": "anime/明日方舟/卡涅利安_3268723.safetensors",
+    "triggers": [
+      "collar, shrug (clothing), clothing cutout, white shirt, white long coat, open clothes, chest strap, long sleeves, gloves, black skirt, pleated skirt, holster, sheathed, thigh strap, leg ribbon, thighhighs ribbon, high heels,",
+      "silver hair, goat ears, short hair, red eyes, goat horns, dark skin,"
+    ],
+    "sha256": "8236c7aa03268cbf1e9c6c21a964d9c8e33bffe970384f249de0d74f40eeb08e",
+    "family": "28",
+    "mapping": {
+      "kept": 60,
+      "mapped": 780,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2878059?modelVersionId=3268723"
+  },
+  {
+    "label": "明日方舟｜可露希尔",
+    "character_id": "char_4228_closur",
+    "game": "明日方舟",
+    "name": "可露希尔",
+    "lora_name": "anime/明日方舟/可露希尔_3060215.safetensors",
+    "triggers": [
+      "Promts for this LoRA:",
+      "Character/Anime*",
+      "cosplay, alternate_costume,",
+      "closure_\\(arknights\\), arknights,",
+      "Face/head:",
+      "long hair, black hair, red eyes, hair between eyes, multicolored hair, red hair, pointy ears, medium hair, two-tone hair, one side up,",
+      "Clothing:",
+      "breasts, medium breasts, large breasts, collarbone, off shoulder,  shirt, long sleeves, dress, jacket, white shirt, open clothes, choker, belt, open jacket, black jacket, black choker, long shirt, black coat, t-shirt,  thighs, thigh strap, no pants,"
+    ],
+    "sha256": "be859030bd49a5452ab3d905f78c960136580f4b29a9db0b1b2e1b817add8862",
+    "family": "28",
+    "mapping": {
+      "kept": 96,
+      "mapped": 1248,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2722933?modelVersionId=3060215"
+  },
+  {
+    "label": "明日方舟｜史尔特尔",
+    "character_id": "char_350_surtr",
+    "game": "明日方舟",
+    "name": "史尔特尔",
+    "lora_name": "anime/明日方舟/史尔特尔_3171419.safetensors",
+    "triggers": [
+      "surtr (arknights), red hair, horns, purple eyes, long hair, demon horns, hair between eyes",
+      "black dress, long sleeves, black gloves, detached collar, shirt, detached sleeves, black jacket, black thighhighs"
+    ],
+    "sha256": "dea5ded5ed05a85a7aad5afa411de81f40b7b4cd2350a13c034e0c069d104728",
+    "family": "28",
+    "mapping": {
+      "kept": 60,
+      "mapped": 780,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2812183?modelVersionId=3171419"
+  },
+  {
+    "label": "明日方舟｜夕",
+    "character_id": "char_2015_dusk",
+    "game": "明日方舟",
+    "name": "夕",
+    "lora_name": "anime/明日方舟/夕_3171392.safetensors",
+    "triggers": [
+      "dusk (arknights), horns, pointy ears, black hair, dragon horns, dragon girl, long hair, red eyes, qipao",
+      "necktie, white dress, sleeveless dress, red necktie, long sleeves, black jacket, shirt"
+    ],
+    "sha256": "19ccc47a0b3fa2090c9498c47160ce11ed2e4e3d41fa3c77f1326490906aeade",
+    "family": "28",
+    "mapping": {
+      "kept": 60,
+      "mapped": 780,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2812167?modelVersionId=3171392"
+  },
+  {
+    "label": "明日方舟｜多萝西",
+    "character_id": "char_4048_doroth",
+    "game": "明日方舟",
+    "name": "多萝西",
+    "lora_name": "anime/明日方舟/多萝西_2950535.safetensors",
+    "triggers": [
+      "default | DRFdef, 1girl, medium breasts, blonde hair, mouse ears, yellow eyes, yellow jerboa tail, low ponytail, crossed bangs,  black hair tie, ring hair ornament, ear tag, white beret, black sleeveless shrug, white detached collar, yellow chest strap, hourglass, shoulder cannon, white top, cleavage, white coat, off shoulder, high-waist skirt, brown skirt, side slit, brown shorts, brown detached sleeves, grey high-waist belt, asymmetrical gloves, yellow gloves, black gloves, single fingerless glove, belt pouch, grey pouch, brown thigh strap, infection monitor (arknights), ankle monitor, black socks, white boots, holding clipboard, holding grey suitcase",
+      "hand of destiny | DRFdnd, 1girl, medium breasts, blonde hair, very long hair, mouse ears, animal ear piercing, yellow eyes, black star halo, halo behind head, black head wings, multiple wings, head wings through headwear, black shrug, pearl necklace, black long dress, white long veil, red gem, yellow gem, rosary, black shawl, black juliet sleeves, black elbow gloves, cleavage, multiple rings, jewelry, back cutout, side slit, white single thighhigh, black stiletto heels",
+      "cowboy | DRFwest, 1girl, medium breasts, blonde hair, long hair, mouse ears, yellow eyes, yellow jerboa tail, crossed bangs, animal ear piercing, black hair ribbon, black hairband, yellow gloves, brown jacket, bomber jacket, leather jacket, single off shoulder, cowboy boots, cowboy hat, wide brim, white hat, ears through headwear, open jacket, brown belt, white kneehighs, tied shirt, collarbone, partially unbuttoned, white bustier, midriff, blue cutoffs, white waist cape"
+    ],
+    "sha256": "ad48eb06a807aab0fc6a9e57f3dd76dccd76ca0bbc89d1d9e1ee72137be8c194",
+    "family": "28",
+    "mapping": {
+      "kept": 60,
+      "mapped": 780,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2627964?modelVersionId=2950535"
+  },
+  {
+    "label": "明日方舟｜安洁莉娜",
+    "character_id": "char_291_aglina",
+    "game": "明日方舟",
+    "name": "安洁莉娜",
+    "lora_name": "anime/明日方舟/安洁莉娜_3239088.safetensors",
+    "triggers": [
+      "angelina",
+      "arknights angelina"
+    ],
+    "sha256": "d6a04dae25c5204d151989ca9ea3935dada458772dd0fd7bc4f198d81cdc23ef",
+    "family": "28",
+    "mapping": {
+      "kept": 60,
+      "mapped": 780,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2867082?modelVersionId=3239088"
+  },
+  {
+    "label": "明日方舟｜山",
+    "character_id": "char_264_f12yin",
+    "game": "明日方舟",
+    "name": "山",
+    "lora_name": "anime/明日方舟/山_3364723.safetensors",
+    "triggers": [
+      "Mountain (Arknights),tiger boy, blue eyes,"
+    ],
+    "sha256": "476e0bb6cba68114f10f626bd4385ac6b5f29bc002eb5d83e07fb82663619a11",
+    "family": "28",
+    "mapping": {
+      "kept": 64,
+      "mapped": 832,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2969344?modelVersionId=3364723"
+  },
+  {
+    "label": "明日方舟｜年",
+    "character_id": "char_2014_nian",
+    "game": "明日方舟",
+    "name": "年",
+    "lora_name": "anime/明日方舟/年_2940335.safetensors",
+    "triggers": [
+      "nian (arknights)",
+      "purple eyes, pointy ears, white hair, streaked hair, long hair, dragon horns, dragon tail",
+      "tube top, bandeau, red bandeau, strapless, midriff, white shorts, open clothes, shorts, white footwear, crop top, bead bracelet",
+      "folding fan, hand fan, holding fan, folded fan",
+      "dress, china dress, chinese clothes, white dress, official alternate costume, sleeveless dress, high heels"
+    ],
+    "sha256": "c34e2c713acfb449f31c2a45a04e44c322277daf711b30db8105fff32c9b79d8",
+    "family": "28",
+    "mapping": {
+      "kept": 60,
+      "mapped": 780,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2618857?modelVersionId=2940335"
+  },
+  {
+    "label": "明日方舟｜归溟幽灵鲨",
+    "character_id": "char_1023_ghost2",
+    "game": "明日方舟",
+    "name": "归溟幽灵鲨",
+    "lora_name": "anime/明日方舟/归溟幽灵鲨_3261910.safetensors",
+    "triggers": [
+      "specter_the_unchained_(born_as_one)_(arknights)_(black), black bonnet, black dress, white cravat, black pantyhose",
+      "specter_the_unchained_(born_as_one)_(arknights)_(white), white veil, white dress, mechanical spine, backless dress"
+    ],
+    "sha256": "1391fe0782a4d2346a58bcf75b5a27ac2463e0dc90f7a274e37d19f1ebab6609",
+    "family": "28",
+    "mapping": {
+      "kept": 96,
+      "mapped": 1248,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2885308?modelVersionId=3261910"
+  },
+  {
+    "label": "明日方舟｜忍冬",
+    "character_id": "char_4026_vulpis",
+    "game": "明日方舟",
+    "name": "忍冬",
+    "lora_name": "anime/明日方舟/忍冬_3404438.safetensors",
+    "triggers": [
+      "vulpisfoglia"
+    ],
+    "sha256": "0809644cb9f8e7c2cbb457ce0684dd0f933bb2b53642dad1d7d55cfda4809c98",
+    "family": "28",
+    "mapping": {
+      "kept": 64,
+      "mapped": 832,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/3001217?modelVersionId=3404438"
+  },
+  {
+    "label": "明日方舟｜斯卡蒂",
+    "character_id": "char_263_skadi",
+    "game": "明日方舟",
+    "name": "斯卡蒂",
+    "lora_name": "anime/明日方舟/斯卡蒂_3167698.safetensors",
+    "triggers": [
+      "skadi (arknights), long hair, red eyes, grey hair, very long hair, hair between eyes, white hair",
+      "red dress, long sleeves, shirt, black gloves, detached sleeves, pants, boots, ribbon"
+    ],
+    "sha256": "3c057af664b63279f19ded08d57e4192c552c820cabcee065c482c0cb1ac4026",
+    "family": "28",
+    "mapping": {
+      "kept": 60,
+      "mapped": 780,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2809088?modelVersionId=3167698"
+  },
+  {
+    "label": "明日方舟｜新约能天使",
+    "character_id": "char_1041_angel2",
+    "game": "明日方舟",
+    "name": "新约能天使",
+    "lora_name": "anime/明日方舟/新约能天使_3049635.safetensors",
+    "triggers": [
+      "exusiai the new covenant \\(the legend seeker\\) \\(arknights\\), 1girl, orange eyes, red hair, halo, black hat, black jacket, red cape, black dress, black gloves, brown thigh boots"
+    ],
+    "sha256": "71dd9401280ca2138ce00a04565e2210007936cd521c5d34e160379033c0c425",
+    "family": "28",
+    "mapping": {
+      "kept": 60,
+      "mapped": 780,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2714382?modelVersionId=3049635"
+  },
+  {
+    "label": "明日方舟｜星熊",
+    "character_id": "char_136_hsguma",
+    "game": "明日方舟",
+    "name": "星熊",
+    "lora_name": "anime/明日方舟/星熊_3328845.safetensors",
+    "triggers": [
+      "hoshi_ark",
+      "1girl, long hair, green hair, yellow eyes, (big breasts: 0.7), one horn on left forehead, one scar on left cheek,"
+    ],
+    "sha256": "f4410194dac97ba3b1c1f4398b7d6c8851a598e4f87f24f250f4ae9e44de47eb",
+    "family": "28",
+    "mapping": {
+      "kept": 64,
+      "mapped": 832,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2940326?modelVersionId=3328845"
+  },
+  {
+    "label": "明日方舟｜望",
+    "character_id": "char_2027_wang",
+    "game": "明日方舟",
+    "name": "望",
+    "lora_name": "anime/明日方舟/望_3194376.safetensors",
+    "triggers": [
+      "wang_(gaomozi)",
+      "1boy, solo, animal ears, black hair, white hair streak",
+      "black coat, gold trim, white robe, gold ornament, belt, patterned pants, black boots, white glove, black glove"
+    ],
+    "sha256": "73ecd0d05ea25ec59368948e96ee6b4e80f1f2a04326dede63d47c61c8dbc6dc",
+    "family": "28",
+    "mapping": {
+      "kept": 60,
+      "mapped": 780,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2830923?modelVersionId=3194376"
+  },
+  {
+    "label": "明日方舟｜泥岩",
+    "character_id": "char_311_mudrok",
+    "game": "明日方舟",
+    "name": "泥岩",
+    "lora_name": "anime/明日方舟/泥岩_3171417.safetensors",
+    "triggers": [
+      "mudrock (arknights), horns, red eyes, long hair, pointy ears, white hair, grey hair, black horns, sports bra",
+      "black gloves, black choker, long sleeves, collar, dress"
+    ],
+    "sha256": "468d512f033f70b64388d983ed706563fa0c294b4dc9559ebd3c96b55af15ce6",
+    "family": "28",
+    "mapping": {
+      "kept": 60,
+      "mapped": 780,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2812182?modelVersionId=3171417"
+  },
+  {
+    "label": "明日方舟｜浊心斯卡蒂",
+    "character_id": "char_1012_skadi2",
+    "game": "明日方舟",
+    "name": "浊心斯卡蒂",
+    "lora_name": "anime/明日方舟/浊心斯卡蒂_3274533.safetensors",
+    "triggers": [
+      "skadi the corrupting heart (arknights), long hair, red eyes, very long hair, grey hair, hair between eyes, white hair",
+      "red dress, long sleeves, detached sleeves, aqua gloves, leg ribbon, boots, wide sleeves, off-shoulder dress"
+    ],
+    "sha256": "a561c24daa04eaa51b5677d638a3d15cb18598f121f8a3c7914549ec7ddb62f0",
+    "family": "28",
+    "mapping": {
+      "kept": 60,
+      "mapped": 780,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2896450?modelVersionId=3274533"
+  },
+  {
+    "label": "明日方舟｜玛露西尔",
+    "character_id": "char_4141_marcil",
+    "game": "明日方舟",
+    "name": "玛露西尔",
+    "lora_name": "anime/明日方舟/玛露西尔_3119702.safetensors",
+    "triggers": [
+      "marcille donato, long hair, blonde hair, green eyes, braid, pointy ears, twin braids, elf, bright pupils, parted bangs, mature female, medium breasts, anime screencap,",
+      "choker, robe, red choker,"
+    ],
+    "sha256": "af33b3ff420e6a13376f1bc0a00ec62ea01a4bb616682d522bf6424add86e25c",
+    "family": "28",
+    "mapping": {
+      "kept": 60,
+      "mapped": 780,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2770930?modelVersionId=3119702"
+  },
+  {
+    "label": "明日方舟｜珊比",
+    "character_id": "char_4235_thumpy",
+    "game": "明日方舟",
+    "name": "珊比",
+    "lora_name": "anime/明日方舟/珊比_3200689.safetensors",
+    "triggers": [
+      "thumpy \\(arknights\\), pink hair,  white hair flower, id card, black pouch, clover, white jacket, pink shirt, black skirt, black bracelet, orange fingerless gloves, black thigh strap, white thighhighs, black shoes,"
+    ],
+    "sha256": "edd0d10d0db5975525f683b5ca7355be56ec3f7a7c4dbf3bec425686dbf76ee7",
+    "family": "28",
+    "mapping": {
+      "kept": 78,
+      "mapped": 1014,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2835958?modelVersionId=3200689"
+  },
+  {
+    "label": "明日方舟｜纯烬艾雅法拉",
+    "character_id": "char_1016_agoat2",
+    "game": "明日方舟",
+    "name": "纯烬艾雅法拉",
+    "lora_name": "anime/明日方舟/纯烬艾雅法拉_3328271.safetensors",
+    "triggers": [
+      "Eyjafjalla the Hvít Aska [another story],eyjafjalla \\(arknights\\)",
+      "ahoge,sheep horns,hairband,very long hair,brown hair,sheep ears,pink eyes,alternate costume,collared shirt,black shirt,frilled collar,long sleeves",
+      "miniskirt,purple skirt,plaid skirt,infection monitor \\(arknights\\),white thighhighs,slippers,purple footwear"
+    ],
+    "sha256": "eeca06553978153e33d1b8330c62e74db293bb61cee81edabbf91ce33dee88f7",
+    "family": "28",
+    "mapping": {
+      "kept": 60,
+      "mapped": 780,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2939868?modelVersionId=3328271"
+  },
+  {
+    "label": "明日方舟｜维什戴尔",
+    "character_id": "char_1035_wisdel",
+    "game": "明日方舟",
+    "name": "维什戴尔",
+    "lora_name": "anime/明日方舟/维什戴尔_3309402.safetensors",
+    "triggers": [
+      "wisadelak, baseout",
+      "wisadelak, novaout"
+    ],
+    "sha256": "cbd370ab78fc319503271ab0e39233710fb97e9b32d61bd121a730daa23a5728",
+    "family": "28",
+    "mapping": {
+      "kept": 60,
+      "mapped": 780,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2924684?modelVersionId=3309402"
+  },
+  {
+    "label": "明日方舟｜缇缇",
+    "character_id": "char_4056_titi",
+    "game": "明日方舟",
+    "name": "缇缇",
+    "lora_name": "anime/明日方舟/缇缇_3268728.safetensors",
+    "triggers": [
+      "white collar, short necktie, jewelry, bare shoulders, pelvic curtain, sleeveless shirt, open clothes, sleeves past fingers, white long coat, see-through, belt, leotard, black skirt, thigh strap, thigh boots, high heels,",
+      "blunt bangs, black hair, short hair, yellow eyes, headband, hair ornament, cat ears, low twintails, hair tubes, dark skin, cat tail,"
+    ],
+    "sha256": "3df6b4e04b8b0420e4156418f5ad0cbd81f7a07e1460f282621b0bb3369b9344",
+    "family": "28",
+    "mapping": {
+      "kept": 60,
+      "mapped": 780,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2878084?modelVersionId=3268728"
+  },
+  {
+    "label": "明日方舟｜能天使",
+    "character_id": "char_103_angel",
+    "game": "明日方舟",
+    "name": "能天使",
+    "lora_name": "anime/明日方舟/能天使_3171421.safetensors",
+    "triggers": [
+      "exusiai (arknights), red hair, short hair, orange eyes, hair over one eye, yellow eyes",
+      "black gloves, fingerless gloves, white jacket, long sleeves, black jacket, black pantyhose, shorts, white shirt"
+    ],
+    "sha256": "956c4c1b04518d5a1ba3e84a6603cc1a45d329586dcabcf793f2f31a7da8a82d",
+    "family": "28",
+    "mapping": {
+      "kept": 60,
+      "mapped": 780,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2812185?modelVersionId=3171421"
+  },
+  {
+    "label": "明日方舟｜莫斯提马",
+    "character_id": "char_213_mostma",
+    "game": "明日方舟",
+    "name": "莫斯提马",
+    "lora_name": "anime/明日方舟/莫斯提马_3194665.safetensors",
+    "triggers": [
+      "mostima_(ax2026)",
+      "1girl, solo, long hair, blue hair, aqua eyes, black halo, black horns, black demon tail, detached wings",
+      "black dress, purple inner skirt, high collar, halterneck, bare shoulders, shoulder cutout, detached sleeves, see-through sleeves, double-layered black leather waist belt, silver buckles, hanging metal chains, small black leather crossbody bag, blue bow, see-through skirt, side slit, black pantyhose, platform boots, purple shoelaces",
+      "black sleeveless dress, high collar, bare shoulders, double-layered black leather waist belt, silver buckles, hanging metal chains, small black leather crossbody bag, blue bow, black pantyhose"
+    ],
+    "sha256": "3a316b6cd6524e6fbb0aaf7363c7b0d4dd5cebb1039b44286a53554175fabf0a",
+    "family": "28",
+    "mapping": {
+      "kept": 60,
+      "mapped": 780,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2831150?modelVersionId=3194665"
+  },
+  {
+    "label": "明日方舟｜莱伊",
+    "character_id": "char_4117_ray",
+    "game": "明日方舟",
+    "name": "莱伊",
+    "lora_name": "anime/明日方舟/莱伊_3100906.safetensors",
+    "triggers": [
+      "ray(arknights)(coral)"
+    ],
+    "sha256": "00230a34378efa068a138cacbc03ef1b308f172227bb3cba4cd5b67ea9fd1f28",
+    "family": "28",
+    "mapping": {
+      "kept": 64,
+      "mapped": 832,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2755860?modelVersionId=3100906"
+  },
+  {
+    "label": "明日方舟｜谬因",
+    "character_id": "char_4229_aphris",
+    "game": "明日方舟",
+    "name": "谬因",
+    "lora_name": "anime/明日方舟/谬因_3144064.safetensors",
+    "triggers": [
+      "aphrissa_(arknights), 1girl, braid, long hair, animal ears, very long hair, tail, gloves, blue eyes, breasts, white footwear, hat, twin braids, dress, boots, bare shoulders, thigh strap, animal ear fluff, socks, blonde hair, white dress, long sleeves, jacket,"
+    ],
+    "sha256": "4eccb933fc8d1d68f9a0cf66f9b946bf41e59a39f283883a1df36426dd660c56",
+    "family": "28",
+    "mapping": {
+      "kept": 60,
+      "mapped": 780,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2790052?modelVersionId=3144064"
+  },
+  {
+    "label": "明日方舟｜逻各斯",
+    "character_id": "char_4133_logos",
+    "game": "明日方舟",
+    "name": "逻各斯",
+    "lora_name": "anime/明日方舟/逻各斯_3379942.safetensors",
+    "triggers": [
+      "logos \\(arknights\\), head wings, horns, mole under eye, pointy ears, earrings, black jacket, black pants, black gloves, bracelet, black boots,",
+      "logos \\(radiant serenity\\) \\(arknights\\), head wings, horns, mole under eye, pointy ears, single earring, black jacket, off shoulder, two tone shirt, white ascot, black pants, black gloves, jewelry, black shoes,",
+      "logos \\(npc\\) \\(arknights\\), head wings, horns, mole under eye, pointy ears, earrings, black cape, black shirt, cleavage cutout, black pants, black gloves, black shoes,"
+    ],
+    "sha256": "ca59d1d88d4d26b1a6d93cbb5868cdd604885e352bdab7e226ec88e42de871c0",
+    "family": "28",
+    "mapping": {
+      "kept": 60,
+      "mapped": 780,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2981588?modelVersionId=3379942"
+  },
+  {
+    "label": "明日方舟｜遥",
+    "character_id": "char_4202_haruka",
+    "game": "明日方舟",
+    "name": "遥",
+    "lora_name": "anime/明日方舟/遥_3325974.safetensors",
+    "triggers": [
+      "haruka (arknights)"
+    ],
+    "sha256": "1eacd30478334ef889b4327c7a9d1974cd92e3305e923be3e008c01fa01f6938",
+    "family": "28",
+    "mapping": {
+      "kept": 60,
+      "mapped": 780,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2937972?modelVersionId=3325974"
+  },
+  {
+    "label": "明日方舟｜铃兰",
+    "character_id": "char_358_lisa",
+    "game": "明日方舟",
+    "name": "铃兰",
+    "lora_name": "anime/明日方舟/铃兰_3171428.safetensors",
+    "triggers": [
+      "suzuran (arknights), animal ears, blonde hair, fox ears, fox girl, tail, fox tail, green eyes",
+      "long sleeves, skirt, white shirt, dress, black gloves, neck ribbon, white pantyhose, red ribbon"
+    ],
+    "sha256": "189283b36c639df954deceb888600e838fc5c25e629e64ca9075e4deccaf3446",
+    "family": "28",
+    "mapping": {
+      "kept": 60,
+      "mapped": 780,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2812192?modelVersionId=3171428"
+  },
+  {
+    "label": "明日方舟｜陈",
+    "character_id": "char_010_chen",
+    "game": "明日方舟",
+    "name": "陈",
+    "lora_name": "anime/明日方舟/陈_3171425.safetensors",
+    "triggers": [
+      "ch'en (arknights), horns, blue hair, red eyes, dragon horns, long hair, tail, dragon tail",
+      "white shirt, necktie, black jacket, dress, black shorts, black gloves, short shorts, long sleeves"
+    ],
+    "sha256": "1c59d716556a49cd653336a441cfcb86277bf51887ab259797dffd3280dd7d3b",
+    "family": "28",
+    "mapping": {
+      "kept": 60,
+      "mapped": 780,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2812189?modelVersionId=3171425"
+  },
+  {
+    "label": "明日方舟｜隐德来希",
+    "character_id": "char_4010_etlchi",
+    "game": "明日方舟",
+    "name": "隐德来希",
+    "lora_name": "anime/明日方舟/隐德来希_3061394.safetensors",
+    "triggers": [
+      "Entelechia-def,1girl, black hair, red eyes, star-shaped pupils, short hair, pointy ears, mole under eye,earrings, hair horns, white collar,white ascot, black coat,black tailcoat, juliet sleeves, long sleeves,red gloves, belt, coffin ornament, red ribbon, coattails, two-sided coat, black shorts, micro shorts, thigh strap, asymmetrical thigh strap, kneehighs, grey socks, high heels, black footwear,",
+      "Entelechia-DazzlingBlue,1girl,  black hair, red eyes, star-shaped pupils, short hair, pointy ears, mole under eye, flower earrings, hat, black headwear, blue jacket, open jacket, cross pendant, white romper, sleeveless, center opening, cleavage cutout, belt, black thighhighs, thigh boots, black footwear, high heels,"
+    ],
+    "sha256": "73cd747fa8e75ee7c69b59090338504949888c2e63c36e4069284e5805417195",
+    "family": "28",
+    "mapping": {
+      "kept": 96,
+      "mapped": 1248,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2723881?modelVersionId=3061394"
+  },
+  {
+    "label": "明日方舟｜黍",
+    "character_id": "char_2025_shu",
+    "game": "明日方舟",
+    "name": "黍",
+    "lora_name": "anime/明日方舟/黍_3032245.safetensors",
+    "triggers": [
+      "shu"
+    ],
+    "sha256": "5675954b3c0344650310a798fc3c1cff965c57f5e987ef37ad5190fbe1e36650",
+    "family": "28",
+    "mapping": {
+      "kept": 96,
+      "mapped": 1248,
+      "dropped_gen2": 0,
+      "dropped_watch": 0,
+      "dropped_unknown": 0,
+      "non_dit": 0,
+      "dropped_interface": 0
+    },
+    "source": "https://civitai.com/models/2700192?modelVersionId=3032245"
+  }
+]

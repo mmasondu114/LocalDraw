@@ -1,0 +1,33 @@
+{
+  "label": "Anima 3.8B v1.1",
+  "files": [
+    {
+      "name": "Anima-3.8B-v1.1.safetensors",
+      "directory": "models/diffusion_models",
+      "url": "https://huggingface.co/lylogummy/Anima-3.8B/resolve/main/difussion_models/Anima-3.8B-v1.1.safetensors",
+      "size": 8809227318,
+      "sha256": "4a458d26b21efa350073422f756d521b4397d9ca5964da4dc6bd9ae258a29629"
+    },
+    {
+      "name": "qwen35_4b.safetensors",
+      "directory": "models/text_encoders",
+      "url": "https://huggingface.co/lylogummy/Anima-3.8B/resolve/main/text_encoders/qwen35_4b.safetensors",
+      "size": 4779016600,
+      "sha256": "ea289be7c916726d09953c7db9971c82b280e694b5d7c47f8ad9ffad6acb54ba"
+    },
+    {
+      "name": "qwen_3_06b_base.safetensors",
+      "directory": "models/text_encoders",
+      "url": "https://huggingface.co/circlestone-labs/Anima/resolve/main/split_files/text_encoders/qwen_3_06b_base.safetensors",
+      "size": 1192135096,
+      "sha256": "cd2a512003e2f9f3cd3c32a9c3573f820bb28c940f73c57b1ddaa983d9223eba"
+    },
+    {
+      "name": "qwen_image_vae.safetensors",
+      "directory": "models/vae",
+      "url": "https://huggingface.co/circlestone-labs/Anima/resolve/main/split_files/vae/qwen_image_vae.safetensors",
+      "size": 253806246,
+      "sha256": "a70580f0213e67967ee9c95f05bb400e8fb08307e017a924bf3441223e023d1f"
+    }
+  ]
+}

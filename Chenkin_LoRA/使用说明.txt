@@ -1,0 +1,56 @@
+Chenkin 原神 / 明日方舟 LoRA 下载器
+
+双击 00-download.bat 开始。外层的 12-download-chenkin-loras.bat 也可启动。
+默认同时下载 3 个文件，每个文件最多 8 路连接；服务器是否支持分段会影响实际连接数。
+文件分别保存在 genshin 和 arknights，文件名包含模型、版本、文件 ID，避免重名覆盖。
+
+清单范围
+随附目录来自 2026-09-19 UTC 的作者 431 个 LoRA 的完整本地目录。
+按作者 Chenkin、类型 LORA、模型名称或标签包含 genshin / arknights（不区分大小写）筛选。
+不匹配说明正文，避免把互相推广其他模型的链接误判为相关模型。
+默认只保留 SDXL 1.0、Pony、Illustrious、NoobAI 版本。
+原神 66 个模型、128 个权重文件；明日方舟 14 个模型、19 个权重文件。
+共 147 个文件，约 11.75 GiB，包含筛选范围内的历史版本；不是仅最新版本。
+排除 SD 1.5、SD 2.0、Flux 和 Other（千问）版本。
+Pony、Illustrious、NoobAI 应搭配各自兼容的基础模型，不代表可以在所有 SDXL 模型中通用。
+不下载示例图和训练数据。每个版本所需基础模型见 清单.csv。
+在线目录可能新增、下架或改变权限，可按下方 --refresh 命令重新获取完整目录。
+
+登录
+测试下载时 Civitai 返回 HTTP 401，需使用你自己的 API Key。
+到 https://civitai.com/user/account ，点击 Security & Apps → Add API Key 创建 Key。
+权限保留 Profile & Settings / Read 和 Models / Read 即可。
+运行 BAT 时按提示粘贴；输入隐藏、不回显、不自动保存，Key 无需发送给任何人。
+也可在此文件夹新建 civitai-token.txt，只写一行 Key；或设置 CIVITAI_API_KEY 环境变量。
+如你自己创建了 token 文件，分享整个文件夹之前先移走该文件。
+Key 不提供额外的付费、提前访问或其他账号没有的下载权限。
+
+续传与验证
+断网时会自动重试；整批结束后还会重新获取地址、续传未完成文件，最多 3 轮。
+断电、关闭窗口或重启后，重新双击同一个 BAT。
+不要删除 .aria2 文件或改动未完成文件的名字；进度每 5 秒保存一次。
+断电时尚未保存的少量进度可能重下。完成文件会进行 SHA256 校验，并在下次运行跳过。
+没有续传记录且校验不符的旧文件会移入 _damaged 后重新下载，不会冒充下载成功。
+错误保存在 download.log，未完成项目保存在 unfinished.json。
+发生 401/403 时检查 API Key 和账号权限；受限或失效模型会明确留在未完成清单。
+只复制 BAT 不够：保留 download.py、catalog.json 和 tools 文件夹。
+下载器固定使用 tools/aria2-1.36.0/aria2c.exe，来自 aria2 官方发布。
+脚本先通过 Civitai 接口获取临时文件地址，再用 aria2 多线程续传；API Key 不传给文件存储站点。
+该版本已通过本机并行下载、强制中断、进度文件保存和续传校验测试。
+已避开 Windows aria2 1.37.0 的进度文件保存故障（上游 issue 2138）。
+本机已安装 Python，无需另装依赖包。
+
+可选命令（在此文件夹打开终端）
+只看清单：00-download.bat --list
+只下载标注 SDXL 1.0 的版本：00-download.bat --family sdxl
+如以后明确需要全部基础模型版本：00-download.bat --family all
+更新在线清单后下载：00-download.bat --refresh
+只更新并查看清单：00-download.bat --refresh --list
+改为 4 文件并行、每文件 16 路：00-download.bat --jobs 4 --connections 16
+指定 HTTP/Mixed 代理：00-download.bat --proxy http://127.0.0.1:7890
+不手动输入 Key：00-download.bat --no-prompt
+默认跟随检测到的系统/环境 HTTP 代理，端口以你的代理软件为准。
+
+来源：https://civitai.com/user/Chenkin
+aria2 官方：https://aria2.github.io/
+进度文件故障记录：https://github.com/aria2/aria2/issues/2138

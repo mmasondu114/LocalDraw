@@ -1,0 +1,17 @@
+{
+  "label": "WAI-illustrious-SDXL v17.0",
+  "name": "waiIllustriousSDXL_v170.safetensors",
+  "size": 6938040682,
+  "sha256": "f116b0c78ff441467b0cdc8f1936e1ed18ea31e9997c7b132b1b8db533f0bd04",
+  "directory": "models/checkpoints",
+  "chunk_size": 67108864,
+  "source": "https://civitai.com/models/827184?modelVersionId=2883731",
+  "mirror_source": "https://modelscope.cn/models/HingXuan/WAI-illustrious-SDXL-v17",
+  "mirror_revision": "20260501150022",
+  "mirror_commit": "e8fa7308fa3489fc66319b5d7d2ce2f49ddc6175",
+  "url": "https://modelscope.cn/api/v1/models/HingXuan/WAI-illustrious-SDXL-v17/repo?Revision=20260501150022&FilePath=waiIllustriousSDXL_v170.safetensors",
+  "fallback_urls": [
+    "https://civitai.com/api/download/models/2883731?fileId=2763986",
+    "https://hf-mirror.com/LyliaEngine/waiIllustriousSDXL_v170/resolve/5ef4e2da7173a160ad04aebcaa2fdcd6d20ed792/waiIllustriousSDXL_v170.safetensors"
+  ]
+}

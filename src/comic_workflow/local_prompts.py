@@ -117,3 +117,5 @@ def generate_draft(app, pid, request, update, jid):
         draft.update(status="failed", error=str(exc))
         e.save(path, draft)
         raise
+    finally:
+        app.model.stop()

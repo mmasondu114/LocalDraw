@@ -6,7 +6,6 @@ Reference conditioning is not a visual acceptance decision.
 import copy
 import hashlib
 from functools import lru_cache
-from .installed_assets import models as model_directory
 from . import engine as e
 from .paths import DATA, ROOT
 
@@ -35,7 +34,7 @@ def _asset_hash(path, size, mtime_ns, ctime_ns):
 def freeze_assets():
     rows = []
     for name, expected in ASSETS.items():
-        path = model_directory(ROOT) / name
+        path = ROOT / 'models' / name
         e.need(path.is_file(), 'Qwen 编辑模型文件尚未安装完整：' + name)
         stat = path.stat()
         actual = _asset_hash(str(path), stat.st_size, stat.st_mtime_ns, stat.st_ctime_ns)

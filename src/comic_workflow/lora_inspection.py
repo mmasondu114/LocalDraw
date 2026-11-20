@@ -6,7 +6,6 @@ import copy
 import re
 from functools import lru_cache
 from pathlib import Path
-from .installed_assets import models as model_directory
 from . import engine as e
 from .paths import ROOT, DATA
 
@@ -136,7 +135,7 @@ def inspect_local(checkpoint=None):
     configured = e.read(ROOT / "config/comfyui.json")["checkpoint"]
     selected = checkpoint or configured
     from .lora_folders import directory
-    scan_root = model_directory(ROOT) / "loras"
+    scan_root = ROOT / "models/loras"
     if checkpoint and (scan_root / directory(checkpoint)).is_dir():
         scan_root = scan_root / directory(checkpoint)
     for p in scan_root.rglob("*.safetensors"):
@@ -153,7 +152,7 @@ def inspect_local(checkpoint=None):
                 "note": str(exc),
                 "family": "无法读取",
             }
-        name = p.relative_to(model_directory(ROOT) / "loras").as_posix()
+        name = p.relative_to(ROOT / "models/loras").as_posix()
         result.update(search_identity(name, roster))
         test = tests.get(name, {})
         if (

@@ -1,0 +1,17 @@
+[project]
+name = "comfyui-anima-3.8b-lorapatch"
+description = "Apply 28-block Anima base (and 40-block Anima-2.9B) LoRAs to Anima-3.8B (52 blocks) with the correct block-index mapping, at load time and without converting files."
+version = "1.0.0"
+license = { file = "LICENSE" }
+requires-python = ">=3.9"
+readme = "README.md"
+classifiers = ["Operating System :: OS Independent"]
+
+[project.urls]
+Repository = "https://github.com/shizukulabs-ai/ComfyUI-Anima-3.8B-loraPatch"
+"Bug Tracker" = "https://github.com/shizukulabs-ai/ComfyUI-Anima-3.8B-loraPatch/issues"
+
+[tool.comfy]
+PublisherId = "shizukulabs-ai"
+DisplayName = "Anima-3.8B LoRA patch"
+Icon = ""

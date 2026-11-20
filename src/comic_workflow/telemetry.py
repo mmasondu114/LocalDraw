@@ -117,12 +117,11 @@ def stream_body(body):
 
 def chat_stream(url, body, timeout, update, logdir=None):
     """Reassemble the same chat response, rejecting partial/disconnected streams."""
-    from .analysis_models import worker_headers
     body = stream_body(body)
     request = urllib.request.Request(
         url,
         data=json.dumps(body).encode(),
-        headers={"Content-Type": "application/json", "Accept": "text/event-stream", **worker_headers(url)},
+        headers={"Content-Type": "application/json", "Accept": "text/event-stream"},
     )
     opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
     content, reasoning = [], []

@@ -6,7 +6,6 @@ The pose branches use the existing author's OpenPose templates.
 import json
 import re
 
-from .installed_assets import models as model_directory
 from . import engine as e, interactions, interaction_masks, regional_lora, regional_prompt
 from .framing import explicit_full_body, explicit_upper_body
 from .paths import ROOT
@@ -87,7 +86,7 @@ def apply(graph, passes, cfg, negative, add_triggers=True, characters=None, glob
         graph['3']['inputs']['text'] += ', cropped, cropped feet, cropped head, out of frame, close-up'
     if use_pose or coupled_pose:
         control = e.read(ROOT / 'config/multi-person-control.json')
-        path = model_directory(ROOT) / "controlnet" / control['name']
+        path = ROOT / 'models/controlnet' / control['name']
         e.need(path.is_file() and path.stat().st_size == control['size']
                and not path.with_suffix(path.suffix + '.aria2').exists(), '多人姿势控制模型未安装完整')
         pose = (interactions.published_pose(interaction, roles, cfg,

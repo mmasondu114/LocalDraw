@@ -1,7 +1,7 @@
 {
-  "endpoint": "http://127.0.0.1:18188",
-  "source_directory": "runtime/ComfyUI-KreaMoss",
-  "python_path": "runtime/python/python.exe",
+  "endpoint": "http://127.0.0.1:8188",
+  "source_directory": "F:\\ChatGPT\\local_draw\\runtime\\ComfyUI-KreaMoss",
+  "python_path": "runtime/kreamoss-venv/Scripts/python.exe",
   "checkpoint": "animaDeltaMix38BQwen0_deltaMixV60.safetensors",
   "adapter": "delta",
   "width": 832,
@@ -26,8 +26,7 @@
   "guided_hand_repair": false,
   "regional_camera_pose_fit": false,
   "memory_mode": "auto_cuda",
-  "consistency_lora": false,
+  "consistency_lora": true,
   "consistency_lora_weight": 0.8,
-  "delta_matte_skin": true,
-  "private_service": true
+  "delta_matte_skin": true
 }

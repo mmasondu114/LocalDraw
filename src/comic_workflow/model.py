@@ -3,7 +3,6 @@
 import copy
 from contextlib import nullcontext
 import json
-import os
 import subprocess
 import threading
 import time
@@ -13,8 +12,7 @@ from pathlib import Path
 
 from . import engine as e
 from .downloader import filehash
-from .paths import ROOT, DATA, settings, local_path, raw_settings
-from .analysis_models import worker_headers, worker_key, release_key
+from .paths import ROOT, DATA, settings, local_path
 from .processes import attach_exit_job, close_job, terminate_tree
 from .telemetry import chat_stream, stream_body, emit
 from .output_language import DEFAULT_OUTPUT_POLICY
@@ -49,7 +47,7 @@ def request_json(endpoint, body=None, timeout=5):
     req = urllib.request.Request(
         endpoint,
         data=json.dumps(body).encode() if body is not None else None,
-        headers={"Content-Type": "application/json", **worker_headers(endpoint)},
+        headers={"Content-Type": "application/json"},
     )
     opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
     try:
@@ -500,18 +498,10 @@ class ModelManager:
         self.message = "未启动语言模型"
         self.job = None
         self.vision = False
-        self.worker_port = None
         self.strata = None
 
-    def owned_worker(self):
-        return self.strata.process if self.strata is not None else self.process
-
-    def owns_live_worker(self):
-        worker = self.owned_worker()
-        return worker is not None and worker.poll() is None
-
     def status(self):
-        cfg = raw_settings() if self.process is not None and self.process.poll() is None else settings()
+        cfg = settings()
         if self.strata is not None:
             return self.strata.status()
         if cfg.get("model_backend") == "strata":
@@ -522,7 +512,7 @@ class ModelManager:
         owned = self.process is not None and self.process.poll() is None
         try:
             ready = (
-                request_json(endpoint(cfg) + "/health", timeout=1).get("status") == "ok"
+                request_json(endpoint() + "/health", timeout=1).get("status") == "ok"
             )
         except Exception:
             ready = False
@@ -592,7 +582,7 @@ class ModelManager:
 
             e.need(
                 path.exists() and path.stat().st_size == cfg["model_size"],
-                "语言模型未就绪，请打开右上角「下载模型」",
+                "模型未完整，请自行运行 01-download-model.bat",
             )
             e.need(
                 verify(path, "校验语言模型") == cfg["model_sha256"],
@@ -605,7 +595,7 @@ class ModelManager:
             args = [
                 str(local_path(cfg["runtime_path"])),
                 "-m",
-                str(cfg["model_path"]),
+                str(path),
                 "--alias",
                 "comic-local",
                 "--host",
@@ -617,9 +607,9 @@ class ModelManager:
                 "--parallel",
                 "1",
                 "--slot-save-path",
-                "data/model-slots",
+                str(DATA / "model-slots"),
                 "--gpu-layers",
-                "auto" if cfg.get("auto_fit_vram") else "all",
+                "all",
                 "--device",
                 "CUDA0",
                 "--flash-attn",
@@ -636,19 +626,19 @@ class ModelManager:
                 "--reasoning",
                 "off",
                 "--fit",
-                "on" if cfg.get("auto_fit_vram") else "off",
+                "off",
             ]
             if vision:
                 vc = e.read(ROOT / "config/vision-model.json")
                 vp = ROOT / vc["directory"] / vc["name"]
                 e.need(
                     vp.is_file() and vp.stat().st_size == vc["size"],
-                    "视觉模块未就绪，请打开右上角「下载模型」",
+                    "视觉模块未完整，请运行 07-download-vision.bat",
                 )
                 e.need(verify(vp, "校验视觉模块") == vc["sha256"], "视觉模块校验失败")
                 args += [
                     "--mmproj",
-                    str(Path(vc["directory"]) / vc["name"]),
+                    str(vp),
                     "--image-max-tokens",
                     "1024",
                 ]
@@ -658,11 +648,9 @@ class ModelManager:
             self.log = (DATA / "logs/model-server.log").open("a", encoding="utf-8")
             log_offset = (DATA / "logs/model-server.log").stat().st_size
             e.save(DATA / "logs/model-command.json", args)
-            self.worker_port = cfg["model_port"]
             self.process = subprocess.Popen(
                 args,
                 cwd=ROOT,
-                env={**os.environ, "LLAMA_API_KEY": worker_key(self.worker_port)},
                 stdout=self.log,
                 stderr=subprocess.STDOUT,
                 creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
@@ -727,27 +715,6 @@ class ModelManager:
             self.stop()
             raise ValueError("模型加载超时，已停止本项目模型进程")
 
-    def unload_if_idle(self):
-        """Called while the owning job holds GENERATION_LOCK; only private workers qualify."""
-        with self.lock:
-            if not self.owns_live_worker():
-                return {"status": "already_unloaded"}
-            try:
-                if self.strata is not None:
-                    result = self.strata.unload_if_idle()
-                    if result["status"] == "unloaded":
-                        self.strata = None
-                    return result
-                slots = request_json(endpoint({"model_port": self.worker_port}) + "/slots", timeout=5)
-                if not isinstance(slots, list) or not slots or any(
-                    slot.get("is_processing") is not False for slot in slots
-                ):
-                    return {"status": "deferred", "reason": "无法确认所有模型请求已结束"}
-                self.stop()
-                return {"status": "unloaded", "method": "owned_llama_worker"}
-            except (OSError, ValueError, TypeError, AttributeError) as exc:
-                return {"status": "deferred", "reason": str(exc)}
-
     def clear_context(self):
         """Clear only our idle text server; persisted outputs are not session cache."""
         if self.strata is not None:
@@ -755,13 +722,12 @@ class ModelManager:
         if self.process is None or self.process.poll() is not None:
             return {"status": "cleared", "method": "already_unloaded"}
         try:
-            origin = endpoint({"model_port": self.worker_port}) if self.worker_port is not None else endpoint()
-            slots = request_json(origin + "/slots", timeout=10)
+            slots = request_json(endpoint() + "/slots", timeout=10)
             e.need(isinstance(slots, list) and slots, "未能确认文字模型会话")
             if any(s.get("is_processing") for s in slots):
                 return {"status": "deferred", "reason": "文字模型仍在处理请求"}
             for slot in slots:
-                result = request_json(origin + f"/slots/{int(slot['id'])}?action=erase", {}, timeout=15)
+                result = request_json(endpoint() + f"/slots/{int(slot['id'])}?action=erase", {}, timeout=15)
                 e.need(result.get("id_slot") == slot['id'], "上下文清理结果不符")
             return {"status": "cleared", "method": "erase_slots", "slots": len(slots)}
         except Exception as exc:
@@ -784,8 +750,6 @@ class ModelManager:
             self.strata.stop()
             self.strata = None
         terminate_tree(self.process)
-        release_key(self.worker_port)
-        self.worker_port = None
         close_job(self.job)
         self.job = None
         if self.log:

@@ -1,0 +1,22 @@
+{
+  "writing_provider": "qwen",
+  "host": "127.0.0.1",
+  "port": 18765,
+  "model_port": 18091,
+  "model_path": "models/Huihui-Qwen3.8-27B-abliterated-UD-Q5_K_XL.gguf",
+  "runtime_path": "runtime/llama-server.exe",
+  "model_size": 20673612704,
+  "model_sha256": "a6ff520853eba5cad302a2a16144b7fe683792cca7fb2830a08479e78ebe12b6",
+  "context_size": 16384,
+  "max_output_tokens": 6000,
+  "gpu_layers": 99,
+  "parallel": 1,
+  "cache_type_k": "q8_0",
+  "cache_type_v": "q8_0",
+  "batch_size": 256,
+  "ubatch_size": 128,
+  "temperature": 0.7,
+  "model_timeout_seconds": 1200,
+  "analysis_model": "huihui_27b",
+  "auto_fit_vram": true
+}

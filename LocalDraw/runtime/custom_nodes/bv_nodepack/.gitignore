@@ -1,0 +1,32 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Local frontend dependencies
+ui/node_modules/
+
+.idea/
+.vscode/
+*.log
+
+# Local documentation planning (not published)
+BV_DOCS_PLAN.local.md
+
+# Local Codex configuration
+.codex/
+.codex-worktrees/
+.codex-test
+.abacusai/
+
+# Local runtime state written when the pack runs outside ComfyUI (LUT catalog
+# state, Remote LLM preferences and credentials, response and header caches).
+/user/
+/models/luts/downloaded/
+
+# Isolated local ComfyUI audit user roots
+/.tmp/codex-node-audit-*/
+
+# Local build, browser regression and acceptance artifacts
+/.tmp/

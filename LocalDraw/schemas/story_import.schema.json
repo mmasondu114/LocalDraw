@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Complete storyboard import",
+  "type": "object",
+  "properties": {
+    "format": {"const": "local-draw-story-v1"},
+    "brief": {"$ref": "brief.schema.json"},
+    "canon": {"$ref": "canon.schema.json"},
+    "pages": {"type": "array", "minItems": 1, "items": {"$ref": "page.schema.json"}}
+  },
+  "required": ["brief", "canon", "pages"],
+  "additionalProperties": false
+}

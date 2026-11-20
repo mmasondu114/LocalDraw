@@ -1,0 +1,111 @@
+{
+  "format": "local-draw-story-v1",
+  "brief": {
+    "title": "屋檐下",
+    "genre": "日常",
+    "direction": "小雨在屋檐下等雨停。",
+    "page_count": 1,
+    "panels_per_page": 1,
+    "panel_mode": "flexible",
+    "reading_direction": "LTR",
+    "page_mode": "single_page",
+    "first_story_page_side": "right",
+    "must_include": [],
+    "avoid": [],
+    "character_material": ""
+  },
+  "canon": {
+    "characters": [
+      {
+        "id": "C001",
+        "name": "小雨",
+        "origin": "original",
+        "source_notes": [],
+        "verified_facts": [],
+        "adaptation_choices": [],
+        "unknowns": [],
+        "appearance": "短发，穿黄色雨衣。",
+        "voice": "轻声",
+        "sample_lines": [],
+        "motivation": "等雨停",
+        "taboos": []
+      }
+    ],
+    "scenes": [
+      {
+        "id": "S001",
+        "name": "小巷屋檐",
+        "layout": "屋檐下是人行道",
+        "landmarks": [
+          "屋檐"
+        ],
+        "lighting": "阴天",
+        "axis_rule": "从街边看向屋檐"
+      }
+    ],
+    "props": [],
+    "world_rules": [],
+    "initial_state": {}
+  },
+  "pages": [
+    {
+      "id": "P001",
+      "number": 1,
+      "reading_direction": "LTR",
+      "layout": "单格横幅",
+      "page_turn_note": "",
+      "state_in": {},
+      "panels": [
+        {
+          "id": "P001-K01",
+          "page_id": "P001",
+          "number": 1,
+          "purpose": "交代人物在等雨停",
+          "layout": "单格横幅",
+          "aspect_ratio": "3:2",
+          "shot": "中景",
+          "angle": "平视",
+          "composition": "人物在左，右侧留给雨幕",
+          "scene_id": "S001",
+          "characters": [
+            {
+              "character_id": "C001",
+              "position": "画面左侧",
+              "gaze": "看向手心",
+              "action": "伸手接雨",
+              "expression": "微笑"
+            }
+          ],
+          "main_instant": "小雨站在屋檐下，伸出手掌接住一滴雨。",
+          "background": "屋檐外的小巷",
+          "props": [],
+          "transition_in": "开场",
+          "transition_out": "本页结束",
+          "state_after": {},
+          "drawing_description": "小雨站在屋檐下，伸出手掌接住一滴雨。"
+        }
+      ],
+      "lettering": [
+        {
+          "id": "P001-K01-T01",
+          "panel_id": "P001-K01",
+          "kind": "dialogue",
+          "speaker_id": "C001",
+          "text": "雨快停了。",
+          "bubble_position": "右上",
+          "order": 1
+        },
+        {
+          "id": "P001-K01-T02",
+          "panel_id": "P001-K01",
+          "kind": "sfx",
+          "speaker_id": null,
+          "text": "滴答",
+          "bubble_position": "右下",
+          "order": 2
+        }
+      ],
+      "state_out": {}
+    }
+  ]
+}

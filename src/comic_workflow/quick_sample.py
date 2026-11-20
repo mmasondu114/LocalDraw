@@ -109,6 +109,7 @@ def translate(app, request, update, jid):
         e.save(folder / "draft.json", {"kind": "prompt_translate", "source": context, "result": result, "metrics": metrics})
         return result
     finally:
+        app.model.stop()
         temporary.cleanup()
 
 
@@ -189,29 +190,6 @@ def selected_loras(items, checkpoint, installed=None):
     return selected
 
 
-def prompt_characters(refs):
-    characters = []
-    for n, card in enumerate(refs or [{"name": "未绑定角色（不要求出镜）", "profile": {}}], 1):
-        character = {key: ([] if spec.get("type") == "array" else "")
-                     for key, spec in CHARACTER["properties"].items()}
-        profile = card["profile"]
-        character.update(id=f"C{n:03}", name=card["name"], origin="original",
-                         source_notes=["用户角色库快照；此处不推断原作事实"],
-                         appearance=e.encoded(profile) if profile else "人物是否出现及外观仅按用户输入",
-                         voice=profile.get("voice", ""), motivation=profile.get("motivation", ""))
-        characters.append(character)
-    return characters
-
-
-def prompt_panel(text, ratio, cast, page="P001", number=1):
-    return {"id": f"{page}-K{number:02}", "page_id": page, "number": number, "purpose": "按用户描述试画",
-             "layout": "单幅画面，填满画布", "aspect_ratio": ratio, "shot": "遵循用户指定的景别",
-             "angle": "遵循用户指定的视角", "composition": "按用户画面描述，不留无意的白边",
-             "scene_id": "S001", "characters": cast, "main_instant": text,
-             "background": "按用户描述，不添加无关情节", "props": [], "transition_in": "独立单幅画面",
-             "transition_out": "独立单幅画面", "state_after": {}, "drawing_description": text}
-
-
 def create(repo, request, *, persistent=False):
     text = request.get("text", "")
     e.need(isinstance(text, str) and 1 <= len(text.strip()) <= 12000, "请输入 1–12000 字符的提示词")
@@ -283,7 +261,16 @@ def create(repo, request, *, persistent=False):
         validate(selections)
     positive = "\n\n".join([text] + [c["prompt"] for c in selections if c["prompt"].strip()])
     e.need(len(positive) <= 24000, "合并后的提示词过长，请精简角色外观描述")
-    characters = prompt_characters(refs)
+    characters = []
+    for n, card in enumerate(refs or [{"name": "未绑定角色（不要求出镜）", "profile": {}}], 1):
+        character = {key: ([] if spec.get("type") == "array" else "")
+                     for key, spec in CHARACTER["properties"].items()}
+        profile = card["profile"]
+        character.update(id=f"C{n:03}", name=card["name"], origin="original",
+                         source_notes=["用户角色库快照；此处不推断原作事实"],
+                         appearance=e.encoded(profile) if profile else "人物是否出现及外观仅按用户输入",
+                         voice=profile.get("voice", ""), motivation=profile.get("motivation", ""))
+        characters.append(character)
     cast = [{"character_id": c["id"], "position": "按用户描述", "gaze": "按用户描述",
              "action": "按用户描述的单一瞬间", "expression": "按用户描述"}
             for c in characters] if refs else []
@@ -291,7 +278,12 @@ def create(repo, request, *, persistent=False):
              "direction": text, "page_count": 1, "panels_per_page": 1,
              "reading_direction": "LTR", "page_mode": "single_page", "first_story_page_side": "right",
              "must_include": [], "avoid": [], "character_material": text, "character_refs": refs}
-    panel = prompt_panel(text, ratio, cast)
+    panel = {"id": "P001-K01", "page_id": "P001", "number": 1, "purpose": "按用户描述试画",
+             "layout": "单幅画面，填满画布", "aspect_ratio": ratio, "shot": "遵循用户指定的景别",
+             "angle": "遵循用户指定的视角", "composition": "按用户画面描述，不留无意的白边",
+             "scene_id": "S001", "characters": cast, "main_instant": text,
+             "background": "按用户描述，不添加无关情节", "props": [], "transition_in": "独立单幅画面",
+             "transition_out": "独立单幅画面", "state_after": {}, "drawing_description": text}
     p = {"version": 1, "workflow": "direct", "quick_sample": True, "script": text, "brief": brief,
          "prompt_input": {"text": text, "negative": negative, "count": count,
                           "checkpoint": checkpoint, "aspect_ratio": ratio, "resolution": resolution, "loras": loras,

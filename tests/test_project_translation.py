@@ -33,5 +33,5 @@ class ProjectTranslationTests(unittest.TestCase):
             self.assertEqual(q['script'].count('\n\n'),1)
             self.assertEqual(list(text_leaves(q['pages'])),[])
             self.assertEqual(e.read(repo.folder(pid)/'history'/f"v{p['version']:06}.json"),p)
-            app.model.stop.assert_not_called()  # Jobs owns final idle release
+            app.model.stop.assert_called_once()
 

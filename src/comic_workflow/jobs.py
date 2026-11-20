@@ -210,8 +210,8 @@ class Jobs:
             local.checkpoint = checkpoint
             local.project = pid
             try:
+                checkpoint()
                 try:
-                    checkpoint()
                     result = fn(update, jid)
                 finally:
                     if self.on_finish:

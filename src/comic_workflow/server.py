@@ -27,14 +27,10 @@ from .lora_inspection import inspect_local
 class Application:
     def __init__(self, repo=None):
         self.repo = repo or Repository()
-        from .model_downloads import ModelDownloads
-        self.model_downloads = ModelDownloads()
         self.jobs = Jobs(on_pause=self.release_paused_models, on_finish=self.clear_finished_context)
         from .storyboard_tools import restore_jobs
         restore_jobs(self.repo, self.jobs)
         self.model = ModelManager()
-        self.pending_idle_worker = None
-        self.idle_release_timer = None
         self.comfy = comfyui.ComfyManager()
         self.token = secrets.token_urlsafe(32)
         self.characters = CharacterLibrary(self.repo.root.parent / "characters")
@@ -42,62 +38,18 @@ class Application:
         self.night_queue = NightQueue(self)
 
     def clear_finished_context(self, job):
-        # The current writer still owns GENERATION_LOCK until cleanup returns.
-        if job["label"] in {"启动语言模型", "启动 FlashNext", "启动分析模型"}:
-            self.pending_idle_worker = None
+        # Loading is a deliberate warm-up, not a text generation submission.
+        if job['label'] in {'启动语言模型', '启动 FlashNext'}:
             return None
-        if not self.model.owns_live_worker():
-            return {"status": "already_unloaded"}
-        with self.night_queue.lock, self.jobs.lock:
-            newer_jobs = any(other != job.get("id") for other in self.jobs.controls)
-            waiting = any(item["status"] in {"waiting", "running"} and
-                          (item["status"] == "waiting" or item.get("job") != job.get("id"))
-                          for item in self.night_queue.state["items"])
-            self.pending_idle_worker = self.model.owned_worker()
-            if newer_jobs or waiting:
-                return {"status": "deferred", "reason": "工作室还有任务"}
-            result = self.model.unload_if_idle()
-            if result["status"] == "deferred":
-                self.schedule_idle_retry(self.pending_idle_worker)
-            else:
-                self.pending_idle_worker = None
-            return result
-
-    def schedule_idle_retry(self, worker):
-        # The server may still be draining a cancelled stream. Retry only a
-        # release that was already requested, and only for the same process.
-        if self.idle_release_timer:
-            self.idle_release_timer.cancel()
-        def retry():
-            self.release_idle_queue_model(worker)
-        timer = threading.Timer(5, retry)
-        timer.daemon = True
-        self.idle_release_timer = timer
-        timer.start()
-
-    def release_idle_queue_model(self, expected=None):
-        from .model import GENERATION_LOCK
-        worker = self.pending_idle_worker if expected is None else expected
-        if worker is None or not GENERATION_LOCK.acquire(blocking=False):
-            return
-        try:
-            if (self.pending_idle_worker is worker and self.model.owned_worker() is worker and
-                    self.model.owns_live_worker()):
-                self.clear_finished_context({"label": "队列已更新"})
-        finally:
-            GENERATION_LOCK.release()
-
-    def release_drawing_cache(self):
-        if comfyui.discover()["ready"]:
-            queue = comfyui.api("/queue")
-            e.need(not queue.get("queue_running") and not queue.get("queue_pending"),
-                   "绘图进行中，请等待完成")
-            if self.comfy.process is not None and self.comfy.process.poll() is None:
-                comfyui.api("/free", {"unload_models": True, "free_memory": True})
+        return self.model.clear_context()
 
     def release_paused_models(self):
         """Unload at a durable pause boundary; keep ComfyUI alive for resume."""
-        self.release_drawing_cache()
+        if comfyui.discover()["ready"]:
+            queue = comfyui.api("/queue")
+            e.need(not queue.get("queue_running") and not queue.get("queue_pending"),
+                   "绘图队列尚未清空，未卸载模型")
+            comfyui.api("/free", {"unload_models": True, "free_memory": True})
         if self.model.status()["owned"]:
             vision = self.model.vision
             self.model.stop()
@@ -135,29 +87,20 @@ class Application:
                     self.jobs.memory.pop(jid, None)
 
     def prepare_language(self, vision=False, update=lambda message: None):
-        from .paths import use_vision_model
-        use_vision_model(vision)
-        self.release_drawing_cache()
+        if comfyui.discover()["ready"]:
+            queue = comfyui.api("/queue")
+            e.need(
+                not queue.get("queue_running") and not queue.get("queue_pending"),
+                "绘图进行中，请等待完成",
+            )
+            comfyui.api("/free", {"unload_models": True, "free_memory": True})
         self.model.start(vision=vision, update=update)
 
     def action(self, a):
         action = a["action"]
         pid = a.get("project")
-        if action in {"check_update", "open_releases"}:
-            from . import updates
-            return updates.check(a.get("token", "")) if action == "check_update" else updates.open_releases()
-        if action == "download_model_asset":
-            return self.model_downloads.start(a.get("asset"))
-        if action == "open_model_folder":
-            return self.model_downloads.open_folder(a.get("asset"))
-        if action in {"analysis_model", "set_analysis_model"}:
-            from .analysis_models import choices, select_model
-            return choices() if action == "analysis_model" else select_model(a.get("model"), self.model)
         if action in {"start_queue", "pause_queue", "remove_queue_item", "reorder_queue", "retry_queue_item", "clear_queue_history", "rename_queue_item"}:
-            result = self.night_queue.control(a)
-            if action in {"remove_queue_item", "clear_queue_history"}:
-                self.release_idle_queue_model()
-            return result
+            return self.night_queue.control(a)
         if action == "queue_prompt":
             from .quick_sample import create
             with self.night_queue.lock:
@@ -186,9 +129,6 @@ class Application:
             return self.jobs.update_paused_request(a['job'], lambda request:
                 change_remaining_count(request, comfyui.drawing_state(self.repo, pid)['batches'],
                                        a.get('candidate_count'), a.get('quantity_mode', 'remaining')))
-        if action in {"preview_direct_story", "save_direct_story", "preview_direct_prompts", "save_direct_prompts"}:
-            from . import direct_imports
-            return direct_imports.handle(self.repo, self.characters, a)
         if action in {"preview_story_import", "save_story_import"}:
             from . import story_import
             if action == "preview_story_import":
@@ -399,20 +339,25 @@ class Application:
         if action in ["character_draft", "story_draft"]:
 
             def draft(update, jid):
-                update("正在核对并加载模型，随后生成草稿")
-                self.prepare_language(
-                    vision=action == "character_draft" and a.get("mode") == "image",
-                    update=update,
-                )
-                folder = DATA / "creative" / jid
-                fn = (
-                    creative.character_draft
-                    if action == "character_draft"
-                    else creative.story_draft
-                )
-                result = fn(self.characters, a, folder, update)
-                e.save(folder / "draft.json", {"kind": action, **result})
-                return result
+                try:
+                    update("正在核对并加载模型，随后生成草稿")
+                    self.prepare_language(
+                        vision=action == "character_draft" and a.get("mode") == "image",
+                        update=update,
+                    )
+                    folder = DATA / "creative" / jid
+                    fn = (
+                        creative.character_draft
+                        if action == "character_draft"
+                        else creative.story_draft
+                    )
+                    result = fn(self.characters, a, folder, update)
+                    e.save(folder / "draft.json", {"kind": action, **result})
+                    return result
+                finally:
+                    # Release both language and vision allocations before the job
+                    # finishes and another task can acquire the generation lock.
+                    self.model.stop()
 
             return {
                 "job": self.jobs.submit(
@@ -600,28 +545,33 @@ class Application:
         if action == "start_model":
 
             def start(update, jid):
-                self.prepare_language(update=update)
+                if comfyui.discover()["ready"]:
+                    queue = comfyui.api("/queue")
+                    e.need(
+                        not queue.get("queue_running")
+                        and not queue.get("queue_pending"),
+                        "ComfyUI 正在绘图，请等待队列清空",
+                    )
+                    comfyui.api("/free", {"unload_models": True, "free_memory": True})
+                from .paths import prompt_model
+                with prompt_model("page_redraw"):
+                    self.model.start(update=update)
 
-            return {"job": self.jobs.submit("启动分析模型", start)}
+            return {"job": self.jobs.submit("启动 FlashNext", start)}
         if action == "stop_model":
-            from .model import GENERATION_LOCK
-            e.need(GENERATION_LOCK.acquire(blocking=False), "请等待当前任务结束后卸载模型")
-            try:
-                result = self.model.unload_if_idle()
-                e.need(result["status"] in {"unloaded", "already_unloaded"},
-                       result.get("reason", "模型仍有请求"))
-                return self.model.status()
-            finally:
-                GENERATION_LOCK.release()
+            e.need(
+                not self.model.status()["generating"], "请等待当前任务结束后卸载模型"
+            )
+            self.model.stop()
+            return self.model.status()
         if action == "generate":
             p = self.repo.get(pid)
             e.need(e.digest(p) == a["base_hash"], "项目已变化，请刷新")
-            e.need(self.model.owns_live_worker() and self.model.status()["ready"],
-                   "工作室自己的分析模型尚未就绪，请先点击启动分析模型")
+            e.need(
+                self.model.status()["ready"], "文字模型尚未就绪，请先点击启动 FlashNext"
+            )
 
             def run(update, jid):
-                e.need(self.model.owns_live_worker() and self.model.status()["ready"],
-                       "分析模型已释放，请重新启动后再提交")
                 drawing_kwargs = {}
                 if a["stage"] == "drawing_prompt":
                     prefs = drawing_settings.load(self.repo, pid)
@@ -693,9 +643,12 @@ class Application:
             self.repo.get(pid)
             def plan_bubbles(update, jid):
                 from . import bubble_planner
-                self.prepare_language(update=update)
-                return bubble_planner.generate(self.repo, pid, self.repo.folder(pid) / "runs" / jid,
-                                               update, force=a.get("force") is True)
+                try:
+                    self.prepare_language(update=update)
+                    return bubble_planner.generate(self.repo, pid, self.repo.folder(pid) / "runs" / jid,
+                                                   update, force=a.get("force") is True)
+                finally:
+                    self.model.stop()
             return {"job": self.jobs.submit("AI 逐句选择气泡", plan_bubbles, pid)}
         if action == "sudowrite_package":
             return sudowrite.package(
@@ -759,11 +712,8 @@ def make_handler(app):
                 self.check_host()
                 url = urlparse(self.path)
                 query = parse_qs(url.query)
-                if url.path == "/api/model-downloads":
-                    self.send(200, app.model_downloads.snapshot())
-                    return
                 if url.path == "/api/session":
-                    self.send(200, {"token": app.token, "workspace": str(ROOT)})
+                    self.send(200, {"token": app.token})
                     return
                 if url.path == "/api/desktop-book":
                     from .desktop import book
@@ -800,8 +750,8 @@ def make_handler(app):
                     self.send(200, app.snapshot(query["id"][0]))
                     return
                 if url.path == "/api/prompt-exchange":
-                    from .prompt_exchange import export_download
-                    self.send(200, export_download(app.repo, query["id"][0]))
+                    from .prompt_exchange import export_storyboard
+                    self.send(200, export_storyboard(app.repo, query["id"][0]))
                     return
                 if url.path == "/api/problems":
                     from .problem_panels import state
@@ -1064,8 +1014,6 @@ def make_handler(app):
                     "/problem-panels.js": "problem-panels.js",
                     "/panel-reader.js": "panel-reader.js",
                     "/story-import.js": "story-import.js",
-                    "/model-downloads.js": "model-downloads.js",
-                    "/direct-imports.js": "direct-imports.js",
                     "/loras.js": "loras.js",
                     "/creative.js": "creative.js",
                     "/prompt.js": "prompt.js",

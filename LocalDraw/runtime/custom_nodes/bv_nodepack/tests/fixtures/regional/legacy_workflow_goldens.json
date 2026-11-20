@@ -1,0 +1,122 @@
+{
+  "schema": "bv.regional.legacy-workflow-goldens",
+  "version": 1,
+  "cases": [
+    {
+      "id": "anima-single-regional-lora-v1",
+      "workflow": "tests/fixtures/workflows/anima-regional-skin-tone-lora-hybrid-035.json",
+      "prompt_node_id": 1,
+      "document_version_before": 1,
+      "region_count": 2,
+      "named_lora_stack_count": 1,
+      "legacy_links": [
+        { "from_node": 24, "from_slot": 0, "to_node": 26, "to_slot": 2, "type": "BV_LORA_STACK_REGISTRY" },
+        { "from_node": 1, "from_slot": 1, "to_node": 26, "to_slot": 3, "type": "BV_REGIONAL_LORA_BINDINGS" }
+      ],
+      "migration": {
+        "document_version_after": 2,
+        "region_usage": "generation",
+        "assumed_defaults": ["region usage = generation"]
+      }
+    },
+    {
+      "id": "anima-dual-regional-lora-v1",
+      "workflow": "tests/fixtures/workflows/anima-dual-regional-character-loras-hybrid-035.json",
+      "prompt_node_id": 1,
+      "document_version_before": 1,
+      "region_count": 2,
+      "named_lora_stack_count": 2,
+      "legacy_links": [
+        { "from_node": 31, "from_slot": 0, "to_node": 24, "to_slot": 1, "type": "BV_LORA_STACK_REGISTRY" },
+        { "from_node": 24, "from_slot": 0, "to_node": 26, "to_slot": 2, "type": "BV_LORA_STACK_REGISTRY" },
+        { "from_node": 1, "from_slot": 1, "to_node": 26, "to_slot": 3, "type": "BV_REGIONAL_LORA_BINDINGS" }
+      ],
+      "migration": {
+        "document_version_after": 2,
+        "region_usage": "generation",
+        "assumed_defaults": ["region usage = generation"]
+      }
+    }
+  ],
+  "detailer_cases": [
+    {
+      "id": "detailer-two-jobs-two-resources",
+      "workflow": "tests/fixtures/workflows/bv-regional-v3-detailer-loop-two-jobs.json",
+      "prompt_node_id": 7,
+      "plan_node_id": 8,
+      "collector_node_id": 15,
+      "expected_region_ids": [
+        "6ee983f7-6a0b-44cf-b05c-64810741449c",
+        "835b5c7b-29f4-451f-ac2e-948527b8c51d"
+      ],
+      "expected_resource_ids": ["Face", "Hand"],
+      "expected_collector_id": "f3993446-d59a-49a3-9918-14817cadcdb9",
+      "provider_link_type": "BV_RUNTIME_RESOURCE_PROVIDER",
+      "loop_link_types": ["BV_DETAILER_PLAN", "BV_DETAILER_LOOP_STATE", "BV_DETAILER_JOB", "FLOW_CONTROL"]
+    }
+  ],
+  "root_graph_cases": [
+    {
+      "id": "m0-four-collector-root-graph",
+      "workflow": "tests/fixtures/regional/bv-regional-v3-m0-multi-fan-in.json",
+      "collector_count": 4,
+      "consumer_count": 1,
+      "provider_link_count": 4,
+      "binding_count": 4
+    }
+  ],
+  "subgraph_cases": [
+    {
+      "id": "m0-four-collector-subgraph",
+      "workflow": "tests/fixtures/regional/m0_subgraph_four_collectors.json",
+      "collector_count": 4,
+      "consumer_count": 1,
+      "provider_link_count": 4,
+      "binding_count": 4
+    }
+  ],
+  "legacy_capture_index": [
+    {
+      "source": "Region Debug.json",
+      "sha256": "c585158e24216b0ae6911bb792f5e0ab239ee2cd3bc549813da9be099d89f22d",
+      "document_version": 1,
+      "region_count": 2,
+      "consumer": "BV Regional Native Conditioning"
+    },
+    {
+      "source": "Flux2 klein 9B Attention.json",
+      "sha256": "15ef1eccc0e8b10bf24bebeef7c82a6aa5c59a3c977b0d8cd3bf7ac2d8a93df7",
+      "document_version": 1,
+      "region_count": 2,
+      "consumer": "BV Regional FLUX.2 Klein 9B Attention"
+    },
+    {
+      "source": "Krea 2 Attention.json",
+      "sha256": "01d998b43ca302ed497b54eb6e9906f741a9078588ae6a966cbb9174e02a8d83",
+      "document_version": 1,
+      "region_count": 2,
+      "consumer": "BV Regional Krea 2 Attention"
+    },
+    {
+      "source": "Illustrious Region Attention.json",
+      "sha256": "647957db44dc6a93030fff1fc2f80612d93d4af647b68dc3d960ff604f174cfd",
+      "document_version": 1,
+      "region_count": 3,
+      "consumer": "BV Regional SDXL Attention"
+    },
+    {
+      "source": "ZiT Attention.json",
+      "sha256": "c49e85996566de3cfb4d8dbad0f2c4c47a7c5e599539b9763276c7e0303e3554",
+      "document_version": 1,
+      "region_count": 2,
+      "consumer": "BV Regional Z-Image Attention"
+    },
+    {
+      "source": "Deteiler Pipe Test.json",
+      "sha256": "9297ec666470e84eb2e40216623699a021844c6d37e3d5610e30c909a15dcc19",
+      "document_version": 2,
+      "region_count": 7,
+      "consumer": "BV Regional Detailer Plan"
+    }
+  ]
+}

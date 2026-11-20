@@ -1,0 +1,25 @@
+{
+  "brief": {
+    "title": "末班车的失物",
+    "genre": "都市温情悬疑",
+    "direction": "雨夜旧车站，年轻值班员误以为陌生老人来寻找遗失的钱，最后发现他只是来归还一把旧伞。结尾克制，不说教。",
+    "page_count": 2,
+    "panels_per_page": 3,
+    "reading_direction": "LTR",
+    "page_mode": "single_page",
+    "first_story_page_side": "right",
+    "must_include": ["老人把一枚铜色号码牌放在柜台上", "下一页才揭晓号码牌对应的是旧伞", "值班员最终把伞推回老人面前"],
+    "avoid": ["超自然解释", "长篇鸡汤对白"],
+    "character_material": "均为原创角色。C001 林夏：23岁女值班员，短黑发，深蓝制服，讲话简短，先办事再关心人；C002 陈伯：70岁老人，灰色雨衣，慢条斯理，不解释自己的善意。两人第一次见面。"
+  },
+  "canon": {
+    "characters": [
+      {"id":"C001","name":"林夏","origin":"original","source_notes":["用户示例设定"],"verified_facts":[],"adaptation_choices":["23岁女值班员"],"unknowns":[],"appearance":"短黑发、深蓝制服","voice":"短句，先问办事需要，不煽情","sample_lines":["您丢了什么？","还下着呢。"],"motivation":"完成值班，同时不让老人淋雨","taboos":["突然对陌生人长篇说教"]},
+      {"id":"C002","name":"陈伯","origin":"original","source_notes":["用户示例设定"],"verified_facts":[],"adaptation_choices":["70岁老人"],"unknowns":[],"appearance":"灰色雨衣、白色短发","voice":"慢、少字，用具体物品回应","sample_lines":["不是来领的。","借了很久。"],"motivation":"归还多年前借的伞","taboos":["自夸善良"]}
+    ],
+    "scenes":[{"id":"S001","name":"雨夜车站失物窗口","layout":"镜头位于柜台侧面，林夏在画面左侧柜台内，陈伯在右侧柜台外；出口在右后方","landmarks":["柜台右侧暖色台灯","右后方玻璃门"],"lighting":"暖色室内灯与门外冷雨光","axis_rule":"两人连线为轴，保持林夏左陈伯右；特写不交换手和道具方向"}],
+    "props":[{"id":"O001","description":"刻着17的铜色号码牌"},{"id":"O002","description":"黑布旧长柄伞，木柄有一道浅裂纹"}],
+    "world_rules":["现实都市，无超自然机制"],
+    "initial_state":{"C001.location":"柜台内左侧","C002.location":"柜台外右侧","C001.clothing":"深蓝制服","C002.clothing":"灰色雨衣","O001.holder":"C002右手","O002.holder":"C002左手，柜台下不可见","knowledge.C001":"不知道来意","knowledge.C002":"来归还旧伞","time":"雨夜末班车后"}
+  }
+}
