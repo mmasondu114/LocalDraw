@@ -143,6 +143,11 @@ class Application:
     def action(self, a):
         action = a["action"]
         pid = a.get("project")
+        if action in {"fusion_source", "save_prompt_fusion"}:
+            from . import task_fusion
+            if action == "fusion_source":
+                return task_fusion.source(self, a.get("kind"), a.get("source_id"))
+            return task_fusion.save(self, a)
         if action in {"check_update", "open_releases"}:
             from . import updates
             return updates.check(a.get("token", "")) if action == "check_update" else updates.open_releases()
@@ -1068,6 +1073,7 @@ def make_handler(app):
                     "/story-import.js": "story-import.js",
                     "/model-downloads.js": "model-downloads.js",
                     "/direct-imports.js": "direct-imports.js",
+                    "/task-fusion.js": "task-fusion.js",
                     "/imported-setup.js": "imported-setup.js",
                     "/loras.js": "loras.js",
                     "/creative.js": "creative.js",

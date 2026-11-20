@@ -90,6 +90,7 @@ window.showStudioHome = async function({refresh=true} = {}) {
   home.append(choices);
   const imports = node("div", undefined, "dialog-actions");
   imports.append(button("直接导入分镜", () => window.openDirectStoryboardImport()),
+    button("融合任务", () => openTaskFusion()),
     button("夜间任务列表", () => window.openStudioQueue()));
   home.append(imports);
   const draftShelf=node("section",undefined,"home-recent");
@@ -160,7 +161,7 @@ window.openStudioQueue = async function() {
     comicChoice.append(node("h3","漫画出图"),node("p",comics.length?"选择已有漫画，再确认要画哪些格子、每格多少张。":"先创建一个漫画并完成分镜，就能在这里安排出图。"));if(comics.length)comicChoice.append(projectSelect);comicChoice.append(addComic);chooser.append(comicChoice);
     chooser.onclose=()=>chooser.remove();document.body.append(chooser);chooser.showModal();
   };
-  headingActions.append(button("＋ 添加任务",addTask,"primary"),button("关闭",()=>dialog.close()));
+  headingActions.append(button("＋ 添加任务",addTask,"primary"),button("融合任务",()=>openTaskFusion(dialog)),button("关闭",()=>dialog.close()));
   heading.append(node("h2","创作任务时间轴"),headingActions);
   const help=node("p","任务从上往下依次执行。上一项完成，下一项自动开始；用上移、下移调整顺序。","queue-timeline-intro");
   const tips=node("details",undefined,"queue-help");tips.append(node("summary","夜间挂机与设置保存说明"),node("p","加入时保存提示词、模型和 LoRA，后续修改不影响已排好的任务。关闭网页后后台仍会继续，电脑需保持开机且不休眠。重启工作室后列表会保留，需手动开始。"));

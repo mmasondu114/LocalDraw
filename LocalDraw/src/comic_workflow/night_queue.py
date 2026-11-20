@@ -109,9 +109,11 @@ class NightQueue:
                      "options": {key: spec.get(key) for key in ("aspect_ratio", "consistency_lora", "hand_detail")}}]
             checkpoint, count = spec["checkpoint"], spec["count"]
         else:
-            from .prompt_exchange import load_import
+            from .prompt_exchange import effective_negative, load_import
             bundle = load_import(self.app.repo, item["project"], request["bundle"])
-            rows = [{"panel_id": row["panel_id"], "positive": row["positive"], "negative": row["negative"],
+            rows = [{"panel_id": row["panel_id"], "positive": "\n".join(filter(None, (
+                         row["positive"], request.get("character_suffixes", {}).get(row["panel_id"])))),
+                     "negative": effective_negative(row, request),
                      "loras": request.get("loras_by_panel", {}).get(row["panel_id"], []),
                      "has_reference": row["panel_id"] in request.get("references_by_panel", {})}
                     for row in bundle["panels"] if row["panel_id"] in request["targets"]]

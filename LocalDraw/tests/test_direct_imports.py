@@ -145,6 +145,34 @@ class DirectImportsTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "重复"):
             self.call("preview_direct_prompts", document=[row, row])
 
+    def test_fusion_uses_reviewed_order_and_never_overwrites_either_source(self):
+        sources = []
+        for key, prompts in [("a", ["A1", "A2"]), ("b", ["B1", "B2"])]:
+            preview = self.call("preview_direct_prompts", project="", document=prompts)
+            item = self.call("save_direct_prompts", project="", document=prompts,
+                             confirm=True, preview_hash=preview["preview_hash"], import_key=key*32)
+            source = self.call("fusion_source", kind="project", source_id=item["project"])
+            sources.insert(0, {**source, "kind":"project", "id":item["project"]})
+        spec = {"sources": sources, "import_key": "c"*32}
+        with self.assertRaisesRegex(ValueError, "逐格审核"):
+            self.call("save_prompt_fusion", **spec)
+        for source in sources:
+            for panel in source["panels"]:
+                panel["approved"] = True
+        sources[0]["panels"][0].update(positive="  B revised\n", negative="  watermark  ")
+        sources[1]["panels"][0].update(approved=False, skipped=True)
+        saved = self.call("save_prompt_fusion", **spec)
+        self.assertEqual(self.call("save_prompt_fusion", **spec), saved)
+        merged = prompt_exchange.load_import(self.repo, saved["project"], saved["bundle"])["panels"]
+        self.assertEqual([(r["panel_id"], r["positive"]) for r in merged],
+                         [("P001-K01","  B revised\n"), ("P001-K02","B2"), ("P002-K01","A2")])
+        self.assertEqual(merged[0]["negative"], "  watermark  ")
+        self.assertEqual(merged[-1]["origin"]["panel_id"], "P001-K02")
+        self.assertEqual(self.repo.get(saved["project"])["brief"]["title"], " + ".join(s["title"] for s in sources))
+        self.assertEqual(self.call("fusion_source", kind="project", source_id=sources[0]["id"])["panels"][0]["positive"], "B1")
+        with self.assertRaisesRegex(ValueError, "同一来源"):
+            self.call("save_prompt_fusion", sources=[sources[0]]*2, import_key="d"*32)
+
     def test_import_setup_freezes_cast_loras_and_individual_counts(self):
         rows = [{"panel_id": k, "positive": f"  Original {k}  ", "negative": "blur"}
                 for k in ("P001-K01", "P001-K02")]

@@ -1741,6 +1741,16 @@ dialog.import-setup[open] {
   margin:0 0 16px;padding:14px 20px;border:1px solid var(--line);border-radius:12px;background:var(--panel);cursor:pointer}
 .setup-chain input[type=checkbox] {grid-row:span 2;width:18px;height:18px;margin:0}
 .setup-chain small {grid-column:2;color:var(--muted)}
+.fusion-dialog {width:min(740px,95vw);max-height:90vh;overflow:auto}
+.fusion-dialog section > label {display:grid;gap:6px;margin:14px 0 8px}
+.fusion-dialog :is(textarea,select) {width:100%;min-width:0;box-sizing:border-box}
+.fusion-dialog h3 {margin:20px 0 8px;overflow-wrap:anywhere}
+.fusion-dialog .fusion-summary {white-space:pre-wrap;color:var(--muted);overflow-wrap:anywhere}
+.fusion-order {padding-inline-start:28px}
+.fusion-order li {padding:10px 0;border-bottom:1px solid var(--line);overflow-wrap:anywhere}
+.fusion-order small {margin-inline-start:12px;color:var(--muted)}
+.fusion-actions {display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.fusion-dialog p[role=status]:empty {margin:0}
 .setup-libraries {display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
 .setup-section {min-width:0;padding:20px;border-radius:12px;border:1px solid var(--line);background:var(--panel)}
 .setup-section h2 {margin:0;font-size:20px}

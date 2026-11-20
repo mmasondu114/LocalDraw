@@ -161,14 +161,18 @@ def standalone_rows(request):
 
 
 def standalone_import(repo, library, request):
-    from .quick_sample import prompt_characters, prompt_panel
     rows = standalone_rows(request)
     digest = e.digest(rows)
     if request["action"] == "preview_direct_prompts":
         return {"panels": [{"panel_id": row["source"] or f"第 {n} 格", **row} for n, row in enumerate(rows, 1)],
                 "total": len(rows), "replace": [], "preview_hash": digest}
     e.need(request.get("confirm") is True and request.get("preview_hash") == digest, "提示词已变化，请重新导入")
-    key = request.get("import_key")
+    title = "逐格出图 · " + rows[0]["positive"].strip().splitlines()[0][:24]
+    return save_panel_work(repo, library, rows, request.get("import_key"), title, digest)
+
+
+def save_panel_work(repo, library, rows, key, title, digest):
+    from .quick_sample import prompt_characters, prompt_panel
     e.need(isinstance(key, str) and re.fullmatch(r"[a-f0-9]{32}", key), "导入标识无效")
     pid = "panels-" + key
     dest = repo.folder(pid)
@@ -187,11 +191,10 @@ def standalone_import(repo, library, request):
         last_group = group
         page = pages[-1]
         summary = row["positive"].strip().splitlines()[0][:100]
-        panel = prompt_panel(summary, "3:2", [], page["id"], len(page["panels"]) + 1)
+        panel = prompt_panel(summary, row.get("aspect_ratio", "3:2"), [], page["id"], len(page["panels"]) + 1)
         page["panels"].append(panel)
         prompts.append({**row, "page_id": page["id"], "panel_id": panel["id"], "panel_hash": e.digest(panel),
                         "summary": (row["source"] + " · " if row["source"] else "") + summary})
-    title = "逐格出图 · " + rows[0]["positive"].strip().splitlines()[0][:24]
     doc = {"brief": {"title": title, "genre": "提示词出图", "direction": "按导入顺序逐格绘制",
                      "page_count": len(pages), "panels_per_page": 1, "panel_mode": "flexible",
                      "reading_direction": "LTR", "page_mode": "single_page", "first_story_page_side": "right",
