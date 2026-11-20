@@ -8,7 +8,7 @@ import urllib.error
 import urllib.request
 import webbrowser
 
-VERSION = "0.1.9"
+VERSION = "0.1.10"
 REPO = "mmasondu114/LocalDraw"
 RELEASES = f"https://github.com/{REPO}/releases/latest"
 

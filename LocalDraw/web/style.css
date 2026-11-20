@@ -15,7 +15,8 @@ body.at-home { display:block; overflow:auto; }
 .home-intro h1 { font-size:38px; letter-spacing:-1px; margin:12px 0; }
 .home-intro p { color:#66716d; max-width:680px; line-height:1.8; }
 .home-intro small { color:#367461; font-weight:600; }
-.home-choices { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:20px; }
+.home-choices { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:20px; }
+@media(min-width:1200px){.home-choices {grid-template-columns:repeat(4,minmax(0,1fr));}}
 .home-choice { border:1px solid #dbe4de; border-radius:20px; padding:28px; background:white; display:flex; flex-direction:column; transition:transform .18s,box-shadow .18s; }
 .home-choice:hover { transform:translateY(-4px); box-shadow:0 12px 30px #284e3c12; }
 .home-number { color:#42846b; font-size:14px; font-weight:700; }
@@ -1488,7 +1489,7 @@ aside > button { padding:10px; border-color:transparent; background:transparent;
 aside > label { padding:14px 4px 2px; border-top:1px solid var(--line); margin-top:4px; color:var(--muted); font-size:12px; }
 aside > .row button { min-height:34px; }
 #home-entry { color:var(--accent); font-weight:600; }
-body[data-stage='prompt'] #prompt-entry { background:var(--soft); color:var(--accent); font-weight:600; }
+aside > button[aria-current="page"] { background:var(--soft); color:var(--accent); font-weight:600; }
 nav button { border-radius:8px; padding:10px; }
 .project-tools { border-color:var(--line); }
 main { padding:20px 22px 18px; gap:12px; }
@@ -1611,7 +1612,7 @@ dialog::backdrop { background:#172d245c; backdrop-filter:blur(3px); }
   aside > button:hover:not(:disabled) { background:var(--raised); border-color:transparent; }
   aside .nav-icon { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round; flex:none; }
   #home-entry { color:#5d4b3c; font-weight:500; }
-  body[data-stage=prompt] #prompt-entry { color:#754127; background:#d5bea6; font-weight:600; box-shadow:inset 3px 0 var(--accent); }
+  aside > button[aria-current="page"] { color:#754127; background:#d5bea6; font-weight:600; box-shadow:inset 3px 0 var(--accent); }
   aside > label { margin-top:14px; padding:16px 4px 4px; font-size:11px; color:var(--muted); }
   aside select { margin-top:8px; font-size:12px; }
   aside > .row button { min-height:32px; font-size:11px; padding:7px 9px; }

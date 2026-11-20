@@ -70,6 +70,7 @@ window.showStudioHome = async function({refresh=true} = {}) {
     const art=document.createElementNS("http://www.w3.org/2000/svg","svg");
     art.setAttribute("viewBox","0 0 160 80");art.setAttribute("aria-hidden","true");art.classList.add("home-card-art");
     const paths={"01":["M22 12h92v56H22z","M30 57l23-24 20 18 16-13 17 19","M124 20l18 18m-18 0l18-18"],"02":["M22 12h116v56H22z","M68 12v56M22 44h46M78 56l22-30 28 30","M32 23h23M32 31h17"],"03":["M30 20h95M30 40h95M30 60h65","M20 16v8M20 36v8M20 56v8","M113 53a15 15 0 1 0 30 0a15 15 0 1 0-30 0M128 44v10l6 4"]};
+    paths["04"]=["M22 12h116v56H22zM22 37h116M74 37v31","M33 25h49M86 53h38"];
     for(const value of paths[number]){const path=document.createElementNS(art.namespaceURI,"path");path.setAttribute("d",value);art.append(path);}
     box.append(node("span",number,"home-number"),art,node("h2",name),node("p",description),button(label,async()=>{
       await fn();
@@ -78,9 +79,10 @@ window.showStudioHome = async function({refresh=true} = {}) {
     },"primary"));
     choices.append(box);
   }
-  card("01","提示词出图","写下标题，让模型生成分镜。确认后逐格出图、选图并合成漫画页。","创建分镜作品",()=>enterPromptBoard(),false);
+  card("01","提示词出图","直接输入正负提示词，选择角色、LoRA 和张数。","开始画一张图",openStandalonePrompt);
   card("02","创作新漫画","写下故事，确认分镜，挑选画面。把每一页慢慢打磨好。","开始一个新故事",async()=>{await $("new-project").onclick();});
   card("03","逐格提示词出图","导入提示词后，选择角色、LoRA 和每格生成张数。","直接导入每格提示词",()=>window.openDirectPromptImport(),false);
+  card("04","分镜出图","写下标题，让模型生成分镜，再逐格出图、选图并合成漫画页。","创建分镜作品",enterPromptBoard,false);
   home.append(choices);
   const imports = node("div", undefined, "dialog-actions");
   imports.append(button("直接导入分镜", () => window.openDirectStoryboardImport()),
@@ -147,7 +149,7 @@ window.openStudioQueue = async function() {
     const chooser=node("dialog",undefined,"queue-add-dialog");chooser.setAttribute("aria-label","添加任务");
     const top=node("div",undefined,"queue-heading");top.append(node("h2","添加一个创作任务"),button("返回时间轴",()=>chooser.close()));chooser.append(top);
     const promptChoice=node("section",undefined,"queue-add-choice");promptChoice.append(node("h3","提示词出图"),node("p","写一段画面描述，选择模型、张数和 LoRA。每次加入都会成为独立的一张任务卡片；连续添加时保留刚才的设置。"),button("填写提示词任务",async()=>{
-      await $("prompt-entry").onclick();window.queueComposerActive=true;window.leaveStudioHome();chooser.close();dialog.close();notify("填好设置后点击「加入任务列表」，新卡片会排在时间轴最后。");
+      await openStandalonePrompt();window.queueComposerActive=true;window.leaveStudioHome();chooser.close();dialog.close();notify("填好设置后点击「加入任务列表」，新卡片会排在时间轴最后。");
     },"primary"));chooser.append(promptChoice);
     const comicChoice=node("section",undefined,"queue-add-choice"),projectSelect=node("select");projectSelect.setAttribute("aria-label","选择要排队的漫画");
     const comics=(boot?.projects||[]).filter(p=>!p.quick_sample);for(const project of comics){const option=node("option",project.title);option.value=project.id;projectSelect.append(option);}if(comics.some(p=>p.id===pid))projectSelect.value=pid;

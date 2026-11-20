@@ -1114,12 +1114,15 @@ async function renderStage() {
   }
   if (stage === "brief") stage = "script";
   document.body.dataset.stage = stage;
+  for(const [id,current] of [["prompt-entry",stage==="prompt"&&!p?.prompt_board],["board-entry",!!p?.prompt_board]]){
+    if(current)$(id).setAttribute("aria-current","page");else $(id).removeAttribute("aria-current");
+  }
   names.script = "剧本与角色";
   names.problems = "问题格子";
   help.problems = "集中填写问题，交给 GPT 或本地 LLM 理解，再按每格数量统一重画。";
   names.finished = p?.prompt_board ? "整图修改" : "成品查看";
   help.finished = p?.prompt_board ? "核对缺格，选择版式并下载漫画整页。" : "按页阅读已选图片与对白组成的漫画，检查后下载成品。";
-  names.prompt = "提示词出图";
+  names.prompt = p?.prompt_board ? "分镜出图" : "提示词出图";
   help.prompt = "输入提示词，选择模型和张数，直接画图。";
   $("workflow-note").textContent = stage === "prompt"
     ? (p?.prompt_board ? "按分镜出图，采用图片后进入整图修改。" : "提示词 → 出图 → 查看 / 保存原图。本入口不自动审核或补画。")
@@ -1796,14 +1799,19 @@ function enterPromptBoard() {
   notify("请先保存临时图片，然后重启工作室后台以使用分镜出图。",true);
 }
 $("import-story").onclick = safe(() => window.openStoryImport());
-$("prompt-entry").onclick = safe(async () => {
+async function openStandalonePrompt() {
   await preserve();
-  clearTimeout(workspaceTimer);
-  // The task timeline is an overlay. Reuse its underlying prompt editor so
-  // adding the next card keeps the user's latest text and LoRA selections.
-  if(!snap?.project.prompt_board) {enterPromptBoard();return;}
-  stage = "prompt"; target = "";
+  if(stage==="prompt" && (newMode || snap?.project.quick_sample) &&
+     $("extras").querySelector('[data-edit-key="prompt-positive"]'))return;
+  if(pid?.startsWith("tmp-"))await api("/api/action",{action:"release_prompt",project:pid});
+  newMode=true;pid=null;snap=null;dirty=false;stage="prompt";target="";
+  workspaceState={views:{}};window.flushLoraSettings=null;$("projects").value="";
   await renderStage();
+}
+$("prompt-entry").onclick = safe(openStandalonePrompt);
+$("board-entry").onclick = safe(async()=>{
+  if(!snap?.project.prompt_board)return enterPromptBoard();
+  await preserve();stage="prompt";target="";await renderStage();
 });
 $("manage-projects").onclick = safe(async () => {
   await preserve();
