@@ -78,7 +78,7 @@ window.showStudioHome = async function({refresh=true} = {}) {
     },"primary"));
     choices.append(box);
   }
-  card("01","提示词出图","先写标题和分镜，再逐格出图、挑选图片，合成漫画页。","创建分镜作品",()=>enterPromptBoard(),false);
+  card("01","提示词出图","写下标题，让模型生成分镜。确认后逐格出图、选图并合成漫画页。","创建分镜作品",()=>enterPromptBoard(),false);
   card("02","创作新漫画","写下故事，确认分镜，挑选画面。把每一页慢慢打磨好。","开始一个新故事",async()=>{await $("new-project").onclick();});
   card("03","逐格提示词出图","导入提示词后，选择角色、LoRA 和每格生成张数。","直接导入每格提示词",()=>window.openDirectPromptImport(),false);
   home.append(choices);

@@ -29,6 +29,30 @@ class PromptBoardTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "跳号"):
             prompt_board.create(self.app, {**self.new, "storyboard": "P03 K01 | 1:1 | 跳过两页"})
 
+    def test_title_only_calls_model_and_confirmation_uses_its_pages(self):
+        self.app.jobs = Mock(root=self.repo.root.parent / "jobs")
+        jid = "b" * 32
+        self.app.jobs.submit.return_value = jid
+        self.app.prepare_language = Mock()
+        with patch.object(prompt_board.creative, "structured", return_value=({"pages": [
+            {"panels": [{"description": "候车的人收起雨伞。", "aspect_ratio": "2:3"}]},
+            {"panels": [{"description": "列车驶进站台。", "aspect_ratio": "16:9"}]}]}, {})) as model:
+            self.assertEqual(prompt_board.generate(self.app, {"title": "雨夜"}), {"job": jid})
+            label, worker = self.app.jobs.submit.call_args.args
+            draft = worker(Mock(), jid)
+            self.app.prepare_language.assert_called_once()
+            self.assertEqual(model.call_args.args[1], {"title": "雨夜", "idea": ""})
+        self.assertFalse(self.repo.folder("panels-" + jid).exists())
+        self.app.jobs.get.return_value = {"label": label, "status": "done", "result": draft}
+        saved = prompt_board.confirm(self.app, jid)
+        self.assertEqual(prompt_board.confirm(self.app, jid), saved)
+        work = self.repo.get(saved["project"])
+        self.assertEqual(work["pages"]["P002"]["panels"][0]["aspect_ratio"], "16:9")
+        self.assertEqual(work["board_source"]["job"], jid)
+        self.app.jobs.get.return_value["status"] = "failed"
+        with self.assertRaisesRegex(ValueError, "生成完成"):
+            prompt_board.confirm(self.app, jid)
+
     def test_queue_freezes_panel_and_ratio_separately_for_each_submission(self):
         with patch.object(comfyui, "discover", return_value={"checkpoints": ["test.safetensors"]}):
             for key in ("P001-K01", "P002-K01"):

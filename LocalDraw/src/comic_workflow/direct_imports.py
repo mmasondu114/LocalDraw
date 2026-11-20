@@ -171,7 +171,7 @@ def standalone_import(repo, library, request):
     return save_panel_work(repo, library, rows, request.get("import_key"), title, digest)
 
 
-def save_panel_work(repo, library, rows, key, title, digest, *, board=False):
+def save_panel_work(repo, library, rows, key, title, digest, *, board=False, board_source=None):
     from .quick_sample import prompt_characters, prompt_panel
     e.need(isinstance(key, str) and re.fullmatch(r"[a-f0-9]{32}", key), "导入标识无效")
     pid = "panels-" + key
@@ -206,6 +206,9 @@ def save_panel_work(repo, library, rows, key, title, digest, *, board=False):
     if board:
         project["prompt_board"] = True
         project["provenance"] = "用户填写的创作分镜"
+        if board_source:
+            project["board_source"] = board_source
+            project["provenance"] = "本地分镜模型生成，用户已确认"
     bundle = {"id": key, "created": e.stamp(), "project_id": pid, "storyboard_hash": story_fingerprint(project),
               "panels": prompts}
     result = {"project": pid, "bundle": key, "saved": len(rows), "targets": [r["panel_id"] for r in prompts]}

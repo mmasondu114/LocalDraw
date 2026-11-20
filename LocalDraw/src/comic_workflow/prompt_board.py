@@ -6,6 +6,50 @@ import uuid
 from . import comfyui, direct_imports, engine as e, layout, quick_sample
 from .image_size import validate_ratio
 from .repository import LOCK, safe_id
+from . import creative
+from .schemas import arr, enum, obj, S
+
+
+BOARD_JOB = "生成提示词作品分镜"
+
+
+def generate(app, request):
+    title, idea = request.get("title"), request.get("idea", "")
+    e.need(isinstance(title, str) and 0 < len(title.strip()) <= 120, "请填写 1–120 字的标题")
+    e.need(isinstance(idea, str) and len(idea) <= 20000, "故事构想最多 2 万字")
+    source = {"title": title.strip(), "idea": idea.strip()}
+    panel = obj({"description": S, "aspect_ratio": enum("1:1", "2:3", "3:2", "16:9", "9:16")})
+    schema = obj({"pages": arr(obj({"panels": {**arr(panel, 1), "maxItems": 9}}), 1)})
+
+    def draft(update, jid):
+        update("正在加载分镜模型")
+        app.prepare_language(update=update)
+        result, _ = creative.structured(
+            "你是漫画分镜导演。根据作品标题和可选的故事构想创作完整的逐页分镜。仅有标题时自行构思短篇。"
+            "遵守用户给出的剧情、页数和格数。未指定篇幅时用简洁的短篇。"
+            "每格只画一个瞬间，description 写清景别、人物动作、构图、环境和必要对白，保持相邻格连贯。"
+            "按构图为每格选择 aspect_ratio。不要生成正负面绘图提示词。",
+            source, schema, app.jobs.root.parent / "creative" / jid, update)
+        rows = []
+        for page_no, page in enumerate(result["pages"], 1):
+            for number, panel in enumerate(page["panels"], 1):
+                description = panel["description"].strip()
+                e.need(description, "模型返回了空画格，请重新生成")
+                rows.append({"source": f"P{page_no:03}-K{number:02}", "description": description,
+                             "aspect_ratio": panel["aspect_ratio"]})
+        e.need(1 <= len(rows) <= 1000, "模型返回的分镜超出作品支持的范围，请缩短篇幅后重试")
+        return {**source, "panels": rows}
+
+    return {"job": app.jobs.submit(BOARD_JOB, draft)}
+
+
+def confirm(app, jid):
+    job = app.jobs.get(safe_id(jid))
+    e.need(job["label"] == BOARD_JOB and job["status"] == "done", "请等待分镜模型生成完成")
+    draft = job["result"]
+    with LOCK:
+        return direct_imports.save_panel_work(app.repo, app.characters, draft["panels"], jid,
+            draft["title"], e.digest(draft), board=True, board_source={"idea": draft["idea"], "job": jid})
 
 
 def create(app, request):

@@ -146,6 +146,11 @@ class Application:
     def action(self, a):
         action = a["action"]
         pid = a.get("project")
+        if action in {"generate_prompt_board", "confirm_prompt_board"}:
+            from . import prompt_board
+            if action == "generate_prompt_board":
+                return prompt_board.generate(self, a)
+            return prompt_board.confirm(self, a.get("job"))
         if action in {"create_prompt_board", "draw_board_panel", "queue_board_panel", "unselect_board_image", "compose_board_page"}:
             from . import prompt_board
             if action == "create_prompt_board":

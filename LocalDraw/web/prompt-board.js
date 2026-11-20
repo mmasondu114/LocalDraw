@@ -3,29 +3,61 @@
 function openPromptBoard() {
   const dialog=node("dialog",undefined,"board-start"), form=node("form");
   dialog.setAttribute("aria-label","创建分镜作品");
-  const title=labeledInput(form,"作品标题",false,""), story=labeledInput(form,"创作分镜",true,"");
-  title.required=story.required=true; title.maxLength=120; story.maxLength=200000; story.rows=9;
-  story.placeholder="P001-K01 | 16:9 | 雨后的街道，远景\nP001-K02 | 1:1 | 主角回头，近景\nP002-K01 | 2:3 | 主角推开店门";
-  const hint=node("small","每行一格，可写「页格编号 | 比例 | 分镜内容」，也可以直接写画面描述。");
-  story.parentElement.append(hint);
-  const status=node("p");status.setAttribute("role","alert");
-  const submit=node("button","进入提示词出图","primary");submit.type="submit";
-  const actions=node("div",undefined,"dialog-actions");actions.append(button("取消",()=>dialog.close()),submit);
-  const key=crypto.randomUUID().replaceAll("-","");
-  form.append(status,actions);dialog.append(node("h2","创建分镜作品"),form);document.body.append(dialog);
+  const storageKey="studio-prompt-board-draft";
+  let draft={};
+  try{draft=JSON.parse(localStorage.getItem(storageKey))||{};}catch{}
+  const title=labeledInput(form,"作品标题",false,draft.title||""), story=labeledInput(form,"故事构想（可选）",true,draft.idea||"");
+  title.required=true; title.maxLength=120; story.maxLength=20000; story.rows=4;
+  story.placeholder="例如：末班车前，两位多年未见的朋友在站台相遇。希望画成两页。";
+  const status=node("p");status.setAttribute("role","status");
+  const preview=node("section");preview.setAttribute("aria-label","分镜预览");
+  const submit=node("button","生成分镜","primary");submit.type="submit";
+  const confirm=button("确认分镜并进入出图",async()=>{
+    const saved=await act("confirm_prompt_board",{job:draft.job});
+    await preserve();await openProject(saved.project,true,"prompt");
+    localStorage.removeItem(storageKey);window.leaveStudioHome();dialog.close();
+  },"primary");
+  const actions=node("div",undefined,"dialog-actions");actions.append(button("关闭",()=>dialog.close()),submit,confirm);
+  confirm.hidden=true;
+  function remember(){cacheLocal(storageKey,JSON.stringify(draft));}
+  function changed(){
+    draft={title:title.value,idea:story.value};remember();preview.replaceChildren();confirm.hidden=true;
+    submit.textContent="生成分镜";submit.classList.add("primary");status.textContent="";
+  }
+  title.oninput=story.oninput=changed;
+  function lock(on){title.readOnly=story.readOnly=submit.disabled=on;}
+  async function watch(){
+    lock(true);
+    try{
+      while(dialog.open){
+        const job=await api("/api/job?id="+encodeURIComponent(draft.job));
+        if(!dialog.open)return;
+        if(job.status==="done"){
+          preview.replaceChildren(node("h3","分镜预览"));
+          for(const row of job.result.panels)preview.append(node("strong",row.source+" · "+row.aspect_ratio),node("p",row.description));
+          status.textContent="已生成 "+job.result.panels.length+" 格分镜。";
+          confirm.hidden=false;submit.textContent="重新生成";submit.classList.remove("primary");return;
+        }
+        if(!["running","paused","pausing","cancelling"].includes(job.status))throw Error(job.message||"分镜生成未完成");
+        status.textContent=job.message||"分镜模型正在生成…";
+        await new Promise(resolve=>setTimeout(resolve,1000));
+      }
+    }catch(error){status.textContent=error.message;}
+    finally{lock(false);}
+  }
+  form.append(status,preview,actions);dialog.append(node("h2","创建分镜作品"),form);document.body.append(dialog);
   form.onsubmit=async event=>{
     event.preventDefault();if(submit.disabled)return;
-    submit.disabled=true;
+    lock(true);status.textContent="正在提交分镜生成任务…";
     try{
-      await preserve();
-      const saved=await act("create_prompt_board",{title:title.value,storyboard:story.value,import_key:key});
-      await openProject(saved.project,true,"prompt");
-      window.leaveStudioHome();dialog.close();
+      const saved=await act("generate_prompt_board",{title:title.value,idea:story.value});
+      draft={title:title.value,idea:story.value,job:saved.job};remember();
+      preview.replaceChildren();confirm.hidden=true;await watch();
     }catch(error){status.textContent=error.message;}
-    finally{submit.disabled=false;}
+    finally{lock(false);}
   };
   dialog.onclose=()=>dialog.remove();
-  dialog.showModal();title.focus();
+  dialog.showModal();if(draft.job)void watch();else title.focus();
 }
 
 function boardPanelId(value) {
