@@ -86,7 +86,7 @@ window.showStudioHome = async function({refresh=true} = {}) {
     window.flushLoraSettings=null;$("projects").value="";await renderStage();
   });
   card("02","创作新漫画","写下故事，确认分镜，挑选画面。把每一页慢慢打磨好。","开始一个新故事",async()=>{await $("new-project").onclick();});
-  card("03","逐格提示词出图","粘贴每格的画面提示词，或选择提示词文件，按顺序出图。","直接导入每格提示词",()=>window.openDirectPromptImport(),false);
+  card("03","逐格提示词出图","导入提示词后，选择角色、LoRA 和每格生成张数。","直接导入每格提示词",()=>window.openDirectPromptImport(),false);
   home.append(choices);
   const imports = node("div", undefined, "dialog-actions");
   imports.append(button("直接导入分镜", () => window.openDirectStoryboardImport()),
@@ -125,7 +125,13 @@ window.showStudioHome = async function({refresh=true} = {}) {
   for(const project of matches.slice(0,search.value?50:6)) {
     const row=node("div",undefined,"home-project");
     row.append(node("strong",project.title),node("small",(project.id===lastProject?"上次打开 · ":"")+(project.quick_sample?"提示词作品 · 已保存":`${project.pages} 页分镜 · 已保存`)),
-      button("继续",async()=>{await preserve();await openProject(project.id);leave();}));recentList.append(row);
+      button("继续",async()=>{await preserve();await openProject(project.id);leave();}));
+    if(project.id.startsWith("panels-")) row.append(button("出图设置",async()=>{
+      const {bundle,stale}=await api("/api/prompt-import?id="+encodeURIComponent(project.id));
+      if(!bundle||stale)throw Error("分镜已有变化，请重新导入提示词。");
+      await openImportedSetup(project.id,bundle.id,bundle.panels);
+    }));
+    recentList.append(row);
   }
   if(matches.length>6&&!search.value)recentList.append(node("small",`共 ${all.length} 个作品，输入名称可查找其他作品。`));
   };search.oninput=renderRecent;renderRecent();recent.append(recentList);

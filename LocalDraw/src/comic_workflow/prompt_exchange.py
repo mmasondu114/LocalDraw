@@ -147,6 +147,40 @@ def current_import(repo, pid):
             **with_render_plan(repo, pid, project, bundle["panels"])}
 
 
+def prepare_import_settings(repo, settings, model, targets, bundle):
+    from .characters import CharacterLibrary
+    from .character_prompt_cleanup import default_visual_prompt
+    from .clothing_policy import resolve_selections
+    from .quick_sample import selected_loras
+    e.need(isinstance(settings, dict), "出图设置无效")
+    roles = settings.get("characters", [])
+    e.need(isinstance(roles, list) and len(roles) <= 4, "最多选择 4 个角色")
+    cards, selected, seen = [], [], set()
+    library = CharacterLibrary(repo.root.parent / "characters")
+    for role in roles:
+        e.need(isinstance(role, dict) and isinstance(role.get("name"), str), "角色选择无效")
+        card = library.get(role["name"])
+        e.need(card["revision"] == role.get("revision"), "角色卡已更新，请重新打开出图设置")
+        e.need(card["id"] not in seen, "角色重复")
+        seen.add(card["id"])
+        selected.append({"name": card["name"], "revision": card["revision"],
+                         "prompt": default_visual_prompt(card["profile"]) or card["name"]})
+        cards.append(card)
+    counts = settings.get("counts", {})
+    e.need(isinstance(counts, dict) and counts.keys() <= set(targets) and
+           all(type(n) is int and 1 <= n <= 16 for n in counts.values()), "每格张数须为 1–16")
+    suffixes = {}
+    for row in bundle["panels"]:
+        if selected and row["panel_id"] in targets:
+            looks = resolve_selections(row["positive"], selected, cards)
+            suffix = ", ".join(s["prompt"] for s in looks if s["prompt"])
+            e.need(len(row["positive"]) + len(suffix) + 1 <= 20000, row["panel_id"] + " 加入角色后提示词过长")
+            suffixes[row["panel_id"]] = suffix
+    return (selected_loras(settings.get("loras", []), model),
+            {"selected_characters": selected, "character_suffixes": suffixes,
+             "candidate_slots_by_panel": {key: list(range(n)) for key, n in counts.items()}})
+
+
 def prepare_request(repo, pid, request):
     from . import drawing_settings
     project = repo.get(pid)
@@ -165,6 +199,9 @@ def prepare_request(repo, pid, request):
     size = size_settings({**(prefs or {}), **{k: request[k] for k in ("resolution", "aspect_ratio") if k in request}})
     model = request.get("checkpoint") or (prefs or {}).get("checkpoint") or comfyui.config()["checkpoint"]
     e.need(isinstance(model, str) and model, "请选择绘图模型")
+    explicit_loras, setup = None, {}
+    if "import_setup" in request:
+        explicit_loras, setup = prepare_import_settings(repo, request["import_setup"], model, targets, bundle)
     from . import anima_consistency, qwen_edit
     references = request.get("references_by_panel", {})
     e.need(isinstance(references, dict) and set(references) <= set(targets),
@@ -189,11 +226,11 @@ def prepare_request(repo, pid, request):
     loras_by_panel = {}
     for _, panel in panels(project):
         if panel["id"] in targets:
-            loras_by_panel[panel["id"]] = drawing_settings.loras_for_panel(
-                {**prefs, "checkpoint": model}, project, panel) if prefs else []
+            loras_by_panel[panel["id"]] = explicit_loras if explicit_loras is not None else (
+                drawing_settings.loras_for_panel({**prefs, "checkpoint": model}, project, panel) if prefs else [])
             if editing:
                 e.need(not loras_by_panel[panel['id']], 'Qwen 编辑试验请关闭 LoRA，使用固定图像参考')
-            if not editing and panel["id"] not in frozen and (prefs or {}).get("reference_character_id"):
+            if explicit_loras is None and not editing and panel["id"] not in frozen and (prefs or {}).get("reference_character_id"):
                 from .characters import CharacterLibrary
                 selected = anima_consistency.selected_character_reference(project, panel, model, prefs,
                     library=CharacterLibrary(repo.root.parent / "characters"))
@@ -205,7 +242,8 @@ def prepare_request(repo, pid, request):
     return {"action": "draw_imported", "bundle": bundle["id"], "targets": targets, "candidate_count": count,
             "checkpoint": model, "steps": steps, "seed": seed, "run_key": uuid.uuid4().hex,
             "loras_by_panel": copy.deepcopy(loras_by_panel), "references_by_panel": frozen,
-            "consistency_lora": False if editing else (prefs or {}).get("consistency_lora", False), **edit_snapshot, **size}
+            "consistency_lora": False if editing or explicit_loras is not None else (prefs or {}).get("consistency_lora", False),
+            **edit_snapshot, **size, **setup}
 
 
 def draw_imported(app, pid, request, update, jid):
@@ -249,6 +287,9 @@ def draw_imported(app, pid, request, update, jid):
                 recovered = recover_batch(repo, pid, pending)
                 e.need(recovered["status"] not in {"running", "uncertain"}, "之前的出图尚未确认结束，暂不提交新的图片")
         for row in rows:
+            suffix = request.get("character_suffixes", {}).get(row["panel_id"])
+            if suffix:
+                row = {**row, "positive": row["positive"] + "\n" + suffix}
             handled = set()
             while True:
                 check()

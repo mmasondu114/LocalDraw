@@ -567,7 +567,7 @@ def run_batch(
         e.need(
             (lora.get("compatible_checkpoint") == checkpoint
              and lora.get("confirmed_compatibility") is True)
-            or (small_sample and structural_match
+            or ((small_sample or prompt_override is not None) and structural_match
                 and lora.get("experimental_checkpoint") == checkpoint),
             "请先根据 LoRA 资源说明确认适配当前底模",
         )

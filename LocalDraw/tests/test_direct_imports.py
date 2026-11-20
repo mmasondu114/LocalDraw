@@ -144,3 +144,30 @@ class DirectImportsTest(unittest.TestCase):
         self.assertEqual((saved["positive"], saved["negative"]), (row["visual_prompt"], ""))
         with self.assertRaisesRegex(ValueError, "重复"):
             self.call("preview_direct_prompts", document=[row, row])
+
+    def test_import_setup_freezes_cast_loras_and_individual_counts(self):
+        rows = [{"panel_id": k, "positive": f"  Original {k}  ", "negative": "blur"}
+                for k in ("P001-K01", "P001-K02")]
+        saved = self.save_prompts(rows)
+        card = {"id": "actor", "name": "Rain", "revision": 1, "profile": {"hair": "blue hair"}}
+        e.save(self.repo.root.parent / "characters/cards/actor/current.json", card)
+        chosen = [{"file": "anime/style.safetensors", "weight": 0.5}]
+        options = {"characters": [{"name": "Rain", "revision": 1}], "loras": chosen,
+                   "counts": {"P001-K02": 3}}
+        request = {**saved, "candidate_count": 1, "checkpoint": "test", "import_setup": options}
+        with patch("comic_workflow.quick_sample.selected_loras", return_value=chosen) as resolve:
+            frozen = prompt_exchange.prepare_request(self.repo, self.pid, request)
+            resolve.assert_called_once_with(chosen, "test")
+        with patch.object(prompt_exchange.comfyui, "run_batch", return_value={"id":"demo"}) as draw:
+            result = prompt_exchange.draw_imported(Mock(repo=self.repo), self.pid, frozen, lambda _:None, "setup")
+        self.assertEqual(result["total"], 4)
+        self.assertEqual([c.args[2] for c in draw.call_args_list], ["P001-K01"] + ["P001-K02"]*3)
+        for call in draw.call_args_list:
+            self.assertEqual(call.args[7], chosen)
+            self.assertEqual(call.kwargs["prompt_override"]["positive"], f"  Original {call.args[2]}  \nblue hair")
+            self.assertEqual(call.kwargs["prompt_override"]["negative"], "blur")
+        original = prompt_exchange.load_import(self.repo, self.pid, saved["bundle"])
+        self.assertEqual([r["positive"] for r in original["panels"]], [r["positive"] for r in rows])
+        options["counts"]["P001-K02"] = 0
+        with self.assertRaisesRegex(ValueError, "张数"):
+            prompt_exchange.prepare_request(self.repo, self.pid, request)

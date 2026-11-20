@@ -62,6 +62,8 @@ window.renderPromptExchange = async function(root, ctx) {
   const status = node("p", "正在读取导入记录…", "exchange-status");
   const checks=node("div");
   let imported = null, stale = false;
+  const setupButton = button("逐格出图设置", () => openImportedSetup(pid, imported.id, imported.panels));
+  setupButton.hidden = true; actions.append(setupButton);
   const upload = node("input");upload.type="file";upload.accept=".json,application/json";upload.hidden=true;
   upload.setAttribute("aria-label", "选择提示词 JSON 文件");
   const exportButton = button("① 导出分镜文件",()=>window.exportStoryboardPrompts(pid,api,notify));
@@ -144,6 +146,7 @@ window.renderPromptExchange = async function(root, ctx) {
     const [result,local]=await Promise.all([
       api("/api/prompt-import?id="+encodeURIComponent(pid)), api("/api/local-prompts?id="+encodeURIComponent(pid))]);
     imported=result.bundle;stale=result.stale;
+    setupButton.hidden=!imported || stale;
     checks.replaceChildren();if(!stale)promptChecks(checks,result,node);
     status.textContent=imported?`已导入 ${imported.panels.length} 格${stale?" · 分镜已变化，请重新导入":" · 提示词原文已保存"}`:"尚未导入提示词文件。";
     target.replaceChildren(node("option","全部已导入画格"));target.firstChild.value="";

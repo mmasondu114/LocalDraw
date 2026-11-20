@@ -1726,6 +1726,49 @@ dialog::backdrop { background:#172d245c; backdrop-filter:blur(3px); }
 .story-input .character-library-list label { display:inline-flex; align-items:center; gap:5px; cursor:pointer; }
 .story-input .character-library-list label[hidden] { display:none; }
 
+dialog.import-setup[open] {
+  position:fixed; inset:0; margin:0; width:100%; max-width:none; height:100%; max-height:none;
+  padding:0; border:0; border-radius:0; box-sizing:border-box; background:var(--canvas);
+  display:grid; grid-template-rows:auto minmax(0,1fr) auto; overflow:hidden;
+}
+.import-setup .setup-top,.import-setup .setup-footer {
+  display:flex; align-items:center; gap:16px; background:var(--panel);
+  padding:16px max(20px,calc((100vw - 1240px)/2)); border-bottom:1px solid var(--line);
+}
+.setup-top h1 {margin:0;flex:1;font-size:clamp(22px,2vw,32px)}
+.setup-body {overflow:auto;padding:24px max(20px,calc((100vw - 1240px)/2));}
+.setup-libraries {display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+.setup-section {min-width:0;padding:20px;border-radius:12px;border:1px solid var(--line);background:var(--panel)}
+.setup-section h2 {margin:0;font-size:20px}
+.setup-section > p {margin:6px 0 14px;color:var(--muted)}
+.setup-section input[type=search] {width:100%;margin-bottom:10px}
+.setup-role-grid,.setup-lora-list {display:grid;gap:6px}
+.setup-role-grid {grid-template-columns:repeat(2,minmax(0,1fr))}
+.import-setup label.setup-option {display:flex;align-items:center;gap:9px;margin:0;padding:7px 10px;min-height:40px;
+  border:1px solid var(--line);border-radius:6px;background:var(--field);cursor:pointer;overflow-wrap:anywhere}
+.setup-option:has(input:checked) {outline:1px solid var(--accent)}
+.setup-option img {width:34px;height:38px;object-fit:cover;border-radius:4px}
+.setup-option input[type=checkbox] {width:16px;height:16px;flex:none;margin:0}
+.setup-nav,.setup-picks,.setup-chip {display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.setup-nav {margin-top:12px}.setup-nav small {flex:1;color:var(--muted)}
+.setup-picks:not(:empty) {margin-bottom:12px}
+.setup-chip {padding:3px 6px 3px 10px;background:var(--raised);border-radius:7px}
+.import-setup .setup-chip label {display:flex;align-items:center;gap:5px;margin:0}
+.setup-chip button {padding:2px 7px;min-height:28px}
+.setup-chip input[type=number],.setup-panels input[type=number],.setup-quantities label input {width:74px}
+.setup-quantities {margin-top:16px}
+.setup-quantities > label {display:flex;align-items:center;gap:12px;margin:12px 0}
+.setup-panels {max-height:40vh;overflow:auto}
+.setup-panels > div {display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;align-items:center;padding:8px 0;border-top:1px solid var(--line)}
+.setup-panels p {margin:0;overflow-wrap:anywhere;white-space:pre-wrap}
+.import-setup .setup-footer {border-top:1px solid var(--line);border-bottom:0;flex-wrap:wrap}
+.setup-footer p {margin:0;flex:1;color:var(--muted)}.setup-footer .primary {min-width:130px}
+@media(max-width:760px) {
+  .setup-libraries {grid-template-columns:1fr}.setup-section {padding:14px}
+  .setup-panels > div {grid-template-columns:minmax(0,1fr) auto}.setup-panels p {grid-row:2;grid-column:1/-1}
+  .setup-footer p:empty {display:none}.setup-footer .primary {margin-left:auto}
+}
+
 .header-actions #model-download-entry.primary {
   background:#235647; border:1px solid #235647; color:white; font-weight:700;
 }

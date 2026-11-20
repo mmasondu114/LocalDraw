@@ -41,27 +41,15 @@ async function openDirectImport(kind, initialProject, initialText = "") {
     files.append(node("summary", "从文件导入"), fileLabel);
     dialog.append(pasteLabel, files);
   }
-  const count = node("input"), estimate = node("p");
-  count.type = "number"; count.min = "1"; count.max = "16"; count.value = "2";
-  let panelCount = 0;
-  function updateEstimate() {
-    estimate.textContent = panelCount && count.checkValidity() && count.value
-      ? panelCount + " 格 × " + count.value + " 张 = " + (panelCount * Number(count.value)) + " 张" : "";
-  }
-  count.oninput = updateEstimate;
+  let promptRows = [];
   if (story) {
     const pair = node("details"), label = node("label", "与草稿配对的 project.json");
     label.append(base);
     pair.append(node("summary", "附上原作品 project.json（分镜草稿或旧版导出）"), label);
     dialog.append(pair, node("p", "分镜将保存为新作品。可直接导入完整分镜 JSON，或为 bundle.json 附上生成时的 project.json。"));
-  } else {
-    const label = node("label", "每格生成张数");
-    count.required = true;
-    label.append(count);
-    dialog.append(label, estimate);
   }
   const controls = node("div", undefined, "dialog-actions");
-  const check = node("button", "预览"), save = node("button", story ? "确认导入为新作品" : "开始逐格生成", "primary");
+  const check = node("button", "预览"), save = node("button", story ? "确认导入为新作品" : "导入并设置出图", "primary");
   const close = node("button", "取消");
   check.hidden = !story;
   controls.append(close, check, save);
@@ -70,7 +58,7 @@ async function openDirectImport(kind, initialProject, initialText = "") {
   const invalidate = () => {
     revision++;
     verified = null;
-    panelCount = 0; updateEstimate();
+    promptRows = [];
     save.disabled = true;
     preview.replaceChildren();
     status.textContent = "";
@@ -122,8 +110,9 @@ async function openDirectImport(kind, initialProject, initialText = "") {
         }
         for (const warning of data.warnings) preview.append(node("p", warning, "warning"));
       } else {
-        panelCount = data.panels.length; updateEstimate();
-        status.textContent = project.value ? "已匹配 " + panelCount + " 格" : "";
+        promptRows = data.panels;
+        const panelCount = promptRows.length;
+        status.textContent = "已识别 " + panelCount + " 格。下一步选择角色、LoRA 和张数。";
         const list = node("details");
         list.append(node("summary", "查看 " + panelCount + " 格提示词"));
         preview.append(list);
@@ -144,32 +133,32 @@ async function openDirectImport(kind, initialProject, initialText = "") {
   };
   save.onclick = async () => {
     if (saving || !verified) return;
-    if (!story && !count.reportValidity()) return;
-    if (!story && window.activeStudioJob) {status.textContent = "请等当前任务结束后再生成。"; return;}
     const request = verified;
     saving = true;
-    for (const control of [input, paste, base, project, count, check, close, save]) control.disabled = true;
+    for (const control of [input, paste, base, project, check, close, save]) control.disabled = true;
     try {
       await flushEdits();
       const result = saved || await act(story ? "save_direct_story" : "save_direct_prompts",
         {...request, confirm: true, import_key: importKey});
       saved = result;
       if (!story) {
-        status.textContent = "正在提交逐格出图任务…";
-        await act("draw_imported", {project: result.project, bundle: result.bundle, targets: result.targets,
-          candidate_count: Number(count.value)});
+        status.textContent = "提示词已保存，正在打开出图设置…";
+        await openImportedSetup(result.project, result.bundle, promptRows.map((row, i) => ({
+          ...row, panel_id:result.targets[i], source:row.source || row.panel_id
+        })));
+        dialog.close();
+        return;
       }
       dialog.close();
-      await openProject(result.project, true, story ? "page" : "drawing");
-      if (!story && stage !== "drawing") {stage = "drawing"; target = ""; await renderStage();}
+      await openProject(result.project, true, "page");
       window.leaveStudioHome?.();
-      notify(story ? "已导入分镜。" : "已开始逐格出图，共 " + result.saved + " 格，每格 " + count.value + " 张。");
+      notify("已导入分镜。");
     } catch (error) {
       if (dialog.open) {status.textContent = error.message; if (!saved) {verified = null; check.hidden = false;}}
       else notify(error.message, true);
     } finally {
       saving = false;
-      for (const control of [input, paste, base, project, count, check, close]) control.disabled = false;
+      for (const control of [input, paste, base, project, check, close]) control.disabled = false;
       save.disabled = !verified;
     }
   };
