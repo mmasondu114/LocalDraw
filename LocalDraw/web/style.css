@@ -1798,6 +1798,10 @@ dialog.import-setup[open] {
 }
 .header-actions #model-download-entry.primary:hover { background:#183f34; color:white; }
 .model-download-dialog { width:min(660px,92vw); max-height:82vh; overflow:auto; }
+.drawing-model-dialog { width:min(460px,92vw); }
+.drawing-model-dialog label { display:grid; gap:6px; }
+.drawing-model-dialog select { width:100%; min-width:0; }
+.drawing-model-dialog [role="status"] { overflow-wrap:anywhere; }
 .model-download-dialog .queue-heading { position:sticky; top:0; background:var(--panel,#fff); z-index:1; }
 .model-file { border-top:1px solid var(--line,#ccc); padding:12px 0; }
 .model-file h3,.model-file p { margin:4px 0; }

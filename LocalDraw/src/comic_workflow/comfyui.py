@@ -185,10 +185,7 @@ def graph(checkpoint, positive, negative, seed, cfg, loras=None):
     if checkpoint in MODELS:
         return diffusion_graph(checkpoint, positive, negative, seed, cfg, loras)
     result = {
-        "1": {
-            "class_type": "CheckpointLoaderSimple",
-            "inputs": {"ckpt_name": checkpoint},
-        },
+        "1": prompt_models.base_loader(checkpoint),
         "2": {
             "class_type": "CLIPTextEncode",
             "inputs": {"text": positive, "clip": ["1", 1]},
@@ -255,6 +252,8 @@ class ComfyManager:
 
     def start(self, runtime_options=None):
         global _private_process
+        if runtime_options and self.preloaded:
+            self.shutdown()  # A specialized drawing may require a different node whitelist.
         cfg = {**config(), **(runtime_options or {})}
         if discover()["ready"]:
             stats = api("/system_stats")
@@ -262,7 +261,8 @@ class ComfyManager:
                    "绘图服务未使用 CUDA 显卡，禁止回退到 CPU")
             argv = stats.get('system', {}).get('argv', [])
             if cfg.get('memory_mode') == 'auto_cuda':
-                matching_memory = ('--reserve-vram' in argv and '--disable-smart-memory' in argv
+                managed_preload = self.process is not None and '--disable-dynamic-vram' in argv
+                matching_memory = ('--reserve-vram' in argv and ('--disable-smart-memory' in argv or managed_preload)
                                    and not any(flag in argv for flag in ('--cpu', '--gpu-only', '--highvram')))
             else:
                 matching_memory = ('--highvram' in argv) if cfg.get('memory_mode') == 'staged_cuda' else ('--gpu-only' in argv)
@@ -315,6 +315,11 @@ class ComfyManager:
                    '隔离检验权重目录无效')
             with (ROOT/'config/comfy-model-paths.yaml').open('a', encoding='utf-8') as paths:
                 paths.write('diagnostic_loras:\n  base_path: '+json.dumps(str(diagnostic))+'\n  loras: .\n')
+        memory_flags = ["--highvram" if cfg.get("memory_mode") == "staged_cuda" else "--gpu-only"]
+        if cfg.get("memory_mode") == "auto_cuda":
+            memory_flags = ["--reserve-vram", "2"]
+            if not cfg.get("preload_weights"):
+                memory_flags.append("--disable-smart-memory")
         args = [
             str(python),
             str(source / "main.py"),
@@ -324,13 +329,14 @@ class ComfyManager:
             str(port),
             "--cuda-device",
             "0",
-            *(["--reserve-vram", "2", "--disable-smart-memory"] if cfg.get('memory_mode') == 'auto_cuda'
-              else ["--highvram" if cfg.get('memory_mode') == 'staged_cuda' else "--gpu-only"]),
+            *(["--disable-dynamic-vram"] if cfg.get("preload_weights") else []),
+            *memory_flags,
             "--disable-all-custom-nodes",
             "--whitelist-custom-nodes",
             "ComfyUI_IPAdapter_plus",
             "local_draw_masks",
             "local_draw_hooks",
+            "local_draw_warmup",
             "ComfyUI-Lora-Pipeline",
             "ComfyUI-OpenPose-Studio",
             "ComfyUI-Styler-Pipeline",
@@ -372,8 +378,7 @@ class ComfyManager:
             stderr=subprocess.STDOUT,
             creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
         )
-        if cfg.get("private_service"):
-            _private_process = self.process
+        _private_process = self.process
         self.job = attach_exit_job(self.process)
         deadline = time.monotonic() + 180
         while time.monotonic() < deadline:
@@ -388,6 +393,17 @@ class ComfyManager:
         raise ValueError("ComfyUI 启动超时")
 
     def stop(self):
+        if not self.preloaded:
+            self.shutdown()
+
+    @property
+    def preloaded(self):
+        process = self.process
+        if process is not None and process.poll() is None:
+            return getattr(process, "preloaded_checkpoint", None)
+        return None
+
+    def shutdown(self):
         terminate_tree(self.process)
         close_job(self.job)
         self.job = None
@@ -851,6 +867,8 @@ def run_batch(
                 "review": {"verdict": "pending" if review_required else "unreviewed"},
             }
             persist()
+            if _private_process and getattr(_private_process, "preloaded_checkpoint", None) != checkpoint:
+                _private_process.preloaded_checkpoint = None
             response = api("/prompt", {"prompt": workflow, "client_id": bid})
             batch["submission_pending"] = False
             e.need(

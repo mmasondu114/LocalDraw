@@ -13,7 +13,7 @@ window.renderPromptStudio = async function(root, project) {
   if(draft?.version!==1 || !draft.input || typeof draft.input!=="object")draft=null;
   const saved = draft?.input || (project?.quick_sample ? project.prompt_input : {}) || {};
   const isDiffusion = name => !!data.diffusion_models?.[name];
-  let animaActive = isDiffusion(saved.checkpoint || data.comfy.configured);
+  let animaActive = isDiffusion(saved.checkpoint || data.preloaded_checkpoint || data.comfy.configured);
   const thisProject = project?.quick_sample ? pid : null;
   root.className = "prompt-studio";
   root.replaceChildren(node("h2", "直接输入提示词画图"),
@@ -280,7 +280,7 @@ window.renderPromptStudio = async function(root, project) {
     const opt = node("option", data.diffusion_models?.[name]?.label || name); opt.value = name; model.append(opt);
   }
   const selectableModels = [...model.options].filter(o => !o.disabled);
-  model.value = [saved.checkpoint, data.comfy.configured]
+  model.value = [saved.checkpoint, data.preloaded_checkpoint, data.comfy.configured]
     .find(name => selectableModels.some(o => o.value === name))
     || selectableModels[0]?.value || "";
   if(draft&&saved.checkpoint){

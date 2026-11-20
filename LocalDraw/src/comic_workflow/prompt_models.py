@@ -26,6 +26,14 @@ def defaults(checkpoint):
     return dict(steps=28, cfg=5.0, sampler_name="euler_ancestral", scheduler="normal")
 
 
+def base_loader(checkpoint):
+    if checkpoint not in MODELS:
+        return {"class_type": "CheckpointLoaderSimple", "inputs": {"ckpt_name": checkpoint}}
+    if MODELS[checkpoint][1] == "anima38":
+        return {"class_type": "Anima38BV2Loader", "inputs": {"model_name": checkpoint}}
+    return {"class_type": "UNETLoader", "inputs": {"unet_name": checkpoint, "weight_dtype": "default"}}
+
+
 def graph(checkpoint, positive, negative, seed, cfg, loras=None):
     from .delta_style import apply as apply_delta_style
     positive, negative = apply_delta_style(checkpoint, positive, negative, cfg)
@@ -42,7 +50,7 @@ def graph(checkpoint, positive, negative, seed, cfg, loras=None):
                  else "qwen3vl_4b_fp8_scaled.safetensors" if krea
                  else "qwen3.5_9b_bf16.safetensors" if moss else "qwen_3_06b_base.safetensors")
     nodes = {
-        "1": {"class_type": "UNETLoader", "inputs": {"unet_name": checkpoint, "weight_dtype": "default"}},
+        "1": base_loader(checkpoint),
         "10": {"class_type": "CLIPLoader", "inputs": {
             "clip_name": clip_name,
             "type": family if krea or moss else "stable_diffusion", "device": "default"}},

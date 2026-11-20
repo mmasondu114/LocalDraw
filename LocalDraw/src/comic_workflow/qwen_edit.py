@@ -80,6 +80,7 @@ def validate_frozen(references):
 
 
 def graph(checkpoint, positive, negative, seed, cfg, loras=None):
+    from .prompt_models import base_loader
     e.need(checkpoint == CHECKPOINT, '不支持的 Qwen 编辑模型')
     e.need(not loras, 'Qwen 编辑试验不加载其他模型的角色或画风 LoRA')
     refs = validate_frozen(cfg.get('edit_references'))
@@ -87,7 +88,7 @@ def graph(checkpoint, positive, negative, seed, cfg, loras=None):
     e.need(abs(cfg['width'] / cfg['height'] / ratio - 1) < 0.04,
            'Qwen 编辑当前须选择与第一张参考图相同的画格比例，避免拉伸人物')
     nodes = {
-        '1': {'class_type': 'UNETLoader', 'inputs': {'unet_name': checkpoint, 'weight_dtype': 'default'}},
+        '1': base_loader(checkpoint),
         '10': {'class_type': 'CLIPLoader', 'inputs': {'clip_name': ENCODER, 'type': 'qwen_image', 'device': 'default'}},
         '12': {'class_type': 'VAELoader', 'inputs': {'vae_name': VAE}},
         'edit-shift': {'class_type': 'ModelSamplingAuraFlow', 'inputs': {'model': ['1', 0], 'shift': 3.1}},

@@ -64,9 +64,10 @@ def is_anima(checkpoint):
 
 
 def graph(checkpoint, positive, negative, seed, cfg, loras=None):
+    from .prompt_models import base_loader
     action_mode = "standard" if cfg.get("literal_prompt") else action_mode_for_prompt(positive)
     nodes = {
-        "1": {"class_type": "Anima38BV2Loader", "inputs": {"model_name": checkpoint}},
+        "1": base_loader(checkpoint),
         "10": {"class_type": "CLIPLoader", "inputs": {
             "clip_name": "qwen_3_06b_base.safetensors", "type": "stable_diffusion", "device": "default"}},
         "11": {"class_type": "AnimaQwen35Loader", "inputs": {"qwen35_model": "qwen35_4b.safetensors"}},

@@ -1,8 +1,8 @@
 "use strict";
 
 async function openImportedSetup(project, bundle, rows) {
-  const [library, data] = await Promise.all([api("/api/characters"), api("/api/drawing-options")]);
-  const model = data.comfy.configured;
+  const [library, data] = await Promise.all([api("/api/characters"), api("/api/drawing-options?for=import")]);
+  const model = data.selected_checkpoint || data.comfy.configured;
   const draftKey = "import-setup-" + project + "-" + bundle;
   let draft = {};
   try { draft = JSON.parse(localStorage.getItem(draftKey)) || {}; } catch {}

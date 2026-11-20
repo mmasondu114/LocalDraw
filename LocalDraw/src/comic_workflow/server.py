@@ -43,6 +43,8 @@ class Application:
 
     def clear_finished_context(self, job):
         # The current writer still owns GENERATION_LOCK until cleanup returns.
+        if job["label"] == "卸载绘图模型":
+            return None
         if job["label"] in {"启动语言模型", "启动 FlashNext", "启动分析模型"}:
             self.pending_idle_worker = None
             return None
@@ -94,6 +96,7 @@ class Application:
                    "绘图进行中，请等待完成")
             if self.comfy.process is not None and self.comfy.process.poll() is None:
                 comfyui.api("/free", {"unload_models": True, "free_memory": True})
+                self.comfy.process.preloaded_checkpoint = None
 
     def release_paused_models(self):
         """Unload at a durable pause boundary; keep ComfyUI alive for resume."""
@@ -153,6 +156,12 @@ class Application:
             return updates.check(a.get("token", "")) if action == "check_update" else updates.open_releases()
         if action == "download_model_asset":
             return self.model_downloads.start(a.get("asset"))
+        if action in {"preload_drawing_model", "unload_drawing_model"}:
+            from . import drawing_models
+            if action == "preload_drawing_model":
+                return {"job": self.jobs.submit("加载绘图模型", lambda update, jid:
+                    drawing_models.preload(self, a.get("checkpoint"), update, jid))}
+            return {"job": self.jobs.submit("卸载绘图模型", lambda update, jid: drawing_models.unload(self))}
         if action == "open_model_folder":
             return self.model_downloads.open_folder(a.get("asset"))
         if action in {"analysis_model", "set_analysis_model"}:
@@ -767,6 +776,10 @@ def make_handler(app):
                 if url.path == "/api/model-downloads":
                     self.send(200, app.model_downloads.snapshot())
                     return
+                if url.path == "/api/drawing-model":
+                    from .drawing_models import snapshot
+                    self.send(200, snapshot(app))
+                    return
                 if url.path == "/api/session":
                     self.send(200, {"token": app.token, "workspace": str(ROOT)})
                     return
@@ -889,11 +902,18 @@ def make_handler(app):
                     from .comparison_models import available
                     from .hand_detail import capability as hand_detail_capability
                     selected_checkpoint = query.get("checkpoint", [None])[0]
+                    preloaded = app.comfy.preloaded
+                    if query.get("for") == ["import"] and preloaded:
+                        from .qwen_edit import CHECKPOINT as edit_checkpoint
+                        if preloaded != edit_checkpoint:  # This form has no per-panel edit references.
+                            selected_checkpoint = preloaded
                     project_id = query.get("id", [None])[0]
                     self.send(
                         200,
                         {
                             "comfy": comfyui.discover(checkpoint=selected_checkpoint, probe=False),
+                            "preloaded_checkpoint": preloaded,
+                            "selected_checkpoint": selected_checkpoint,
                             "previous_panel_unavailable": previous_panel_unavailable(selected_checkpoint or comfyui.config()["checkpoint"]),
                             "art_presets": art_presets.PRESETS,
                             "prompt_characters": True,
@@ -1072,6 +1092,7 @@ def make_handler(app):
                     "/panel-reader.js": "panel-reader.js",
                     "/story-import.js": "story-import.js",
                     "/model-downloads.js": "model-downloads.js",
+                    "/drawing-model.js": "drawing-model.js",
                     "/direct-imports.js": "direct-imports.js",
                     "/prompt-json.js": "prompt-json.js",
                     "/task-fusion.js": "task-fusion.js",
@@ -1125,7 +1146,7 @@ def serve():
     app = Application()
     server = ThreadingHTTPServer(("127.0.0.1", cfg["port"]), make_handler(app))
     atexit.register(app.model.stop)
-    atexit.register(app.comfy.stop)
+    atexit.register(app.comfy.shutdown)
     url = f"http://127.0.0.1:{server.server_port}"
     print("本地漫画工作室：" + url, flush=True)
     if not args.no_browser:
@@ -1137,7 +1158,7 @@ def serve():
     finally:
         app.night_queue.close()
         app.model.stop()
-        app.comfy.stop()
+        app.comfy.shutdown()
         server.server_close()
 
 
