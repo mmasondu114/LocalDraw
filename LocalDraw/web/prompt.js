@@ -704,28 +704,11 @@ window.renderPromptStudio = async function(root, project) {
   start.classList.add("prompt-start");
   const selections=node("section",undefined,"prompt-selection workspace-pane");
   selections.setAttribute("aria-label","本次出图选择");
-  function pickerDialog(label, section, summaryTitle, summary) {
-    const dialog=node("dialog",undefined,"prompt-picker-dialog");
-    dialog.setAttribute("aria-label",label);
-    const heading=node("div",undefined,"queue-heading");
-    heading.append(section.querySelector("h3"),button("完成",()=>dialog.close()));
-    dialog.append(heading,section);
-    const trigger=node("button",label);
-    trigger.type="button";
-    trigger.setAttribute("aria-haspopup","dialog");
-    trigger.onclick=()=>{
-      dialog.showModal();
-      section.querySelector('input[type="search"]')?.focus();
-    };
-    const group=node("div");
-    group.append(node("h3",summaryTitle),summary,trigger);
-    selections.append(group);
-    return dialog;
-  }
   loraBox.classList.add("prompt-loras");
-  const charactersDialog=pickerDialog("选择角色",characterBox,"已选角色",selectedCharacters);
-  const lorasDialog=pickerDialog("选择 LoRA",loraBox,"LoRA 权重",selectedLoras);
-  root.replaceChildren(inputPane,selections,galleryPane,charactersDialog,lorasDialog);
+  characterBox.querySelector("h3").after(selectedCharacters);
+  loraBox.querySelector("h3").after(selectedLoras);
+  selections.append(characterBox,loraBox);
+  root.replaceChildren(inputPane,selections,galleryPane);
   const draftInput=()=>({text:positive.value,negative:negative.value,json_editor:jsonEditor.state,board_target:board?panelChoice.value:undefined,checkpoint:model.value,count:Number(count.value),...imageSize.draft(),
       task_name:taskName.value,regional_characters:regional.checked,reference_weight:strength.value,hand_detail:hand.checked,consistency_lora:consistency.checked,delta_matte_skin:matte.checked,
       characters:characterRows.filter(r=>r.check.checked||r.prompt.value!==r.defaultPrompt||r.region.value!=="null"||(!animaActive&&!r.useReference.checked)).map(r=>({name:r.card.name,revision:r.card.revision,selected:r.check.checked,prompt:r.prompt.value,
