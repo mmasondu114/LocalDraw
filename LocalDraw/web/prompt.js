@@ -87,7 +87,8 @@ window.renderPromptStudio = async function(root, project) {
   const characterBox = node("section", undefined, "candidate prompt-characters");
   characterBox.append(node("h3", "角色 · 最多 4 个"));
   characterBox.append(node("small", "衣着由提示词决定；未提到衣着时才补入角色默认服装。可在下方最终预览核对。"));
-  const characterList = node("div", undefined, "prompt-character-list"), characterCount = node("p");
+  const characterList = node("div", undefined, "prompt-character-list");
+  const selectedCharacters=node("p"), selectedLoras=node("p");
   const regionalLabel = node("label"), regional = node("input");
   regional.type = "checkbox"; regional.checked = saved.regional_characters ?? !project;
   regional.dataset.editKey = "prompt-regional-characters";
@@ -140,7 +141,11 @@ window.renderPromptStudio = async function(root, project) {
       row.useReference.disabled = animaActive || !row.card.image_id;
       if(animaActive) row.useReference.checked = false;
     }
-    characterCount.textContent = `已选 ${selected.length}/4` + (selected.length ? " · " + selected.map(r => r.card.name).join("、") : "");
+    const names=selected.map(r=>r.card.name).join("\n") || "未选择角色";
+    const weights=(loraPicker?.rows || []).filter(r=>r.check.checked && !r.check.disabled)
+      .map(r=>loraChoiceName(r.file)+" × "+(r.weight.value || "0")).join("\n") || "未选择 LoRA";
+    if(selectedCharacters.textContent!==names)selectedCharacters.textContent=names;
+    if(selectedLoras.textContent!==weights)selectedLoras.textContent=weights;
     regional.disabled = animaActive || selected.length < 2 || selected.some(r=>r.region.value === "null");
     if(animaActive) regional.checked = false;
     const imageCharacters = selected.filter(r => r.card.image_id && r.useReference.checked);
@@ -697,9 +702,9 @@ window.renderPromptStudio = async function(root, project) {
   for(const field of [model,count,...imageSize.controls])field.addEventListener(field.tagName==="INPUT"?"input":"change",updateSubmitSummary);updateSubmitSummary();
   inputPane.append(formScroll,submitActions);
   start.classList.add("prompt-start");
-  const pickers=node("div",undefined,"prompt-picker-actions");
-  introduction.after(pickers);
-  function pickerDialog(label, section) {
+  const selections=node("section",undefined,"prompt-selection workspace-pane");
+  selections.setAttribute("aria-label","本次出图选择");
+  function pickerDialog(label, section, summaryTitle, summary) {
     const dialog=node("dialog",undefined,"prompt-picker-dialog");
     dialog.setAttribute("aria-label",label);
     const heading=node("div",undefined,"queue-heading");
@@ -712,14 +717,15 @@ window.renderPromptStudio = async function(root, project) {
       dialog.showModal();
       section.querySelector('input[type="search"]')?.focus();
     };
-    pickers.append(trigger);
+    const group=node("div");
+    group.append(node("h3",summaryTitle),summary,trigger);
+    selections.append(group);
     return dialog;
   }
   loraBox.classList.add("prompt-loras");
-  const charactersDialog=pickerDialog("选择角色",characterBox);
-  const lorasDialog=pickerDialog("选择 LoRA",loraBox);
-  pickers.append(characterCount);
-  root.replaceChildren(inputPane,galleryPane,charactersDialog,lorasDialog);
+  const charactersDialog=pickerDialog("选择角色",characterBox,"已选角色",selectedCharacters);
+  const lorasDialog=pickerDialog("选择 LoRA",loraBox,"LoRA 权重",selectedLoras);
+  root.replaceChildren(inputPane,selections,galleryPane,charactersDialog,lorasDialog);
   const draftInput=()=>({text:positive.value,negative:negative.value,json_editor:jsonEditor.state,board_target:board?panelChoice.value:undefined,checkpoint:model.value,count:Number(count.value),...imageSize.draft(),
       task_name:taskName.value,regional_characters:regional.checked,reference_weight:strength.value,hand_detail:hand.checked,consistency_lora:consistency.checked,delta_matte_skin:matte.checked,
       characters:characterRows.filter(r=>r.check.checked||r.prompt.value!==r.defaultPrompt||r.region.value!=="null"||(!animaActive&&!r.useReference.checked)).map(r=>({name:r.card.name,revision:r.card.revision,selected:r.check.checked,prompt:r.prompt.value,
