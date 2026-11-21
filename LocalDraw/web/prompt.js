@@ -21,7 +21,12 @@ window.renderPromptStudio = async function(root, project) {
   const panels=board ? Object.values(project.pages).flatMap(page=>page.panels) : [];
   for(const panel of panels)panelChoice.add(new Option(panel.id+" · "+panel.aspect_ratio,panel.id));
   if(panels.some(p=>p.id===saved.board_target))panelChoice.value=saved.board_target;
-  function describePanel(){const selected=panels.find(p=>p.id===panelChoice.value);panelHint.textContent=selected?.drawing_description || "提示词编号在本作品的分镜中不存在。";}
+  let syncPreview;
+  function describePanel(){
+    const selected=panels[panelChoice.selectedIndex];
+    panelHint.textContent=selected?.drawing_description || "提示词编号在本作品的分镜中不存在。";
+    syncPreview?.();
+  }
   panelLabel.append(panelChoice,panelHint);describePanel();
   root.className = "prompt-studio";
   root.replaceChildren(node("h2", board ? project.brief.title : "直接输入提示词画图"),
@@ -443,14 +448,45 @@ window.renderPromptStudio = async function(root, project) {
   start.dataset.unavailable = String(!model.value);
   start.disabled = !model.value || !!window.activeStudioJob;
   root.append(fields, handLabel, handNote, consistencyLabel, consistencyNote, loraBox, node("small", "一次 1–16 张。LoRA 不自动改写原提示词；需要触发词请填写在对应角色的外观提示词中。角色参考图按勾选启用，不自动审核，中文不会自动翻译。"), start);
-  const gallery = node("section", undefined, "prompt-gallery workspace-pane"); root.append(gallery);
+  const galleryPane = node("section", undefined, "prompt-gallery workspace-pane"); root.append(galleryPane);
+  const gallery = board ? node("div", undefined, "board-preview-body") : galleryPane;
   let activeImage = 0;
   let seenImages=0;
+  let previewPanel, result;
   let galleryRevision = 0;
+  if(board){
+    const footer=node("nav",undefined,"board-panel-navigation");
+    footer.setAttribute("aria-label","切换画格");
+    function stepButton(label,step){
+      const control=node("button",label,"small");
+      control.type="button";
+      control.onclick=()=>{
+        panelChoice.selectedIndex+=step;
+        panelChoice.dispatchEvent(new Event("change",{bubbles:true}));
+      };
+      return control;
+    }
+    const back=stepButton("上一格",-1), forward=stepButton("下一格",1);
+    footer.append(back,forward);
+    galleryPane.append(gallery,footer);
+    syncPreview=()=>{
+      const index=panelChoice.selectedIndex;
+      back.disabled=index<=0;
+      forward.disabled=index>=panels.length-1;
+      if(result && previewPanel!==panelChoice.value)renderGallery();
+    };
+  }
   const refresh = async () => {
     if (!gallery.isConnected) return;
     const revision = ++galleryRevision;
-    gallery.replaceChildren(node("h2", "图片预览"));
+    const latest=thisProject ? await api("/api/images?id=" + encodeURIComponent(thisProject)) : null;
+    if (!gallery.isConnected || revision !== galleryRevision) return;
+    result=latest;
+    renderGallery();
+  };
+  function renderGallery(){
+    const panelId=panelChoice.value;
+    gallery.replaceChildren(node("h2", board && panelId ? "图片预览 · "+panelId : "图片预览"));
     let images = [];
     const copyTools = node("div", undefined, "gallery-copy-tools");
     const copyCurrent = button("复制当前图片", () => copyImages(false), "small");
@@ -474,8 +510,10 @@ window.renderPromptStudio = async function(root, project) {
     clearImages.dataset.startJob = "true";
     clearImages.dataset.unavailable = "true";
     clearImages.disabled = true;
-    copyAll.setAttribute("aria-label", "复制所有图片");
-    copyAll.title = "复制本次已生成的所有原图，可粘贴到文件夹或支持多图粘贴的软件";
+    const copyAllLabel=board ? "复制本格全部图片" : "复制所有图片";
+    copyAll.textContent=copyAllLabel;
+    copyAll.setAttribute("aria-label", copyAllLabel);
+    copyAll.title = copyAllLabel+"，可粘贴到文件夹或支持多图粘贴的软件";
     copyCurrent.disabled = copyAll.disabled = true;
     copyTools.append(copyCurrent, copyAll);if(!board)copyTools.append(clearImages);
     if(board)copyTools.append(button("整图修改",async()=>{await preserve();stage="finished";target="";await renderStage();}));
@@ -506,18 +544,18 @@ window.renderPromptStudio = async function(root, project) {
       }
       empty.append(examples,node("small","立即出图为临时预览；加入列表会保存结果。"));gallery.append(empty);return;
     }
-    const result = await api("/api/images?id=" + encodeURIComponent(thisProject));
-    if (!gallery.isConnected || revision !== galleryRevision) return;
-    images = result.images.batches.flatMap(b => b.images.map(image => ({...image, batch:b})));
-    if(board && images.length>seenImages)activeImage=images.length-1;
+    const batches=board ? result.images.batches.filter(b=>b.panel_id===panelId) : result.images.batches;
+    images = batches.flatMap(b => b.images.map(image => ({...image, batch:b})));
+    if(board && (previewPanel!==panelId || images.length>seenImages))activeImage=Math.max(0,images.length-1);
+    previewPanel=panelId;
     seenImages=images.length;
-    if (!images.length) {gallery.append(node("div", window.activeStudioJob
+    if (!images.length) {gallery.append(node("div", board ? (panelId ? "本格还没有候选图" : "请选择画格") : window.activeStudioJob
       ? "等待图片生成…\n生成进度显示在顶部"
-      : board?"生成候选图后，在图片下方点「采用」选入对应画格。":project?.transient===false?"这项排队作品还没有图片\n打开「任务列表」查看等待或执行状态":"暂无生成图片\n点击“开始画图”生成新图片", "gallery-empty"));return;}
+      : project?.transient===false?"这项排队作品还没有图片\n打开「任务列表」查看等待或执行状态":"暂无生成图片\n点击“开始画图”生成新图片", "gallery-empty"));return;}
     clearImages.dataset.unavailable = "false";
     clearImages.disabled = !!window.activeStudioJob;
     copyCurrent.disabled = copyAll.disabled = false;
-    copyAll.textContent = `复制所有图片（${images.length}）`;
+    copyAll.textContent = `${copyAllLabel}（${images.length}）`;
     activeImage = Math.min(activeImage, images.length - 1);
     const viewer = node("div", undefined, "gallery-viewer");
     const navigation = node("div", undefined, "gallery-navigation");
@@ -582,6 +620,7 @@ window.renderPromptStudio = async function(root, project) {
       viewer.replaceChildren(card);
       imageNumber.textContent = `${activeImage + 1} / ${images.length} 张`;
       previous.disabled = activeImage === 0; next.disabled = activeImage === images.length - 1;
+      previous.dataset.unavailable=String(previous.disabled);next.dataset.unavailable=String(next.disabled);
       const first = Math.floor(activeImage / 8) * 8;
       thumbnails.replaceChildren();
       images.slice(first, first + 8).forEach((image, offset) => {
@@ -594,7 +633,7 @@ window.renderPromptStudio = async function(root, project) {
     }
     gallery.append(viewer, navigation, thumbnails);
     showImage();
-  };
+  }
   const inputPane = node("section", undefined, "prompt-input workspace-pane");
   const introduction = root.children[1];
   inputPane.append(root.firstElementChild, introduction, positive.parentElement, negative.parentElement, languageNotice);
@@ -660,7 +699,7 @@ window.renderPromptStudio = async function(root, project) {
   const libraryPane = node("div", undefined, "prompt-library");
   characterBox.classList.add("workspace-pane"); loraBox.classList.add("workspace-pane", "prompt-loras");
   libraryPane.append(characterBox, loraBox);
-  root.replaceChildren(inputPane, libraryPane, gallery);
+  root.replaceChildren(inputPane, libraryPane, galleryPane);
   const draftInput=()=>({text:positive.value,negative:negative.value,json_editor:jsonEditor.state,board_target:board?panelChoice.value:undefined,checkpoint:model.value,count:Number(count.value),...imageSize.draft(),
       task_name:taskName.value,regional_characters:regional.checked,reference_weight:strength.value,hand_detail:hand.checked,consistency_lora:consistency.checked,delta_matte_skin:matte.checked,
       characters:characterRows.filter(r=>r.check.checked||r.prompt.value!==r.defaultPrompt||r.region.value!=="null"||(!animaActive&&!r.useReference.checked)).map(r=>({name:r.card.name,revision:r.card.revision,selected:r.check.checked,prompt:r.prompt.value,
