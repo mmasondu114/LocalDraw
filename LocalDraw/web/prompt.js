@@ -244,7 +244,7 @@ window.renderPromptStudio = async function(root, project) {
   characterActions.append(button("管理角色", () =>
     window.openCharacterLibrary(() => loadPromptCharacters().catch(e => notify(e.message, true)))),
     button("刷新角色列表", loadPromptCharacters));
-  characterBox.append(characterCount, bindingStatus, referenceControls, characterActions);
+  characterBox.append(bindingStatus, referenceControls, characterActions);
   positive.addEventListener("input", refreshCharacters);
   negative.addEventListener("input", refreshCharacters);
   strength.addEventListener("input", refreshCharacters);
@@ -577,11 +577,12 @@ window.renderPromptStudio = async function(root, project) {
       const open=node("a","下载原图");open.href=url;open.download="提示词出图-"+image.id+".png";
       const info = node("details", undefined, "gallery-info");
       info.append(node("summary", "生成详情"), node("p",`模型：${image.batch.checkpoint} · 种子：${image.seed}`));
-      card.append(link,open);
+      const tools=node("div",undefined,"compact-actions gallery-image-actions");
+      tools.append(open);
+      card.append(link,tools);
       if(board){
         const key=image.batch.panel_id, selected=result.images.selections[key]?.image.id===image.id;
         if(selected){open.download=key+".png";open.textContent="下载 "+key+" 原图";}
-        const tools=node("div",undefined,"compact-actions");
         const adopt=button(selected?"已采用 · "+key:"采用到 "+key,async()=>{
           await api("/api/action",{action:"select_image",project:thisProject,target:key,image:image.id,compact:true});
           await refresh();
@@ -590,11 +591,10 @@ window.renderPromptStudio = async function(root, project) {
         if(selected)tools.append(button("取消采用",async()=>{
           await api("/api/action",{action:"unselect_board_image",project:thisProject,target:key,image:image.id});await refresh();
         }));
-        card.append(tools);
       }
       const panel = Object.values(project?.pages || {}).flatMap(page => page.panels)
         .find(p => p.id === image.batch.panel_id);
-      if (panel && image.review?.verdict !== "pending") card.append(button("框选错误区域修复", () =>
+      if (panel && image.review?.verdict !== "pending") tools.append(button("框选错误区域修复", () =>
         window.ensureDrawingTools().then(()=>window.openImageRepairDialog({root,img,image,project,panel})), "small"));
       card.append(info);
       if (image.review?.verdict && image.review.verdict !== "unreviewed") {
@@ -631,7 +631,8 @@ window.renderPromptStudio = async function(root, project) {
         thumb.append(img); thumbnails.append(thumb);
       });
     }
-    gallery.append(viewer, navigation, thumbnails);
+    gallery.append(viewer);
+    if(images.length>1)gallery.append(navigation,thumbnails);
     showImage();
   }
   const inputPane = node("section", undefined, "prompt-input workspace-pane");
@@ -696,10 +697,29 @@ window.renderPromptStudio = async function(root, project) {
   for(const field of [model,count,...imageSize.controls])field.addEventListener(field.tagName==="INPUT"?"input":"change",updateSubmitSummary);updateSubmitSummary();
   inputPane.append(formScroll,submitActions);
   start.classList.add("prompt-start");
-  const libraryPane = node("div", undefined, "prompt-library");
-  characterBox.classList.add("workspace-pane"); loraBox.classList.add("workspace-pane", "prompt-loras");
-  libraryPane.append(characterBox, loraBox);
-  root.replaceChildren(inputPane, libraryPane, galleryPane);
+  const pickers=node("div",undefined,"prompt-picker-actions");
+  introduction.after(pickers);
+  function pickerDialog(label, section) {
+    const dialog=node("dialog",undefined,"prompt-picker-dialog");
+    dialog.setAttribute("aria-label",label);
+    const heading=node("div",undefined,"queue-heading");
+    heading.append(section.querySelector("h3"),button("完成",()=>dialog.close()));
+    dialog.append(heading,section);
+    const trigger=node("button",label);
+    trigger.type="button";
+    trigger.setAttribute("aria-haspopup","dialog");
+    trigger.onclick=()=>{
+      dialog.showModal();
+      section.querySelector('input[type="search"]')?.focus();
+    };
+    pickers.append(trigger);
+    return dialog;
+  }
+  loraBox.classList.add("prompt-loras");
+  const charactersDialog=pickerDialog("选择角色",characterBox);
+  const lorasDialog=pickerDialog("选择 LoRA",loraBox);
+  pickers.append(characterCount);
+  root.replaceChildren(inputPane,galleryPane,charactersDialog,lorasDialog);
   const draftInput=()=>({text:positive.value,negative:negative.value,json_editor:jsonEditor.state,board_target:board?panelChoice.value:undefined,checkpoint:model.value,count:Number(count.value),...imageSize.draft(),
       task_name:taskName.value,regional_characters:regional.checked,reference_weight:strength.value,hand_detail:hand.checked,consistency_lora:consistency.checked,delta_matte_skin:matte.checked,
       characters:characterRows.filter(r=>r.check.checked||r.prompt.value!==r.defaultPrompt||r.region.value!=="null"||(!animaActive&&!r.useReference.checked)).map(r=>({name:r.card.name,revision:r.card.revision,selected:r.check.checked,prompt:r.prompt.value,
