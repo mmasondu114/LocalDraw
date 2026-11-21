@@ -16,7 +16,7 @@ window.loraMatchesSearch = (file, info, query) => {
     .some(term => normalizeLoraSearch(term).includes(q));
 };
 // One compact picker shared by story settings and direct prompt drawing.
-window.createLoraPicker = function(host, data, items, characters, changed, prefix="") {
+window.createLoraPicker = function(host, data, items, characters, changed, prefix="", selectedOnly=false) {
   const box=node("section",undefined,"lora-library"), tools=node("div",undefined,"lora-tools");
   const search=node("input"), folder=node("select"), filter=node("select"), total=node("small");
   search.type="search";search.placeholder="搜索中文名、拼音或英文别名";search.setAttribute("aria-label","搜索 LoRA");
@@ -39,7 +39,9 @@ window.createLoraPicker = function(host, data, items, characters, changed, prefi
   }
   let activeDirectory=null, activeCheckpoint=data.comfy.configured;
   for(const [v,t] of [["all","全部"],["role-version","角色版"],["cos-version","Cos 服装版"],["selected","已勾选"],["character","已关联角色"],["style","全图风格"],["compatible","结构兼容"]]) add(filter,v,t);
-  tools.append(search,folder,filter,total,button("刷新列表",async()=>{await preserve();location.reload();}));box.append(tools);
+  const reload=button("刷新列表",async()=>{await preserve();location.reload();});
+  tools.append(search,folder,filter,total,reload);
+  if(!selectedOnly)box.append(tools);
   const list=node("div",undefined,"lora-compact-list"), rows=[];
   let page=0, pageSize=4, saving=Promise.resolve(), saveError=null;
   const saveStatus=node("small");
@@ -96,13 +98,21 @@ window.createLoraPicker = function(host, data, items, characters, changed, prefi
     name.readOnly=true;name.title="名称取自文件的第一个下划线之前";
     trigger.onchange=()=>{item.trigger_words=trigger.value;saveLabel(item);notifyChange();};
     confirmed.onchange=()=>{item.confirmed=confirmed.checked;notifyChange();};
-    row.append(choice,weight,owner,details);list.append(row);
+    if(selectedOnly){
+      details.append(owner);
+      row.append(choice,weight,details);
+    }else row.append(choice,weight,owner,details);
+    list.append(row);
     rows.push({file:item.file,item,row,check,weight,owner,confirmed,variant,sync:()=>{check.checked=!!item.selected&&!check.disabled;weight.value=String(item.weight);populateOwner(owner,item.character_id);confirmed.checked=!!item.confirmed;trigger.value=item.trigger_words||"";title.textContent=item.name;}});
   }
   const navigation=node("div",undefined,"lora-tools lora-navigation"),pageLabel=node("small");
   const prev=button("上一页",()=>{page--;refresh();}),next=button("下一页",()=>{page++;refresh();});
   navigation.append(prev,pageLabel,next);
   function refresh() {
+    if(selectedOnly){
+      for(const r of rows)r.row.hidden=!r.check.checked || r.check.disabled;
+      return;
+    }
     // Keep row order and the current page stable when toggling a choice.
     // Moving same-name variants made the selection appear to switch files.
     const q=search.value.trim().toLowerCase();
@@ -132,13 +142,17 @@ window.createLoraPicker = function(host, data, items, characters, changed, prefi
     const selected=rows.filter(r=>r.check.checked);if(!selected.length)throw Error("请先勾选 LoRA");
     for(const r of selected){populateOwner(r.owner,bulkOwner.value);r.owner.onchange();}
   }));
-  box.append(list,navigation,bulk,saveStatus);host.append(box);refresh();
-  const resize = new ResizeObserver(() => {
-    if (!box.isConnected) {resize.disconnect(); return;}
-    const capacity = Math.max(1, Math.min(20, Math.floor(list.clientHeight / 48)));
-    if (capacity !== pageSize) {page = Math.floor(page * pageSize / capacity); pageSize = capacity; refresh();}
-  });
-  resize.observe(list);
+  box.append(list);
+  if(!selectedOnly){
+    box.append(navigation);
+    const resize = new ResizeObserver(() => {
+      if (!box.isConnected) {resize.disconnect(); return;}
+      const capacity = Math.max(1, Math.min(20, Math.floor(list.clientHeight / 48)));
+      if (capacity !== pageSize) {page = Math.floor(page * pageSize / capacity); pageSize = capacity; refresh();}
+    });
+    resize.observe(list);
+  }else bulk.append(reload);
+  box.append(bulk,saveStatus);host.append(box);refresh();
   const flush=async()=>{await saving;if(saveError)throw saveError;};
   window.flushLoraLibrary=flush;
   const updateCharacters=(cards)=>{

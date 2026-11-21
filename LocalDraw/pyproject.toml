@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "local-comic-studio"
-version = "0.1.14"
+version = "0.1.15"
 description = "本地中文漫画剧本与文字分镜工作室"
 requires-python = ">=3.12,<3.15"
 dependencies = ["jsonschema==4.26.0", "Pillow==12.3.0", "websocket-client==1.9.0", "pypinyin==0.55.0"]

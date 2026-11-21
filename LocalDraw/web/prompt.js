@@ -85,10 +85,10 @@ window.renderPromptStudio = async function(root, project) {
     catch(error){event.preventDefault();notify(error.message,true);}
   });
   const characterBox = node("section", undefined, "candidate prompt-characters");
-  characterBox.append(node("h3", "角色 · 最多 4 个"));
-  characterBox.append(node("small", "衣着由提示词决定；未提到衣着时才补入角色默认服装。可在下方最终预览核对。"));
+  characterBox.append(node("h3", "已选角色"));
+  characterBox.title="最多选择 4 个角色。未提到衣着时才补入角色默认服装。";
   const characterList = node("div", undefined, "prompt-character-list");
-  const selectedCharacters=node("p"), selectedLoras=node("p");
+  const noCharacters=node("small","未选择角色"), noLoras=node("small","未选择 LoRA");
   const regionalLabel = node("label"), regional = node("input");
   regional.type = "checkbox"; regional.checked = saved.regional_characters ?? !project;
   regional.dataset.editKey = "prompt-regional-characters";
@@ -105,19 +105,6 @@ window.renderPromptStudio = async function(root, project) {
   const preview = labeledInput(characterBox, "最终正向提示词预览", true);
   preview.readOnly = true; preview.rows = 5; delete preview.dataset.editKey;
   let characterRows = [], loraPicker = null;
-  const characterSearch = node("input");
-  characterSearch.type = "search"; characterSearch.placeholder = "搜索角色：中文名、拼音、英文别名";
-  characterSearch.setAttribute("aria-label", "搜索角色");
-  function refreshCharacterPage() {
-    let matches = 0;
-    for (const row of characterRows) {
-      row.row.hidden = !characterMatchesSearch(row.card, characterSearch.value);
-      if (!row.row.hidden) matches++;
-    }
-    characterList.querySelector(".character-empty")?.remove();
-    if (!matches) characterList.append(node("p", characterRows.length ? "没有匹配的角色" : "还没有角色，可点击“管理角色”添加。", "character-empty"));
-  }
-  characterSearch.addEventListener("input", refreshCharacterPage);
   const chatCard = /(?:^|\n)\s*(?:#{1,6}\s*)?(?:\*\*)?(?:personality|speech\s+style|interaction\s+guidelines|background|relationships|system\s+prompt|性格(?:与行为习惯)?|说话方式(?:与台词样例)?|互动(?:规则|指南)|人物关系|背景(?:设定)?|系统提示词)\s*(?:\*\*)?\s*[:：]/i;
   function selectCharacterLoras(id, selected) {
     if (!loraPicker) return;
@@ -137,15 +124,12 @@ window.renderPromptStudio = async function(root, project) {
     jsonEditor?.refresh();
     const selected = characterRows.filter(r => r.check.checked);
     for (const row of characterRows) {
-      row.details.hidden = !row.check.checked;
+      row.row.hidden = !row.check.checked;
       row.useReference.disabled = animaActive || !row.card.image_id;
       if(animaActive) row.useReference.checked = false;
     }
-    const names=selected.map(r=>r.card.name).join("\n") || "未选择角色";
-    const weights=(loraPicker?.rows || []).filter(r=>r.check.checked && !r.check.disabled)
-      .map(r=>loraChoiceName(r.file)+" × "+(r.weight.value || "0")).join("\n") || "未选择 LoRA";
-    if(selectedCharacters.textContent!==names)selectedCharacters.textContent=names;
-    if(selectedLoras.textContent!==weights)selectedLoras.textContent=weights;
+    noCharacters.hidden=selected.length>0;
+    noLoras.hidden=!!loraPicker?.rows.some(r=>r.check.checked && !r.check.disabled);
     regional.disabled = animaActive || selected.length < 2 || selected.some(r=>r.region.value === "null");
     if(animaActive) regional.checked = false;
     const imageCharacters = selected.filter(r => r.card.image_id && r.useReference.checked);
@@ -232,17 +216,15 @@ window.renderPromptStudio = async function(root, project) {
       });
       prompt.addEventListener("input", refreshCharacters);
       useReference.addEventListener("change", refreshCharacters);
-      row.append(label, details); characterList.append(row);
-      characterRows.push({card, row, check, prompt, details, region, useReference,defaultPrompt});
+      const appearance=node("details");
+      appearance.append(node("summary","外观与参考图"),details);
+      row.append(label,appearance); characterList.append(row);
+      characterRows.push({card, row, check, prompt, region, useReference,defaultPrompt});
     }
     loraPicker?.updateCharacters(characterRows.map(r=>r.card));
-    refreshCharacterPage();
     refreshCharacters();
   }
   characterBox.insertBefore(characterList, preview.parentElement);
-  const characterTools = node("div", undefined, "character-tools");
-  characterTools.append(characterSearch);
-  characterBox.insertBefore(characterTools, characterList);
   const referenceControls = node("div", undefined, "reference-controls");
   referenceControls.append(regionalLabel, strengthLabel);
   const characterActions = node("div", undefined, "compact-actions");
@@ -348,9 +330,8 @@ window.renderPromptStudio = async function(root, project) {
   consistency.dataset.editKey="prompt-consistency-lora";
   consistencyLabel.append(consistency,document.createTextNode("自动加载一致性 LoRA"));
   const consistencyNote=node("small","此开关只加载 Anima Edit v2，不会自动启用角色参考图。当前提示词出图使用文字与 LoRA；没有图像参考时不锁定具体角色外观。");
-  loraBox.append(node("h3","LoRA · 风格与角色"));
+  loraBox.append(node("h3","已选 LoRA · 权重"));
   loraBox.title = "选中角色时自动勾选对应 LoRA，可手动取消；刷新页面或选择其他角色不会重新勾选。全图风格手动勾选。每张最多 5 个，强度 0–2。";
-  loraBox.append(node("small", "选中角色会自动勾选对应 LoRA；可随时取消，取消后不会自动勾回。"));
   const items=(data.comfy.loras||[]).map(file=>{
     const label=data.lora_labels?.[file]||{},stored=(saved.loras||[]).find(l=>resolveLoraFile(l.file,data)===file);
     return {file,name:label.name||stored?.label||file.split("/").pop().replace(/\.safetensors$/i,""),
@@ -358,7 +339,7 @@ window.renderPromptStudio = async function(root, project) {
       character:label.character||stored?.character||"",selected:!!stored,weight:stored?.weight??label.weight??0.7,
       trigger_words:label.trigger_words||"",confirmed:!!label.confirmed};
   });
-  loraPicker=createLoraPicker(loraBox,data,items,characterRows.map(r=>r.card),()=>{refreshCharacters();},"prompt-lora-");
+  loraPicker=createLoraPicker(loraBox,data,items,characterRows.map(r=>r.card),()=>{refreshCharacters();},"prompt-lora-",true);
   const loraRows=loraPicker.rows;
   for(const row of loraRows)row.row.querySelector("details").append(button("添加触发词",()=>{
     const words=row.item.trigger_words?.trim();if(!words)throw Error("请先在编辑中填写触发词");
@@ -705,9 +686,47 @@ window.renderPromptStudio = async function(root, project) {
   const selections=node("section",undefined,"prompt-selection workspace-pane");
   selections.setAttribute("aria-label","本次出图选择");
   loraBox.classList.add("prompt-loras");
-  characterBox.querySelector("h3").after(selectedCharacters);
-  loraBox.querySelector("h3").after(selectedLoras);
-  selections.append(characterBox,loraBox);
+  characterBox.querySelector("h3").after(noCharacters);
+  loraBox.querySelector("h3").after(noLoras);
+  function searchChoices(label, matches, describe){
+    const group=node("div",undefined,"choice-search"), input=node("input"), results=node("div");
+    input.type="search";input.placeholder=label;input.setAttribute("aria-label",label);
+    results.hidden=true;
+    function close(){results.hidden=true;results.replaceChildren();}
+    function open(){
+      const query=input.value.trim(), rows=matches(query);
+      results.replaceChildren();results.hidden=false;
+      for(const row of (query ? rows : rows.slice(0,5))){
+        const option=node("button",describe(row));
+        option.type="button";
+        if(row.file)option.title=row.file;
+        option.onclick=()=>{
+          row.check.click();
+          input.value="";close();
+          (row.weight || row.check).focus();
+        };
+        results.append(option);
+      }
+      if(!rows.length)results.append(node("small","没有匹配的可选项"));
+      else if(!query && rows.length>5)results.append(node("small","输入名称可搜索全部"));
+    }
+    input.onfocus=input.onclick=input.oninput=open;
+    input.onkeydown=event=>{
+      if(event.key==="ArrowDown"){
+        event.preventDefault();if(results.hidden)open();
+        results.querySelector("button")?.focus();
+      }
+    };
+    group.addEventListener("focusout",event=>{if(!group.contains(event.relatedTarget))close();});
+    group.onkeydown=event=>{if(event.key==="Escape"){event.preventDefault();input.focus();close();}};
+    group.append(input,results);
+    return group;
+  }
+  const characterSearch=searchChoices("搜索角色",q=>characterRows.filter(r=>!r.check.checked && characterMatchesSearch(r.card,q)),r=>r.card.name);
+  const loraSearch=searchChoices("搜索 LoRA",q=>loraRows.filter(r=>!r.check.checked && !r.check.disabled && loraMatchesSearch(r.file,data.lora_inspection?.[r.file],q)),r=>loraChoiceName(r.file));
+  const characterSettings=node("details");
+  characterSettings.append(node("summary","角色设置与管理"),bindingStatus,referenceControls,characterActions);
+  selections.append(characterBox,loraBox,characterSearch,loraSearch,characterSettings);
   root.replaceChildren(inputPane,selections,galleryPane);
   const draftInput=()=>({text:positive.value,negative:negative.value,json_editor:jsonEditor.state,board_target:board?panelChoice.value:undefined,checkpoint:model.value,count:Number(count.value),...imageSize.draft(),
       task_name:taskName.value,regional_characters:regional.checked,reference_weight:strength.value,hand_detail:hand.checked,consistency_lora:consistency.checked,delta_matte_skin:matte.checked,
