@@ -9,6 +9,7 @@ MODELS = {
     "animaDeltaMix38BQwen0_deltaMixV60.safetensors": ("Anima Delta Mix v6", "delta", 35, 4.5, "dpmpp_2m", "sgm_uniform"),
     "krea2_turbo_fp8_scaled.safetensors": ("Krea2 Turbo · FP8", "krea2", 8, 1.0, "euler", "simple"),
     "krea2_turbo_bf16.safetensors": ("Krea2 Turbo · BF16 高精度", "krea2", 8, 1.0, "euler", "simple"),
+    "moodyKrea2Mix_v3_Global_BF16_abilirated.safetensors": ("Moody Krea 2 Mix v3 Global BF16 (abilirated)", "krea2", 8, 1.0, "euler", "simple"),
     "moss_image_sft_bf16.safetensors": ("MOSS-Image SFT · BF16 高精度", "moss_image", 25, 2.5, "er_sde", "simple"),
 }
 
@@ -46,9 +47,14 @@ def graph(checkpoint, positive, negative, seed, cfg, loras=None):
         return anima_graph(checkpoint, positive, negative, seed, cfg, loras)
     krea = family == "krea2"
     moss = family == "moss_image"
-    clip_name = ("qwen3vl_4b_bf16.safetensors" if checkpoint == "krea2_turbo_bf16.safetensors"
+    clip_name = ("qwen3vl_4b_bf16.safetensors" if checkpoint in ("krea2_turbo_bf16.safetensors",
+                         "moodyKrea2Mix_v3_Global_BF16_abilirated.safetensors")
                  else "qwen3vl_4b_fp8_scaled.safetensors" if krea
                  else "qwen3.5_9b_bf16.safetensors" if moss else "qwen_3_06b_base.safetensors")
+    if krea:
+        encoder = model_directory(ROOT) / "text_encoders" / "qwen3vl_4b_abliterated_bf16.safetensors"
+        if encoder.is_file():
+            clip_name = encoder.name
     nodes = {
         "1": base_loader(checkpoint),
         "10": {"class_type": "CLIPLoader", "inputs": {
