@@ -167,7 +167,7 @@ def prepare_import_settings(repo, settings, model, targets, bundle):
         e.need(not reason, reason)
         e.need(len(targets) >= 2, "自动参考上一格至少需要两格")
     roles = settings.get("characters", [])
-    e.need(isinstance(roles, list) and len(roles) <= 4, "最多选择 4 个角色")
+    e.need(isinstance(roles, list), "角色选择必须是列表")
     cards, selected, seen = [], [], set()
     library = CharacterLibrary(repo.root.parent / "characters")
     for role in roles:
