@@ -113,7 +113,7 @@ def translate(app, request, update, jid):
 
 
 def selected_characters(repo, items, use_reference):
-    e.need(isinstance(items, list) and len(items) <= 4, "最多同时选择 4 个角色")
+    e.need(isinstance(items, list), "角色选择必须是列表")
     e.need(type(use_reference) is bool, "参考图选项无效")
     library = CharacterLibrary(repo.root.parent / "characters")
     refs, selections, seen = [], [], set()
@@ -241,7 +241,7 @@ def prepare_sample(repo, request):
     if "use_reference" not in request and using_anima:
         use_reference = False
     elif "use_reference" not in request:
-        e.need(isinstance(items, list) and len(items) <= 4, "最多同时选择 4 个角色")
+        e.need(isinstance(items, list), "角色选择必须是列表")
         library = CharacterLibrary(repo.root.parent / "characters")
         use_reference = False
         for item in items:

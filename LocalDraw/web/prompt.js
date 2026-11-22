@@ -86,7 +86,7 @@ window.renderPromptStudio = async function(root, project) {
   });
   const characterBox = node("section", undefined, "candidate prompt-characters");
   characterBox.append(node("h3", "已选角色"));
-  characterBox.title="最多选择 4 个角色。未提到衣着时才补入角色默认服装。";
+  characterBox.title="未提到衣着时才补入角色默认服装。";
   const characterList = node("div", undefined, "prompt-character-list");
   const noCharacters=node("small","未选择角色"), noLoras=node("small","未选择 LoRA");
   const regionalLabel = node("label"), regional = node("input");
@@ -398,7 +398,6 @@ window.renderPromptStudio = async function(root, project) {
     const contaminated = characters.filter(c=>chatCard.test(c.prompt));
     if (contaminated.length) throw Error(contaminated.map(c=>c.name).join("、") + "的外观提示词含聊天设定，请先整理 / 转换英文提示词");
     const useReference = characterRows.some(r=>r.check.checked && r.card.image_id && r.useReference.checked);
-    if (characters.length>4) throw Error("最多同时选择 4 个角色，请减少勾选");
     const referenceWeight = Number(strength.value);
     if (!Number.isFinite(referenceWeight) || referenceWeight < 0 || referenceWeight > 1)
       throw Error("参考图强度须为 0–1");
