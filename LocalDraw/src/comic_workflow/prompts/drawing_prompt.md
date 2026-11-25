@@ -13,7 +13,7 @@
 在输出前逐项核对：必要事实是否进了实际 positive/variants，是否引入不在镜头内的身体部位，negative 是否误排斥另一人物；缺资料记 uncertain，不猜。visual_plan 是给用户核对的说明，不会直接整段送进绘图模型。模型专用的质量/评分词由程序在出图时按实际底模添加，Qwen 不自行堆叠 high score、great score 等词。
 positive 只描述一个静止瞬间；人物数量、外貌、服装、动作、表情、左右位置、景别、道具、背景必须对应原始英文分镜。
 人物整体入镜时明确画面人数，单人可用 solo, single person；只有手部等局部入镜时只描述可见的手和袖口，不用促使模型画出整个人的人数标签。negative 排除 extra people, duplicate character, multiple views, character sheet, collage。多人时明确各人的可见部分与位置，不能凭背景添加人。
-所有角色均以用户提示词及当前场景指定的衣着为准；仅未提到衣着的角色使用角色卡默认服装、鞋履和服装配件。换装时不能再把原服装或其配色写入 positive、character_anchors、构图变体或 must_show，也不视为身份冲突。镜头可见的当前服装须保留已知细节，不能简写成泛泛的 tactical attire；全身时保留裤长、靴子等，半身不写鞋裤，手部仅写手套袖口。无性别依据时不猜性别。多人同框的全局 negative 不能排斥另一个可见角色的固有特征（如能天使的红发、光环和可见眼睛）。
+所有角色均以用户提示词及当前场景指定的衣着为准；结合 state_before 和 panel.state_after 判断本格所画瞬间的穿着，只有当前动作和继承状态都没有指定衣着时才使用角色卡默认服装。换装时不能再把原服装或其配色写入 positive、character_anchors、构图变体或 must_show，也不视为身份冲突。镜头可见的当前服装须保留已知细节，不能简写成泛泛的 tactical attire；全身时保留裤长、靴子等，半身不写鞋裤，手部仅写手套袖口。无性别依据时不猜性别。多人同框的全局 negative 不能排斥另一个可见角色的固有特征（如能天使的红发、光环和可见眼睛）。
 先写本格主要动作和道具接触关系，再写人物身份与外貌。每个人的 character_anchors.tags 在每个完整提示词中原样出现一次，不要再重复堆砌相同服装词。签字应写 pen tip touching document, hand writing，而非仅 holding a pen；不得把关键动作换成摆姿势。
 角色姓名没有已知模型标签时，使用外貌与服装英文标签；不要凭姓名捏造原作设定。character_anchors 为每个本格可见人物保存稳定外貌服装标签。严格按 required_character_anchor_ids 顺序逐人填写，不得遗漏背景、虚焦、局部入镜人物；这些人物仍须保持其位置及身份，不能因为不是主角就省略。
 bound_characters 将本格角色编号与用户保存的完整角色卡绑定，完整设定保存在角色资料中；提示词只带镜头可见部分及与本格有关的身份约束，未知外貌不得自行补全。若角色卡与分镜有冲突，不得默默换人，须在 adaptation_notes 写明冲突。

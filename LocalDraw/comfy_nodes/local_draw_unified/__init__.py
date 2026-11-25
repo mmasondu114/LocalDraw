@@ -1,6 +1,7 @@
 import logging
 
 from aiohttp import web
+import folder_paths
 import comfy.samplers
 import nodes
 from server import PromptServer
@@ -60,6 +61,8 @@ class UnifiedModel:
             else:
                 model = nodes.UNETLoader().load_unet(profile["file"], "default")[0]
             clip_name = "qwen3vl_4b_fp8_scaled.safetensors" if family == "krea2" else "qwen_3_06b_base.safetensors"
+            if family == "krea2" and folder_paths.get_full_path("text_encoders", "qwen3vl_4b_abliterated_bf16.safetensors"):
+                clip_name = "qwen3vl_4b_abliterated_bf16.safetensors"
             clip_type = "krea2" if family == "krea2" else "stable_diffusion"
             clip = nodes.CLIPLoader().load_clip(clip_name, clip_type, "default")[0]
             vae = nodes.VAELoader().load_vae("qwen_image_vae.safetensors")[0]

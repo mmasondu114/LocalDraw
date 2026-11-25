@@ -164,6 +164,7 @@ def build_context(p, stage, target, instruction, drawing_checkpoint=None):
             e.need(ctx["panel"], "未找到目标格")
             from .character_binding import panel_characters
 
+            ctx["state_before"] = e.panel_start_state(ctx["current_page"], ctx["panel"])
             ctx["bound_characters"] = panel_characters(p, ctx["panel"])
             ctx["brief"] = copy.deepcopy(ctx["brief"])
             ctx["brief"].pop(
@@ -521,6 +522,9 @@ class ModelManager:
         available = path.exists() and path.stat().st_size == cfg["model_size"]
         owned = self.process is not None and self.process.poll() is None
         try:
+            import socket
+            with socket.create_connection(("127.0.0.1", cfg["model_port"]), timeout=0.06):
+                pass
             ready = (
                 request_json(endpoint(cfg) + "/health", timeout=1).get("status") == "ok"
             )

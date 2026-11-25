@@ -51,6 +51,7 @@ window.renderPanelReader = async function(root, ctx) {
     return input;
   }
   const positive = field("正向提示词"), negative = field("负向提示词");
+  positive.parentElement.after(wardrobeButton(positive, () => true, saveWorkspace));
   negative.placeholder = "可留空";
   function remember() {
     const row = rows.get(panels[index].id);

@@ -13,14 +13,6 @@ def validate(value):
     if "consistency_lora" in value:
         e.need(type(value["consistency_lora"]) is bool, "一致性 LoRA 选项无效")
     e.need(isinstance(value.get("reference_character_id", ""), str), "参考图角色编号无效")
-    from . import art_presets
-
-    preset = art_presets.get(value)
-    if preset:
-        e.need(
-            value == art_presets.apply(value, preset["id"]),
-            "画风设置已手动变化，请切换为自定义后保存",
-        )
     e.need(value.get("mode") in ["none", "manual", "characters"], "请选择 LoRA 模式")
     e.need(
         isinstance(value.get("checkpoint"), str) and value["checkpoint"],

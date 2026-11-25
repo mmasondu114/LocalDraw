@@ -244,7 +244,6 @@ class ConsistencyTests(unittest.TestCase):
                                 'consistency_lora':True,'reference':False,'control':False})
         self.assertEqual(result['status'], 'done')
         self.assertEqual(result['consistency']['reference_mode'], 'none')
-        self.assertEqual(result['references'], [])
         self.assertEqual(fixture.prompts[-1]['5']['inputs']['model'], ['consistency-lora',0])
         self.assertFalse(any(n['class_type'] in ('LoadImage','VAEEncode','ApplyCosmosReferenceLatent')
                              for n in fixture.prompts[-1].values()))

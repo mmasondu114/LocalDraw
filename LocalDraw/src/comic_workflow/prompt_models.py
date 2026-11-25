@@ -6,7 +6,10 @@ MODELS = {
     "qwen_image_edit_2511_fp8mixed.safetensors": ("Qwen Image Edit 2511 · 多图参考试验", "qwen_edit", 40, 4.0, "euler", "simple"),
     "Anima-3.8B-v1.1.safetensors": ("Anima 3.8B v1.1", "anima38", 40, 6.0, "res_multistep", "beta"),
     "anima-aesthetic-v1.1.safetensors": ("Anima Aesthetic v1.1", "anima", 30, 4.0, "er_sde", "simple"),
+    "anima-turbo-v1.1.safetensors": ("Anima Turbo v1.1", "anima", 10, 1.0, "euler", "simple"),
+    "2.9DeMixV7.5.safetensors": ("Anima Delta Mix 2.9B v7.5 Flat", "anima", 35, 4.5, "euler_ancestral", "normal"),
     "animaDeltaMix38BQwen0_deltaMixV60.safetensors": ("Anima Delta Mix v6", "delta", 35, 4.5, "dpmpp_2m", "sgm_uniform"),
+    "krea2_anime_uwu_v2_w8a8.safetensors": ("Krea 2 Anime UWU v2.0 W8A8", "krea2", 8, 1.0, "euler", "simple"),
     "krea2_turbo_fp8_scaled.safetensors": ("Krea2 Turbo · FP8", "krea2", 8, 1.0, "euler", "simple"),
     "krea2_turbo_bf16.safetensors": ("Krea2 Turbo · BF16 高精度", "krea2", 8, 1.0, "euler", "simple"),
     "moodyKrea2Mix_v3_Global_BF16_abilirated.safetensors": ("Moody Krea 2 Mix v3 Global BF16 (abilirated)", "krea2", 8, 1.0, "euler", "simple"),
@@ -46,6 +49,7 @@ def graph(checkpoint, positive, negative, seed, cfg, loras=None):
         from .anima import graph as anima_graph
         return anima_graph(checkpoint, positive, negative, seed, cfg, loras)
     krea = family == "krea2"
+    zero_negative = krea and (cfg["cfg"] == 1.0 or not negative.strip())
     moss = family == "moss_image"
     clip_name = ("qwen3vl_4b_bf16.safetensors" if checkpoint in ("krea2_turbo_bf16.safetensors",
                          "moodyKrea2Mix_v3_Global_BF16_abilirated.safetensors")
@@ -62,7 +66,7 @@ def graph(checkpoint, positive, negative, seed, cfg, loras=None):
             "type": family if krea or moss else "stable_diffusion", "device": "default"}},
         "12": {"class_type": "VAELoader", "inputs": {"vae_name": "flux2-vae.safetensors" if moss else "qwen_image_vae.safetensors"}},
         "2": {"class_type": "CLIPTextEncode", "inputs": {"clip": ["10", 0], "text": positive}},
-        "3": {"class_type": "ConditioningZeroOut", "inputs": {"conditioning": ["2", 0]}} if krea else
+        "3": {"class_type": "ConditioningZeroOut", "inputs": {"conditioning": ["2", 0]}} if zero_negative else
              {"class_type": "CLIPTextEncode", "inputs": {"clip": ["10", 0], "text": negative}},
         "4": {"class_type": "EmptyFlux2LatentImage" if moss else "EmptySD3LatentImage", "inputs": {"width": cfg["width"], "height": cfg["height"], "batch_size": 1}},
         "5": {"class_type": "KSampler", "inputs": {
@@ -82,7 +86,7 @@ def graph(checkpoint, positive, negative, seed, cfg, loras=None):
         nodes[key] = {"class_type": "DeltaMixQ35LoraLoader" if family == "delta" else "LoraLoader", "inputs": inputs}
         model, clip = [key, 0], [key, 1]
     nodes["2"]["inputs"]["clip"] = clip
-    if not krea:
+    if not zero_negative:
         nodes["3"]["inputs"]["clip"] = clip
     nodes["5"]["inputs"]["model"] = model
     return nodes

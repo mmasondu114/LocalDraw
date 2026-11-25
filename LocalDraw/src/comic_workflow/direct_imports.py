@@ -7,7 +7,7 @@ from pathlib import Path
 import uuid
 
 from . import engine as e, manual_drawing, prompt_exchange, story_import
-from .batch_drawing import story_fingerprint
+from .engine import story_fingerprint
 from .repository import LOCK
 
 
@@ -75,12 +75,12 @@ def storyboard(repo, request):
 
 
 def prompt_row(row):
-    if "negative_prompt" in row and "negative" not in row:
-        row = {**row, "negative": row["negative_prompt"]}
-    if "visual_prompt" not in row:
-        return row
-    return {**row, "panel_id": row.get("panel_id", row.get("id")),
-            "positive": row.get("positive", row["visual_prompt"]), "negative": row.get("negative", "")}
+    return {
+        **row,
+        "panel_id": row.get("panel_id", row.get("id")),
+        "positive": row.get("positive", row.get("visual_prompt", row.get("prompt"))),
+        "negative": row.get("negative", row.get("negative_prompt", "")),
+    }
 
 
 def prompt_preview(repo, pid, request):
@@ -115,7 +115,13 @@ def prompt_preview(repo, pid, request):
         page, panel = expected[key]
         e.need(row.get("page_id", page) == page, f"{key}：所属页不正确")
         if foreign:
-            e.need(originals[key] == row.get("storyboard"),
+            expected_board = originals[key]
+            incoming = row.get("storyboard")
+            new_fields = {"state_before", "state_after", "props"}
+            if isinstance(incoming, dict) and new_fields.isdisjoint(incoming) and "avoid" not in doc:
+                # Earlier v1 downloads had the same identity checks but no continuity fields.
+                expected_board = {k: v for k, v in expected_board.items() if k not in new_fields}
+            e.need(expected_board == incoming,
                    f"{key}：来源与目标作品的分镜摘要不匹配，无法按编号映射")
         positive, negative = row.get("positive"), row.get("negative")
         e.need(isinstance(positive, str) and positive.strip() and isinstance(negative, str)
@@ -181,17 +187,22 @@ def save_panel_work(repo, library, rows, key, title, digest, *, board=False, boa
         e.need(receipt["hash"] == digest, "该导入标识已用于其他提示词")
         return receipt["result"]
     pages, prompts = [], []
+    initial = {"visual_state": ""} if board and any("visual_state" in row for row in rows) else {}
+    state = initial
     last_group = None
     for row in rows:
         group = (row["source"] or "").partition("-")[0] if re.match(r"^P[0-9]+-K[0-9]+$", row["source"] or "") else ""
         if not pages or group != last_group or len(pages[-1]["panels"]) == 9:
             n = len(pages) + 1
             pages.append({"id": f"P{n:03}", "number": n, "reading_direction": "LTR", "layout": "逐格出图",
-                          "page_turn_note": "", "state_in": {}, "state_out": {}, "lettering": [], "panels": []})
+                          "page_turn_note": "", "state_in": state, "state_out": state, "lettering": [], "panels": []})
         last_group = group
         page = pages[-1]
         summary = row["description"] if board else row["positive"].strip().splitlines()[0][:100]
         panel = prompt_panel(summary, row.get("aspect_ratio", "3:2"), [], page["id"], len(page["panels"]) + 1)
+        if board and row.get("visual_state", "").strip():
+            state = {"visual_state": row["visual_state"].strip()}
+        panel["state_after"] = page["state_out"] = state
         page["panels"].append(panel)
         prompts.append({**row, "page_id": page["id"], "panel_id": panel["id"], "panel_hash": e.digest(panel),
                         "summary": (row["source"] + " · " if row["source"] else "") + summary})
@@ -201,7 +212,7 @@ def save_panel_work(repo, library, rows, key, title, digest, *, board=False, boa
                      "must_include": [], "avoid": [], "character_material": ""},
            "canon": {"characters": prompt_characters([]), "scenes": [{"id": "S001", "name": "按提示词",
                      "layout": "", "landmarks": [], "lighting": "", "axis_rule": ""}],
-                     "props": [], "world_rules": [], "initial_state": {}}, "pages": pages}
+                     "props": [], "world_rules": [], "initial_state": initial}, "pages": pages}
     _, project, _, _ = story_import.prepare(doc, library)
     if board:
         project["prompt_board"] = True

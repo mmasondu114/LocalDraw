@@ -23,6 +23,15 @@ def digest(x):
     ).hexdigest()
 
 
+def story_fingerprint(project):
+    return digest(
+        {
+            key: project.get(key)
+            for key in ["brief", "canon", "plan", "pages", "script", "script_source"]
+        }
+    )
+
+
 def save(p, x):
     p = pathlib.Path(p)
     p.parent.mkdir(parents=True, exist_ok=True)
@@ -116,6 +125,12 @@ def validate_plan(p, project):
             item["turn_after"] == turn_after(b, n),
             f"{item['id']} 的 turn_after 必须为 {str(turn_after(b, n)).lower()}，它表示物理可翻页位置而非悬念",
         )
+
+
+def panel_start_state(page, panel):
+    """Confirmed pages number panels in reading order, starting at one."""
+    number = panel["number"]
+    return page["state_in"] if number == 1 else page["panels"][number - 2]["state_after"]
 
 
 def validate_page(page, project, start=None):

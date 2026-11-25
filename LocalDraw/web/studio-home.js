@@ -300,7 +300,7 @@ window.openStudioQueue = async function() {
         for(const row of saved.panels){
           const panel=node("article",undefined,"queue-card");panel.append(node("h3",row.panel_id),node("strong","正向提示词"),node("pre",row.positive),node("strong","负向提示词"),node("pre",row.negative||"未填写"));
           panel.append(node("p","角色 / 风格 LoRA："+(row.loras.map(l=>`${l.label||l.file}（强度 ${l.weight}）`).join("、")||"未选择")));
-          if(row.options)panel.append(node("p",`画幅 ${row.options.aspect_ratio} · 一致性辅助 ${row.options.consistency_lora?"开启":"关闭"} · 手部增强 ${row.options.hand_detail?"开启":"关闭"}`));
+          if(row.options)panel.append(node("p",`画幅 ${row.options.aspect_ratio} · 一致性辅助 ${row.options.consistency_lora?"开启":"关闭"}`+(row.options.seed!=null?` · 种子 ${row.options.seed}`:"")));
           if(row.has_reference)panel.append(node("small","已保存固定参考图"));preview.append(panel);
         }
         preview.onclose=()=>preview.remove();document.body.append(preview);preview.showModal();
@@ -371,14 +371,16 @@ document.addEventListener("DOMContentLoaded",()=>{
         const result = await act("check_update", {token: token.value});
         label.hidden = !result.auth_required;
         status.textContent = result.auth_required ? "当前版本 " + result.current + "。填写只读令牌可比较版本，也可以直接打开发行页。"
-          : "当前版本 " + result.current + "，GitHub 最新版 " + result.latest + (result.available ? "，可前往下载。" : "，无需更新。");
+          : "当前版本 " + result.current + "，GitHub 最新版 " + result.latest + (result.available ? "。工作室会在打开和退出时检查并安装正式版。" : "，无需更新。");
       } catch (error) { label.hidden = false; status.textContent = error.message; }
       finally { token.value = ""; check.disabled = false; }
     });
     const actions = node("div", undefined, "dialog-actions");
     actions.append(check, button("打开 GitHub 下载页", safe(() => act("open_releases"))),
       button("关闭", () => dialog.close()));
-    dialog.append(node("h2", "检测更新"), status, label, actions);
+    dialog.append(node("h2", "检测更新"));
+    if (boot?.desktop_update) dialog.append(node("p", boot.desktop_update.time + " · " + boot.desktop_update.message));
+    dialog.append(status, label, actions);
     dialog.onclose = () => dialog.remove();
     document.body.append(dialog); dialog.showModal(); check.click();
   };

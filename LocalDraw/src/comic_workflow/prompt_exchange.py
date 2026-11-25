@@ -4,7 +4,7 @@ import copy
 import json
 import uuid
 from . import engine as e, comfyui
-from .batch_drawing import story_fingerprint
+from .engine import story_fingerprint
 from .repository import LOCK, safe_id
 from .task_control import checkpoint, active_time
 from .prompt_preflight import WRITING_GUIDANCE, with_render_plan, visual_cast
@@ -13,7 +13,8 @@ FORMAT = "comic-prompt-exchange/v1"
 
 
 def panels(project):
-    return [(page, panel) for page in project.get("pages", {}).values() for panel in page["panels"]]
+    return [(page, panel) for page in sorted(project.get("pages", {}).values(), key=lambda p: p["number"])
+            for panel in page["panels"]]
 
 
 def export_storyboard(repo, pid):
@@ -23,23 +24,35 @@ def export_storyboard(repo, pid):
     e.need(items and planned and all(p["id"] in project["pages"] for p in planned), "请先确认全部分镜，再导出提示词交换文件")
     cast = {c["id"]: c for c in project.get("canon", {}).get("characters", [])}
     scenes = {s["id"]: s for s in project.get("canon", {}).get("scenes", [])}
-    return {
+    # Standalone imports keep only a short display label in the storyboard.
+    original = {}
+    if pid.startswith("panels-") and not project.get("prompt_board"):
+        key = pid.removeprefix("panels-")
+        if (repo.folder(pid) / "prompt-imports" / (key + ".json")).is_file():
+            original = {row["panel_id"]: row for row in load_import(repo, pid, key)["panels"]}
+    document = {
         "format": FORMAT, "project_id": pid, "storyboard_hash": story_fingerprint(project),
         "title": project.get("brief", {}).get("title", pid),
         "instructions": "给 Grok 或其他外部提示词编写工具：你的任务是把已确认的文字分镜转换为逐格绘图提示词。请直接填写 panels 中每格的 positive 和 negative，不要续写剧本、重排分镜或生成图片。绘图模型实际只接收这一格的 positive / negative，不会另外读取 storyboard。按下方 writing_process 和 prompt_writing_guidance 执行。返回可直接重新导入本工作室的完整 JSON 对象，不附加 Markdown 围栏、分析说明、代码或工作流。",
         "writing_process": [
+            "original_prompt 如存在，保存了该格导入的完整正负面原文；storyboard.action 可能只是短标题。保留原文的画面细节和排除项，按当前分镜与用户修订更新。",
             "先通读全部分镜，理解各格之间的动作推进、景别变化、人物出入场以及道具转移；再逐格填写，不要先写一段统一长模板粘贴到所有画格。",
             "每格先读 action、description、shot、angle、characters 中的 in_this_panel，再结合 visible_character_profiles 核对人物外观；角色卡只提供辨认依据，本格明确的服装、状态与动作优先。资料有冲突时不要把互相矛盾的描述同时写进提示词。",
             "按‘本格景别与角度 → 可见人数和主要动作 → 每位出镜人物的位置与简短外观 → 必要环境’组织 positive，绘图描述使用清晰英文。negative 填英文错误项或空字符串。",
             "完成后逐格自查：人数是否正确；有没有把未出镜角色写进来；耳朵、光环、发色和服装是否各自归属；动作与道具数量是否清楚；景别是否落实；是否重复了无关长段落；是否使用了依赖前文的省略说法。再比较相邻格，确认分镜里的差异确实写进了提示词。",
             "只填写 positive、negative，保留其余原始字段与分镜资料；format、project_id、storyboard_hash、panel_id、page_id 必须原样保留。默认填写全部 panels，不新增、合并、重复、重编号或漏掉画格。只有用户明确要求处理部分画格时，才删除未处理的 panels 条目；保留的每一格都必须有非空 positive 和字符串 negative。",
         ],
+        "avoid": project["brief"].get("avoid", []),
+        "story_idea": project.get("board_source", {}).get("idea", ""),
         "prompt_writing_guidance": WRITING_GUIDANCE,
         "panels": [{
             "page_id": page["id"], "panel_id": panel["id"],
             "storyboard": {
                 "purpose": panel.get("purpose", ""), "action": panel.get("main_instant", ""),
                 "description": panel.get("drawing_description", ""),
+                "state_before": e.panel_start_state(page, panel),
+                "state_after": panel["state_after"],
+                "props": panel.get("props", []),
                 "characters": [{"character": copy.deepcopy(cast.get(role["character_id"], {"id": role["character_id"]})),
                                 "in_this_panel": copy.deepcopy(role)} for role in panel.get("characters", [])],
                 "scene": copy.deepcopy(scenes.get(panel.get("scene_id"), {})),
@@ -51,6 +64,12 @@ def export_storyboard(repo, pid):
             "positive": "", "negative": "",
         } for page, panel in items],
     }
+    if original:
+        for row, (_, panel) in zip(document["panels"], items):
+            source = original.get(row["panel_id"])
+            if source and source["panel_hash"] == e.digest(panel):
+                row["original_prompt"] = {"positive": source["positive"], "negative": source["negative"]}
+    return document
 
 
 def export_download(repo, pid):
@@ -147,6 +166,13 @@ def current_import(repo, pid):
             **with_render_plan(repo, pid, project, bundle["panels"])}
 
 
+def effective_positive(row, settings):
+    key = row["panel_id"]
+    positive = settings.get("positive_by_panel", {}).get(key, row["positive"])
+    suffix = settings.get("character_suffixes", {}).get(key)
+    return positive + "\n" + suffix if suffix else positive
+
+
 def effective_negative(row, settings):
     panel = settings.get("negative_by_panel", {}).get(row["panel_id"], row["negative"])
     common = settings.get("common_negative", "")
@@ -167,7 +193,7 @@ def prepare_import_settings(repo, settings, model, targets, bundle):
         e.need(not reason, reason)
         e.need(len(targets) >= 2, "自动参考上一格至少需要两格")
     roles = settings.get("characters", [])
-    e.need(isinstance(roles, list) and len(roles) <= 4, "最多选择 4 个角色")
+    e.need(isinstance(roles, list), "角色选择必须是列表")
     cards, selected, seen = [], [], set()
     library = CharacterLibrary(repo.root.parent / "characters")
     for role in roles:
@@ -184,6 +210,10 @@ def prepare_import_settings(repo, settings, model, targets, bundle):
            all(type(n) is int and 1 <= n <= 16 for n in counts.values()), "每格张数须为 1–16")
     common = settings.get("common_negative", "")
     edits = settings.get("negative_by_panel", {})
+    positives = settings.get("positive_by_panel", {})
+    e.need(isinstance(positives, dict) and positives.keys() <= set(targets) and
+           all(isinstance(v, str) and v.strip() and len(v) <= 20000 for v in positives.values()),
+           "逐格正向提示词须为 1–20000 字")
     e.need(isinstance(common, str) and len(common) <= 20000, "通用负面提示词最多 20000 字")
     e.need(isinstance(edits, dict) and edits.keys() <= set(targets) and
            all(isinstance(v, str) and len(v) <= 20000 for v in edits.values()), "逐格负面提示词无效")
@@ -193,14 +223,16 @@ def prepare_import_settings(repo, settings, model, targets, bundle):
             continue
         e.need(len(effective_negative(row, settings)) <= 20000, row["panel_id"] + " 合并后的负面提示词最多 20000 字")
         if selected:
-            looks = resolve_selections(row["positive"], selected, cards)
+            positive = positives.get(row["panel_id"], row["positive"])
+            looks = resolve_selections(positive, selected, cards)
             suffix = ", ".join(s["prompt"] for s in looks if s["prompt"])
-            e.need(len(row["positive"]) + len(suffix) + 1 <= 20000, row["panel_id"] + " 加入角色后提示词过长")
+            e.need(len(positive) + len(suffix) + 1 <= 20000, row["panel_id"] + " 加入角色后提示词过长")
             suffixes[row["panel_id"]] = suffix
     return (selected_loras(settings.get("loras", []), model),
             {"selected_characters": selected, "character_suffixes": suffixes,
              "reference_previous_panel": chain,
              "common_negative": common, "negative_by_panel": dict(edits),
+             "positive_by_panel": dict(positives),
              "candidate_slots_by_panel": {key: list(range(n)) for key, n in counts.items()}})
 
 
@@ -272,14 +304,16 @@ def prepare_request(repo, pid, request):
 
 def previous_panel_reference(repo, pid, run_key, previous_panel, current_panel):
     from .anima_consistency import freeze_reference
-    batches = [b for b in comfyui.drawing_state(repo, pid)["batches"]
-               if b.get("render_options", {}).get("import_run") == run_key]
+    index = comfyui.drawing_state(repo, pid)
+    batches = [b for b in index["batches"] if b.get("render_options", {}).get("import_run") == run_key]
     # A resumed panel must keep the pixels used by its already submitted candidates.
     for batch in batches:
         fixed = batch["render_options"].get("consistency_reference")
         if batch["panel_id"] == current_panel and fixed:
             return fixed
-    image = next((im for b in batches if b["panel_id"] == previous_panel for im in b.get("images", [])), None)
+    images = [im for b in batches if b["panel_id"] == previous_panel for im in b.get("images", [])]
+    picked = index.get("selections", {}).get(previous_panel, {}).get("image", {}).get("id")
+    image = next((im for im in images if im["id"] == picked), images[0] if images else None)
     e.need(image is not None, f"{previous_panel} 未生成可用图片，无法继续绘制 {current_panel}")
     return freeze_reference(repo, pid, image["id"])
 
@@ -330,10 +364,7 @@ def draw_imported(app, pid, request, update, jid):
                 e.need(recovered["status"] not in {"running", "uncertain"}, "之前的出图尚未确认结束，暂不提交新的图片")
         for index, row in enumerate(rows):
             chain_reference = None
-            row = {**row, "negative": effective_negative(row, request)}
-            suffix = request.get("character_suffixes", {}).get(row["panel_id"])
-            if suffix:
-                row = {**row, "positive": row["positive"] + "\n" + suffix}
+            row = {**row, "negative": effective_negative(row, request), "positive": effective_positive(row, request)}
             handled = set()
             while True:
                 check()

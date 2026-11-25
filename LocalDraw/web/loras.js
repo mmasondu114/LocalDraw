@@ -1,5 +1,31 @@
 "use strict";
-window.loraDisplayName = file => file.replaceAll("\\", "/").split("/").pop().replace(/\.[^.]+$/, "").split("_", 1)[0];
+const loraModelFolders = new Set(["anime","sdxl","krea2","moss_image","qwen_edit"]);
+const LORA_WEIGHT_STORAGE_KEY = "local-draw-lora-weights-v1";
+window.savedLoraWeights = () => {
+  try { return JSON.parse(localStorage.getItem(LORA_WEIGHT_STORAGE_KEY) || "{}") || {}; } catch { return {}; }
+};
+window.rememberLoraWeight = (file, value) => {
+  const w = Number(value);
+  if (!file || !Number.isFinite(w) || w < 0 || w > 2) return;
+  try {
+    const map = window.savedLoraWeights();
+    map[file.replaceAll("\\", "/")] = w;
+    localStorage.setItem(LORA_WEIGHT_STORAGE_KEY, JSON.stringify(map));
+  } catch {}
+};
+window.defaultLoraWeight = (file, data, fallback=0.7) => {
+  const key = String(file || "").replaceAll("\\", "/");
+  const remembered = window.savedLoraWeights()[key];
+  if (typeof remembered === "number" && Number.isFinite(remembered)) return remembered;
+  const labelW = data?.lora_labels?.[key]?.weight;
+  if (typeof labelW === "number" && Number.isFinite(labelW)) return labelW;
+  return fallback;
+};
+window.loraDisplayName = file => {
+  const parts = file.replaceAll("\\", "/").split("/");
+  const stem = parts.at(-1).replace(/\.[^.]+$/, "");
+  return parts.length === 2 && loraModelFolders.has(parts[0]) ? stem : stem.split("_", 1)[0];
+};
 window.loraVariant = file => {
   const folders=file.replaceAll("\\", "/").split("/").slice(0,-1);
   if(folders.some(part=>/^cos\s*服装$/i.test(part))) return {kind:"cos",label:"Cos 服装版",note:"侧重 Cos 服装与装扮；还原角色本人请优先选角色版。"};
@@ -16,23 +42,34 @@ window.loraMatchesSearch = (file, info, query) => {
     .some(term => normalizeLoraSearch(term).includes(q));
 };
 // One compact picker shared by story settings and direct prompt drawing.
-window.createLoraPicker = function(host, data, items, characters, changed, prefix="", selectedOnly=false) {
+// Rows are mounted lazily into the DOM so thousands of LoRAs open instantly.
+window.createLoraPicker = function(host, data, items, characters, changed, prefix="", selectedOnly=false, onBuildRow=null) {
   const box=node("section",undefined,"lora-library"), tools=node("div",undefined,"lora-tools");
   const search=node("input"), folder=node("select"), filter=node("select"), total=node("small");
   search.type="search";search.placeholder="搜索中文名、拼音或英文别名";search.setAttribute("aria-label","搜索 LoRA");
   folder.setAttribute("aria-label","LoRA 文件夹");filter.setAttribute("aria-label","LoRA 筛选");
   const add=(select,value,label)=>{const o=node("option",label);o.value=value;select.append(o);};
-  // Hundreds of LoRAs share the same character library. Populate the full
-  // dropdown only when opened, instead of creating N × M option elements.
+  let characterById=new Map(), characterByName=new Map();
+  function indexCharacters(cards) {
+    characters=cards;
+    characterById=new Map(cards.map(c=>[c.id,c]));
+    characterByName=new Map(cards.map(c=>[c.name,c]));
+  }
+  indexCharacters(characters);
   function populateOwner(select, value, expanded=false) {
     select.replaceChildren(); add(select,"","全图风格");
-    for(const c of characters) if(expanded || c.id===value) add(select,c.id,"角色 · "+c.name);
-    if(value && !characters.some(c=>c.id===value)) add(select,value,"需重新关联 · 角色已移除");
+    if (expanded) {
+      for(const c of characters) add(select,c.id,"角色 · "+c.name);
+      if(value && !characterById.has(value)) add(select,value,"需重新关联 · 角色已移除");
+    } else if (value) {
+      const hit=characterById.get(value);
+      add(select,value,hit?"角色 · "+hit.name:"需重新关联 · 角色已移除");
+    }
     select.value=value || "";
     select.dataset.expanded=String(expanded);
   }
   function lazyOwner(select, value) {
-    populateOwner(select,value);
+    populateOwner(select,value,false);
     const expand=()=>{if(select.dataset.expanded!=="true")populateOwner(select,select.value,true);};
     select.addEventListener("focus",expand);
     select.addEventListener("pointerdown",expand);
@@ -62,61 +99,124 @@ window.createLoraPicker = function(host, data, items, characters, changed, prefi
     if("character_id" in label) Object.assign(item,{character_id:label.character_id,character:label.character});
     if(!("character_id" in item)) {
       const old=item.characters?.[0]||item.character||(info?.is_character?item.name:"");
-      item.character_id=item.characters?.length>1?"unresolved":(characters.find(c=>c.name===old)?.id || (old?"unresolved":""));
+      item.character_id=item.characters?.length>1?"unresolved":(characterByName.get(old)?.id || (old?"unresolved":""));
     }
-    const row=node("div",undefined,"lora-compact-row"), choice=node("label"), check=node("input"), title=node("span",item.name);
-    const variant=loraVariant(item.file), choiceName=loraChoiceName(item.file), identity=node("span",undefined,"lora-identity");
-    row.dataset.loraVariant=variant.kind;
-    check.setAttribute("aria-label",choiceName);
-    check.type="checkbox";check.checked=!!item.selected;check.disabled=!["Anima","SDXL","Krea2","MOSS-Image"].includes(info?.family)&&info?.structurally_compatible!==true;
-    if(check.disabled) {check.checked=false;item.selected=false;}
-    item.incompatible=check.disabled;
-    if(prefix)check.dataset.editKey=prefix+"use-"+item.file;
-    identity.append(title);
-    if(variant.label)identity.append(node("small",variant.label,"lora-variant lora-variant-"+variant.kind));
-    choice.append(check,identity);
-    if(item.file.includes("/"))choice.append(node("small",item.file.split("/").slice(0,-1).join("/"),"lora-folder"));
-    choice.title=[choiceName,variant.note,item.file,check.disabled?(info?.note||"结构未确认"):""].filter(Boolean).join("\n");
-    const weight=node("input");weight.type="number";weight.min="0";weight.max="2";weight.step="0.05";weight.value=String(item.weight??0.7);
-    weight.setAttribute("aria-label",choiceName+" 强度");if(prefix)weight.dataset.editKey=prefix+"weight-"+item.file;
-    const owner=node("select");owner.setAttribute("aria-label",choiceName+" 应用到");
-    lazyOwner(owner,item.character_id);
-    const details=node("details"), summary=node("summary","编辑");details.append(summary,node("small",item.file));
-    if(variant.label)details.append(node("p",variant.label+"："+variant.note));
-    const name=labeledInput(details,"名称",false,item.name),trigger=labeledInput(details,"触发词",false,item.trigger_words||"");
-    delete name.dataset.editKey;delete trigger.dataset.editKey;
-    details.append(node("small",info?.note||"结构尚未确认"));
-    const compat=node("label","确认适配当前底模"),confirmed=node("input");confirmed.type="checkbox";confirmed.checked=!!item.confirmed;confirmed.disabled=check.disabled;compat.prepend(confirmed);details.append(compat);
-    const notifyChange=()=>{item.selected=check.checked;item.weight=Number(weight.value);changed?.(item);refresh();};
-    check.onchange=notifyChange;weight.onchange=notifyChange;
-    owner.onchange=()=>{
-      item.character_id=owner.value;item.character=characters.find(c=>c.id===owner.value)?.name||"";
-      item.characters=item.character?[item.character]:[];item.scope=owner.value?"characters":"story";
-      if(owner.value && !check.disabled)check.checked=true;
-      saveLabel(item);notifyChange();
+    const variant=loraVariant(item.file), choiceName=loraChoiceName(item.file);
+    const disabled=!["Anima","SDXL","Krea2","MOSS-Image"].includes(info?.family)&&info?.structurally_compatible!==true;
+    if(disabled) item.selected=false;
+    item.incompatible=disabled;
+    const state={checked:!!item.selected&&!disabled, disabled, weight:String(item.weight??window.defaultLoraWeight(item.file,data,0.7)), owner:item.character_id||"", confirmed:!!item.confirmed};
+    let mounted=null;
+    function mount() {
+      if(mounted) return mounted;
+      const row=node("div",undefined,"lora-compact-row"), choice=node("label"), check=node("input"), title=node("span",item.name);
+      const identity=node("span",undefined,"lora-identity");
+      row.dataset.loraVariant=variant.kind;
+      check.setAttribute("aria-label",choiceName);
+      check.type="checkbox";check.checked=state.checked;check.disabled=state.disabled;
+      if(prefix)check.dataset.editKey=prefix+"use-"+item.file;
+      identity.append(title);
+      if(variant.label)identity.append(node("small",variant.label,"lora-variant lora-variant-"+variant.kind));
+      choice.append(check,identity);
+      if(item.file.includes("/"))choice.append(node("small",item.file.split("/").slice(0,-1).join("/"),"lora-folder"));
+      choice.title=[choiceName,variant.note,item.file,state.disabled?(info?.note||"结构未确认"):""].filter(Boolean).join("\n");
+      const weight=node("input");weight.type="number";weight.min="0";weight.max="2";weight.step="0.05";weight.value=state.weight;
+      weight.setAttribute("aria-label",choiceName+" 强度");if(prefix)weight.dataset.editKey=prefix+"weight-"+item.file;
+      const owner=node("select");owner.setAttribute("aria-label",choiceName+" 应用到");
+      lazyOwner(owner,state.owner);
+      const details=node("details"), summary=node("summary","编辑");details.append(summary,node("small",item.file));
+      if(variant.label)details.append(node("p",variant.label+"："+variant.note));
+      const name=labeledInput(details,"名称",false,item.name),trigger=labeledInput(details,"触发词",false,item.trigger_words||"");
+      delete name.dataset.editKey;delete trigger.dataset.editKey;
+      details.append(node("small",info?.note||"结构尚未确认"));
+      const compat=node("label","确认适配当前底模"),confirmed=node("input");confirmed.type="checkbox";confirmed.checked=state.confirmed;confirmed.disabled=state.disabled;compat.prepend(confirmed);details.append(compat);
+      const notifyChange=()=>{state.checked=check.checked;state.weight=weight.value;item.selected=check.checked;item.weight=Number(weight.value);changed?.(item);refresh();};
+      check.onchange=notifyChange;
+      weight.onchange=()=>{window.rememberLoraWeight(item.file,weight.value);notifyChange();};
+      weight.addEventListener("input",()=>window.rememberLoraWeight(item.file,weight.value));
+      owner.onchange=()=>{
+        state.owner=owner.value;
+        item.character_id=owner.value;item.character=characterById.get(owner.value)?.name||"";
+        item.characters=item.character?[item.character]:[];item.scope=owner.value?"characters":"story";
+        if(owner.value && !check.disabled){check.checked=true;state.checked=true;}
+        saveLabel(item);notifyChange();
+      };
+      name.readOnly=true;name.title=item.file;
+      trigger.onchange=()=>{item.trigger_words=trigger.value;saveLabel(item);notifyChange();};
+      confirmed.onchange=()=>{state.confirmed=confirmed.checked;item.confirmed=confirmed.checked;notifyChange();};
+      if(selectedOnly){details.append(owner);row.append(choice,weight,details);}
+      else row.append(choice,weight,owner,details);
+      if(selectedOnly && r.orderIndex!=null) row.style.order=r.orderIndex;
+      list.append(row);
+      mounted={row,check,weight,owner,confirmed,trigger,title,details};
+      onBuildRow?.(r, details);
+      return mounted;
+    }
+    const r={
+      file:item.file, item, variant, orderIndex:null,
+      get mounted(){return !!mounted;},
+      mount,
+      get row(){return mount().row;},
+      check:{
+        get checked(){return mounted?mounted.check.checked:state.checked;},
+        set checked(v){state.checked=!!v;if(mounted)mounted.check.checked=state.checked;},
+        get disabled(){return mounted?mounted.check.disabled:state.disabled;},
+        set disabled(v){state.disabled=!!v;if(mounted)mounted.check.disabled=state.disabled;},
+        click(){mount().check.click();},
+        focus(){mount().check.focus();},
+      },
+      weight:{
+        get value(){return mounted?mounted.weight.value:state.weight;},
+        set value(v){state.weight=String(v);if(mounted)mounted.weight.value=state.weight;},
+        focus(){mount().weight.focus();},
+      },
+      owner:{
+        get value(){return mounted?mounted.owner.value:state.owner;},
+        set value(v){state.owner=v||"";if(mounted)populateOwner(mounted.owner,state.owner);},
+        onchange(){if(mounted)mounted.owner.onchange();},
+      },
+      confirmed:{
+        get checked(){return mounted?mounted.confirmed.checked:state.confirmed;},
+        set checked(v){state.confirmed=!!v;if(mounted)mounted.confirmed.checked=state.confirmed;},
+        get disabled(){return mounted?mounted.confirmed.disabled:state.disabled;},
+        set disabled(v){if(mounted)mounted.confirmed.disabled=!!v;},
+      },
+      sync(){
+        state.checked=!!item.selected&&!state.disabled;state.weight=String(item.weight);
+        state.owner=item.character_id||"";state.confirmed=!!item.confirmed;
+        if(mounted){
+          mounted.check.checked=state.checked;mounted.weight.value=state.weight;
+          populateOwner(mounted.owner,state.owner);mounted.confirmed.checked=state.confirmed;
+          mounted.trigger.value=item.trigger_words||"";mounted.title.textContent=item.name;
+        }
+      },
     };
-    name.readOnly=true;name.title="名称取自文件的第一个下划线之前";
-    trigger.onchange=()=>{item.trigger_words=trigger.value;saveLabel(item);notifyChange();};
-    confirmed.onchange=()=>{item.confirmed=confirmed.checked;notifyChange();};
-    if(selectedOnly){
-      details.append(owner);
-      row.append(choice,weight,details);
-    }else row.append(choice,weight,owner,details);
-    list.append(row);
-    rows.push({file:item.file,item,row,check,weight,owner,confirmed,variant,sync:()=>{check.checked=!!item.selected&&!check.disabled;weight.value=String(item.weight);populateOwner(owner,item.character_id);confirmed.checked=!!item.confirmed;trigger.value=item.trigger_words||"";title.textContent=item.name;}});
+    rows.push(r);
   }
+  // Sort the visible choices independently of the saved LoRA application order.
+  const characterFolders = new Set(["原神", "明日方舟", "Ave Mujica", "Girls Band Cry", "角色", "热门角色", "其他角色"]);
+  const generalRows = [], characterRows = [];
+  for (const r of rows) {
+    const folders = r.file.replaceAll("\\", "/").split("/").slice(0,-1);
+    const category = r.variant.kind || folders.some(name => characterFolders.has(name));
+    (category ? characterRows : generalRows).push(r);
+  }
+  const displayRows = [...generalRows, ...characterRows];
+  if (selectedOnly) displayRows.forEach((r, index) => { r.orderIndex = index; });
   const navigation=node("div",undefined,"lora-tools lora-navigation"),pageLabel=node("small");
   const prev=button("上一页",()=>{page--;refresh();}),next=button("下一页",()=>{page++;refresh();});
   navigation.append(prev,pageLabel,next);
   function refresh() {
     if(selectedOnly){
-      for(const r of rows)r.row.hidden=!r.check.checked || r.check.disabled;
+      for(const r of rows){
+        const show=r.check.checked && !r.check.disabled;
+        if(show){const el=r.mount().row;el.hidden=false;}
+        else if(r.mounted) r.row.hidden=true;
+      }
       return;
     }
-    // Keep row order and the current page stable when toggling a choice.
-    // Moving same-name variants made the selection appear to switch files.
     const q=search.value.trim().toLowerCase();
-    const visible=rows.filter(r=>{
+    const visible=displayRows.filter(r=>{
       const dir=r.file.includes("/")?r.file.split("/").slice(0,-1).join("/"):"";
       return (!activeDirectory||r.file.startsWith(activeDirectory+"/"))
         && (folder.value==="*"||dir===folder.value||dir.startsWith(folder.value+"/"))
@@ -125,9 +225,10 @@ window.createLoraPicker = function(host, data, items, characters, changed, prefi
     });
     page=Math.max(0,Math.min(page,Math.ceil(visible.length/pageSize)-1));
     const shown=new Set(visible.slice(page*pageSize,page*pageSize+pageSize));
-    for(const r of rows)r.row.hidden=!shown.has(r);
-    // CSS ordering keeps form fields attached for draft persistence without
-    // repeatedly moving hundreds of hidden rows through the DOM.
+    for(const r of rows){
+      if(shown.has(r)){r.mount().row.hidden=false;}
+      else if(r.mounted) r.row.hidden=true;
+    }
     for(const [index,r] of [...shown].entries())r.row.style.order=index;
     list.querySelector(".lora-empty")?.remove();
     if (!visible.length) list.append(node("p", rows.length ? "没有匹配的 LoRA" : "暂无 LoRA，可放入文件后刷新列表。", "lora-empty"));
@@ -137,10 +238,10 @@ window.createLoraPicker = function(host, data, items, characters, changed, prefi
   }
   for(const control of [search,folder,filter])control.addEventListener(control===search?"input":"change",()=>{page=0;refresh();});
   const bulk=node("details"),bulkOwner=node("select");bulkOwner.setAttribute("aria-label","批量关联到");
-  add(bulkOwner,"","全图风格");for(const c of characters)add(bulkOwner,c.id,"角色 · "+c.name);
+  lazyOwner(bulkOwner,"");
   bulk.append(node("summary","批量关联已勾选项"),bulkOwner,button("应用关联",()=>{
     const selected=rows.filter(r=>r.check.checked);if(!selected.length)throw Error("请先勾选 LoRA");
-    for(const r of selected){populateOwner(r.owner,bulkOwner.value);r.owner.onchange();}
+    for(const r of selected){const m=r.mount();populateOwner(m.owner,bulkOwner.value);m.owner.onchange();}
   }));
   box.append(list);
   if(!selectedOnly){
@@ -156,10 +257,9 @@ window.createLoraPicker = function(host, data, items, characters, changed, prefi
   const flush=async()=>{await saving;if(saveError)throw saveError;};
   window.flushLoraLibrary=flush;
   const updateCharacters=(cards)=>{
-    characters=cards;
-    for(const select of [...rows.map(r=>r.owner),bulkOwner]){
-      populateOwner(select,select.value,select===bulkOwner);
-    }
+    indexCharacters(cards);
+    populateOwner(bulkOwner,bulkOwner.value,bulkOwner.dataset.expanded==="true");
+    for(const r of rows){if(r.mounted)populateOwner(r.row.querySelector("select"),r.owner.value,false);}
     refresh();
   };
   const setCheckpoint=(checkpoint)=>{
@@ -176,13 +276,14 @@ window.createLoraPicker = function(host, data, items, characters, changed, prefi
       for(const name of [...directories].sort())add(folder,name,name);
     }
     box.dataset.loraDirectory=directory;
+    const targetFamily=krea?"Krea2":moss?"MOSS-Image":anima?"Anima":"SDXL";
     for(const r of rows){
-      const family=data.lora_inspection?.[r.file]?.family;
-      r.check.disabled=!r.file.startsWith(directory+"/")||family!==(krea?"Krea2":moss?"MOSS-Image":anima?"Anima":"SDXL");
+      const f=data.lora_inspection?.[r.file]?.family;
+      r.check.disabled=!r.file.startsWith(directory+"/")||f!==targetFamily;
       r.confirmed.disabled=r.check.disabled;r.item.incompatible=r.check.disabled;
       if(r.check.disabled){r.check.checked=false;r.item.selected=false;}
     }
     refresh();
   };
-  return {rows,refresh,flush,updateCharacters,setCheckpoint,sync:()=>{for(const r of rows)r.sync();refresh();}};
+  return {rows,displayRows,refresh,flush,updateCharacters,setCheckpoint,sync:()=>{for(const r of rows)r.sync();refresh();}};
 };

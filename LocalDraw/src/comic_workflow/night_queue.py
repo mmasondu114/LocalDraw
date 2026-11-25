@@ -107,13 +107,12 @@ class NightQueue:
             payload = project["drawing_prompts"]["P001-K01"]["payload"]
             rows = [{"panel_id": project.get("board_target", "单幅出图"), "positive": payload["positive"],
                      "negative": payload["negative"], "loras": spec.get("loras", []),
-                     "options": {key: spec.get(key) for key in ("aspect_ratio", "consistency_lora", "hand_detail")}}]
+                     "options": {key: spec.get(key) for key in ("aspect_ratio", "consistency_lora", "seed")}}]
             checkpoint, count = spec["checkpoint"], spec["count"]
         else:
-            from .prompt_exchange import effective_negative, load_import
+            from .prompt_exchange import effective_negative, effective_positive, load_import
             bundle = load_import(self.app.repo, item["project"], request["bundle"])
-            rows = [{"panel_id": row["panel_id"], "positive": "\n".join(filter(None, (
-                         row["positive"], request.get("character_suffixes", {}).get(row["panel_id"])))),
+            rows = [{"panel_id": row["panel_id"], "positive": effective_positive(row, request),
                      "negative": effective_negative(row, request),
                      "loras": request.get("loras_by_panel", {}).get(row["panel_id"], []),
                      "has_reference": row["panel_id"] in request.get("references_by_panel", {})}

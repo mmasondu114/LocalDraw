@@ -23,6 +23,9 @@ class StrataManager:
                         local_path(f["path"]).stat().st_size == f["size"]
                         for f in self.cfg["model_files"])
         try:
+            import socket
+            with socket.create_connection(("127.0.0.1", self.cfg["model_port"]), timeout=0.06):
+                pass
             health = request_json(endpoint(self.cfg) + "/health", timeout=1)
             ready = (health.get("service") == "strata" and health.get("loaded") is True
                      and health.get("model") == self.cfg["model_name"]

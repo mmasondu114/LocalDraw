@@ -2,7 +2,7 @@
 import copy
 import uuid
 from . import engine as e, comfyui, prompt_exchange as exchange
-from .batch_drawing import story_fingerprint
+from .engine import story_fingerprint
 from .character_binding import identity_hash
 from .repository import LOCK
 

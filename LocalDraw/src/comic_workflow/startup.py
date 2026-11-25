@@ -3,9 +3,11 @@
 import argparse
 import json
 import os
+import socket
 import subprocess
 import sys
 import time
+import urllib.parse
 import urllib.request
 import webbrowser
 from datetime import datetime
@@ -15,6 +17,12 @@ from .paths import ROOT, DATA, settings
 
 
 def ready(url):
+    parsed = urllib.parse.urlparse(url)
+    try:
+        with socket.create_connection((parsed.hostname or "127.0.0.1", parsed.port or 80), timeout=0.08):
+            pass
+    except OSError:
+        return False
     # Loopback must not depend on the user's VPN or HTTP proxy.
     opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
     try:
@@ -68,7 +76,7 @@ def start(*, open_browser=True, timeout=30):
                 raise RuntimeError(
                     f"工作室尚未就绪，未打开网页。稍后可重新双击启动入口。日志：{log_path}"
                 )
-            time.sleep(0.25)
+            time.sleep(0.06)
     print(f"工作室已就绪：{url}\n服务在后台运行，可以关闭启动窗口。", flush=True)
     if open_browser:
         webbrowser.open(url)

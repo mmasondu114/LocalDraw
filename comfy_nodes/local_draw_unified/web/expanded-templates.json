@@ -2542,7 +2542,7 @@
           "ld_branch": true
         },
         "widgets_values": [
-          "qwen3vl_4b_fp8_scaled.safetensors",
+          "qwen3vl_4b_abliterated_bf16.safetensors",
           "krea2",
           "default"
         ]

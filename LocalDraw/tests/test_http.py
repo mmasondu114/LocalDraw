@@ -278,25 +278,22 @@ class HttpTests(unittest.TestCase):
                 request_json("http://127.0.0.1:8188/free", {"unload_models": True}), {}
             )
 
-    def test_project_and_comparison_images_remain_accessible(self):
+    def test_project_images_and_manga_font_remain_accessible(self):
+        import gzip
         from PIL import Image
 
         root = Path(self.tmp.name)
         project_image = root / "projects/test/images/batch/1.png"
-        art_image = root / "test-results/art-style/run/seed-A.png"
-        for file in (project_image, art_image):
-            file.parent.mkdir(parents=True, exist_ok=True)
-            Image.new("RGB", (8, 8), "white").save(file)
+        project_image.parent.mkdir(parents=True, exist_ok=True)
+        Image.new("RGB", (8, 8), "white").save(project_image)
         with patch("comic_workflow.server.DATA", root):
-            for endpoint, file in [
-                ("/api/image?id=test&bundle=batch&file=1.png", project_image),
-                ("/api/art-image?folder=run&file=seed-A.png", art_image),
-            ]:
-                with self.opener.open(self.base + endpoint) as response:
-                    self.assertEqual(response.headers["Content-Type"], "image/png")
-                    self.assertEqual(response.read(), file.read_bytes())
-            with self.assertRaises(urllib.error.HTTPError):
-                self.opener.open(self.base + "/api/art-image?folder=..&file=seed-A.png")
+            with self.opener.open(self.base + "/api/image?id=test&bundle=batch&file=1.png") as response:
+                self.assertEqual(response.headers["Content-Type"], "image/png")
+                self.assertEqual(response.read(), project_image.read_bytes())
+        with self.opener.open(self.base + "/fonts/manga-font.json.gz") as response:
+            self.assertEqual(response.headers["Content-Type"], "application/octet-stream")
+            font = json.loads(gzip.decompress(response.read()).decode("utf-8"))
+            self.assertIn("glyphs", font)
 
     def test_workspace_roundtrip_and_stale_write_protection(self):
         pid = self.app.repo.create(None, True)

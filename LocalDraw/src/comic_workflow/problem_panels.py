@@ -2,7 +2,7 @@
 import copy
 import uuid
 from . import engine as e, comfyui, creative, manual_drawing, prompt_exchange as exchange
-from .batch_drawing import story_fingerprint
+from .engine import story_fingerprint
 from .local_prompts import panel_context
 from .paths import prompt_model
 from .repository import LOCK, safe_id

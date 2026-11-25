@@ -155,6 +155,8 @@ let boot,
   lastJobs = "";
 let workspaceState = {views:{}}, restoringWorkspace = false, workspaceTimer;
 let stageRender = 0;
+let promptSessionId = null;
+const legacyPromptRounds = new Map();
 // Load the drawing tools (including comic lettering) only when used. Share the
 // request across callers and allow a retry after a transient connection error.
 let drawingToolsLoading;
@@ -251,9 +253,8 @@ let scrollSave;
 window.addEventListener("scroll",()=>{clearTimeout(scrollSave);scrollSave=setTimeout(saveWorkspace,180);},{passive:true});
 window.addEventListener("pagehide",()=>{
   if (stage === "prompt") window.savePromptDraft?.();
-  if (pid?.startsWith("tmp-")) {
-    fetch("/api/action", {method:"POST",keepalive:true,headers:{"Content-Type":"application/json","X-Studio-Token":boot.token},body:JSON.stringify({action:"release_prompt",project:pid})}).catch(()=>{});
-    return;
+  for (const project of new Set([...legacyPromptRounds.keys(), promptSessionId].filter(Boolean))) {
+    fetch("/api/action", {method:"POST",keepalive:true,headers:{"Content-Type":"application/json","X-Studio-Token":boot.token},body:JSON.stringify({action:"release_prompt",project})}).catch(()=>{});
   }
   if (stage === "prompt") return;
   saveWorkspace();
@@ -1057,7 +1058,6 @@ async function reloadProjects(refresh = true) {
 let projectOpenRevision = 0;
 async function openProject(id, refreshProjects = !boot.projects.some(p=>p.id===id), initialStage = "script") {
   const revision = ++projectOpenRevision;
-  if (pid?.startsWith("tmp-") && pid !== id) await api("/api/action", {action:"release_prompt",project:pid});
   const switching = !snap || pid !== id;
   const [snapshot, workspace] = await Promise.all([
     api("/api/project?id=" + encodeURIComponent(id)), switching ? readWorkspace(id) : null,
@@ -1095,19 +1095,7 @@ function currentValue() {
   }
   return p?.[stage];
 }
-async function renderStage() {
-  await window.flushProblemEdits?.();
-  window.flushProblemEdits = null;
-  const revision = ++stageRender;
-  if (["script", "brief", "drawing", "finished"].includes(stage)) {
-    await window.ensureDrawingTools();
-    if (revision !== stageRender) return;
-  }
-  window.disposeFinishedComic?.();
-  window.disposeFinishedComic = null;
-  $("extras").dataset.renderToken = String(revision);
-  restoringWorkspace=true;
-  const p = snap?.project;
+function renderStageHeader(p) {
   for(const id of ["history","fork","export","delete-project"]){
     $(id).disabled=newMode||!pid||pid.startsWith("tmp-");
     $(id).title=$(id).disabled?"创建或打开已保存的作品后可用":"";
@@ -1154,6 +1142,21 @@ async function renderStage() {
   });
   $("target-row").hidden = !["page", "audit"].includes(stage);
   $("workspace").hidden = ["drawing", "problems", "finished", "script", "prompt"].includes(stage);
+}
+async function renderStage() {
+  await window.flushProblemEdits?.();
+  window.flushProblemEdits = null;
+  const revision = ++stageRender;
+  if (["script", "brief", "drawing", "finished"].includes(stage)) {
+    await window.ensureDrawingTools();
+    if (revision !== stageRender) return;
+  }
+  window.disposeFinishedComic?.();
+  window.disposeFinishedComic = null;
+  $("extras").dataset.renderToken = String(revision);
+  restoringWorkspace=true;
+  const p = snap?.project;
+  renderStageHeader(p);
   $("extras").replaceChildren();
   $("extras").className = "";
   $("simple-page").replaceChildren();
@@ -1695,7 +1698,8 @@ async function refreshStatus() {
     $("stop-model").disabled = data.model.generating || !data.model.owned;
     const seenJobs = new Set();
     const relevant = data.jobs
-      .filter((j) => activeJobStates.has(j.status) || j.project === pid)
+      .filter((j) => activeJobStates.has(j.status) || j.project === pid ||
+        (stage === "prompt" && pid === promptSessionId && legacyPromptRounds.has(j.project)))
       .filter((j) => {
         const key = `${j.project || "studio"}:${j.label}`;
         if (seenJobs.has(key)) return false;
@@ -1735,12 +1739,20 @@ async function refreshStatus() {
       const finished = relevant.find(
         (j) =>
           ["done", "failed", "interrupted", "cancelled"].includes(j.status) &&
-          previous.some((old) => old.id === j.id && ["running", "pausing", "cancelling"].includes(old.status)),
+          (previous.some(old => old.id === j.id && activeJobStates.has(old.status)) ||
+           (stage === "prompt" && !previous.some(old => old.id === j.id))),
       );
       lastJobs = signature;
+      if (finished && legacyPromptRounds.has(finished.project)) {
+        legacyPromptRounds.get(finished.project).batches = null;
+        if (stage === "prompt" && pid === promptSessionId && finished.project !== pid)
+          await window.refreshPromptResults?.();
+      }
       if (finished && finished.project === pid && !dirty && !newMode) {
         saveWorkspace();
-        snap = await api("/api/project?id=" + pid);
+        const snapshot = await api("/api/project?id=" + finished.project);
+        if (pid !== finished.project) return;
+        snap = snapshot;
         if (["生成文字分镜", "生成整部分镜"].includes(finished.label) && stage === "page") {
           target = finished.result?.target || target;
           renderStage();
@@ -1769,8 +1781,7 @@ $("new-project").onclick = safe(async () => {
   try {
   await preserve();
   clearTimeout(workspaceTimer);
-  if (pid?.startsWith("tmp-")) await api("/api/action", {action:"release_prompt",project:pid});
-  else if (workspaceProject() && stage!=="prompt") await api("/api/action", {action:"save_workspace", project:workspaceProject(), state:structuredClone(workspaceState)});
+  if (workspaceProject() && stage!=="prompt") await api("/api/action", {action:"save_workspace", project:workspaceProject(), state:structuredClone(workspaceState)});
   let previous={}, result=null;
   try {previous=JSON.parse(localStorage.getItem("studio-workspace-new")||"{}");} catch {}
   result = newMode ? workspaceState.storyResult || null : null;
@@ -1801,9 +1812,9 @@ function enterPromptBoard() {
 $("import-story").onclick = safe(() => window.openStoryImport());
 async function openStandalonePrompt() {
   await preserve();
-  if(stage==="prompt" && (newMode || snap?.project.quick_sample) &&
+  if(stage==="prompt" && (newMode || pid===promptSessionId) &&
      $("extras").querySelector('[data-edit-key="prompt-positive"]'))return;
-  if(pid?.startsWith("tmp-"))await api("/api/action",{action:"release_prompt",project:pid});
+  if(promptSessionId)return openProject(promptSessionId,false);
   newMode=true;pid=null;snap=null;dirty=false;stage="prompt";target="";
   workspaceState={views:{}};window.flushLoraSettings=null;$("projects").value="";
   await renderStage();

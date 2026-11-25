@@ -34,6 +34,7 @@ window.confirmLiteralDrawing = async function(ctx, action, request) {
       area.placeholder=key==="positive"?"填写你确认的画面描述；也可以先导入提示词文件":"可留空";
       field.append(area);card.append(field);fields[key]=area;
     }
+    fields.positive.parentElement.after(wardrobeButton(fields.positive));
     edits.push({row,fields});list.append(card);
   }
   const queued=action==="queue_drawing";
@@ -198,6 +199,7 @@ window.renderPromptExchange = async function(root, ctx) {
         for(const [key,label] of [["positive","正向提示词"],["negative","负向提示词"]]) {
           const field=node("label",label),area=node("textarea");area.value=row[key];area.rows=3;field.append(area);article.append(field);fields[key]=area;
         }
+        fields.positive.parentElement.after(wardrobeButton(fields.positive));
         edits.push({row,fields});
         list.append(article);
       }

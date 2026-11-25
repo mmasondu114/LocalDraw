@@ -1,6 +1,7 @@
 """Loopback-only HTTP application. Browser edits require same-origin session token."""
 
 import atexit
+import gzip
 import json
 import mimetypes
 import secrets
@@ -16,10 +17,10 @@ from .jobs import Jobs
 from .model import ModelManager, generate
 from .paths import ROOT, DATA, settings
 from .repository import Repository, safe_id
-from . import comfyui, layout, sudowrite
+from . import comfyui, layout
 from . import creative
 from . import drawing_settings
-from . import art_presets, prompt_models
+from . import prompt_models
 from .characters import CharacterLibrary, DETAILS
 from .lora_inspection import inspect_local
 
@@ -146,6 +147,9 @@ class Application:
     def action(self, a):
         action = a["action"]
         pid = a.get("project")
+        if action == "wardrobe_preview":
+            from .wardrobe import preview
+            return preview(a)
         if action in {"generate_prompt_board", "confirm_prompt_board"}:
             from . import prompt_board
             if action == "generate_prompt_board":
@@ -266,11 +270,6 @@ class Application:
                 raise ValueError("旧版自动审核补画任务已停用，请重新核对提示词后发起出图；已有图片保留")
             return self.jobs.control(a["job"], action.removesuffix("_job"),
                                      confirm=a.get("confirm", False), resume_fn=resume)
-        if action == "translate_project_english":
-            from .project_translation import translate
-            request = {"action": action, "base_hash": e.digest(self.repo.get(pid))}
-            return {"job": self.jobs.submit("翻译英文剧本与分镜",
-                lambda update, jid: translate(self, pid, request, update, jid), pid, request=request)}
         if action in {"save_problem", "export_problems", "import_problems", "understand_problems", "understand_and_redraw", "redraw_problems"}:
             from . import problem_panels
             if action == "save_problem":
@@ -317,6 +316,23 @@ class Application:
             from .quick_sample import create
 
             return create(self.repo, a)
+        if action == "draw_quick_sample":
+            from .quick_sample import draw_session
+            return draw_session(self, pid, a)
+        if action == "second_pass":
+            from . import second_pass
+            second_pass.validate_request(self.repo, pid, a)
+            return {"job": self.jobs.submit(
+                "二次采样",
+                lambda update, jid: second_pass.run(self, pid, a, update, jid),
+                pid,
+            )}
+        if action == "apply_second_pass":
+            from . import second_pass
+            return second_pass.apply_result(self.repo, pid, a["source_image_id"], a["image_id"])
+        if action == "unapply_second_pass":
+            from . import second_pass
+            return second_pass.unapply_result(self.repo, pid, a["source_image_id"])
         if action == "prompt_batch":
             from .quick_sample import run
 
@@ -395,27 +411,12 @@ class Application:
                     archive_time = time.time()
                 e.save(path, {**a["state"], "archived_at": archive_time})
             return {"saved": True}
-        if action == "automatic":
-            from .automatic import run_automatic
-
-            e.need(a.get("authorize_auto_confirm") is True, "需要明确授权自动保存分镜")
-            e.need(e.digest(self.repo.get(pid)) == a["base_hash"], "作品已变化，请刷新")
-            return {
-                "job": self.jobs.submit(
-                    "自动制作整部漫画",
-                    lambda update, jid: run_automatic(self, pid, update, jid),
-                    pid,
-                )
-            }
         if action == "character_upload":
             return self.characters.upload(a["data_url"])
         if action == "save_lora_labels":
             return comfyui.save_lora_labels(a["items"])
         if action == "save_drawing_settings":
             return drawing_settings.save(self.repo, pid, a["settings"])
-        if action == "preview_art_preset":
-            value = art_presets.apply(a["settings"], a["preset"])
-            return drawing_settings.validate(value)
         if action == "character_save":
             return self.characters.save(
                 a["name"],
@@ -691,24 +692,6 @@ class Application:
             request = prepare_request(self.repo, pid, {**a, **({"targets":[a["target"]], "force":True} if action == "draw" else {})})
             return {"job": self.jobs.submit("按确认提示词出图 · 自己选图",
                 lambda update, jid: draw_imported(self, pid, request, update, jid), pid, request=request)}
-        if action == "small_batch":
-            from .drawing_tools import small_batch
-
-            return {"job": self.jobs.submit(
-                "单张 / 少量试画",
-                lambda update, jid: small_batch(self, pid, a, update, jid), pid
-            )}
-        if action == "drawing_pilot":
-            raise ValueError("自动镜头改写已停用，请核对提示词后直接出图")
-        if action == "local_repair":
-            from .drawing_tools import local_repair
-            return {
-                "job": self.jobs.submit(
-                    "框选区域局部修复",
-                    lambda update, jid: local_repair(self, pid, a, update, jid),
-                    pid,
-                )
-            }
         if action == "select_image":
             index = comfyui.select_image(
                 self.repo, pid, a["target"], a["image"], a.get("allow_rejected", False), a.get("allow_unreviewed", False)
@@ -725,16 +708,6 @@ class Application:
                 return bubble_planner.generate(self.repo, pid, self.repo.folder(pid) / "runs" / jid,
                                                update, force=a.get("force") is True)
             return {"job": self.jobs.submit("AI 逐句选择气泡", plan_bubbles, pid)}
-        if action == "sudowrite_package":
-            return sudowrite.package(
-                self.repo,
-                pid,
-                a["stage"],
-                a.get("target", ""),
-                a.get("instruction", ""),
-            )
-        if action == "sudowrite_import":
-            return sudowrite.import_result(self.repo, pid, a["handoff"], a["text"])
         raise ValueError("未知操作")
 
     def snapshot(self, pid):
@@ -750,6 +723,10 @@ class Application:
 
 
 def make_handler(app):
+    lifecycle_lock = threading.Lock()
+    writing = 0
+    shutting_down = False
+
     class Handler(BaseHTTPRequestHandler):
         def log_message(self, fmt, *args):
             pass
@@ -760,8 +737,18 @@ def make_handler(app):
                 if isinstance(data, bytes)
                 else json.dumps(data, ensure_ascii=False).encode()
             )
+            compressed = False
+            if (
+                len(raw) >= 4096
+                and "gzip" in (self.headers.get("Accept-Encoding") or "")
+                and content_type.startswith(("application/json", "text/"))
+            ):
+                raw = gzip.compress(raw, compresslevel=1)
+                compressed = True
             self.send_response(status)
             self.send_header("Content-Type", content_type)
+            if compressed:
+                self.send_header("Content-Encoding", "gzip")
             self.send_header("Content-Length", str(len(raw)))
             self.send_header("Cache-Control", "no-store")
             self.send_header("X-Content-Type-Options", "nosniff")
@@ -787,6 +774,10 @@ def make_handler(app):
                 self.check_host()
                 url = urlparse(self.path)
                 query = parse_qs(url.query)
+                if url.path == "/api/wardrobe":
+                    from .wardrobe import catalog
+                    self.send(200, catalog())
+                    return
                 if url.path == "/api/model-downloads":
                     self.send(200, app.model_downloads.snapshot())
                     return
@@ -795,7 +786,7 @@ def make_handler(app):
                     self.send(200, snapshot(app))
                     return
                 if url.path == "/api/session":
-                    self.send(200, {"token": app.token, "workspace": str(ROOT)})
+                    self.send(200, {"token": app.token, "workspace": str(ROOT), "idle_shutdown": True})
                     return
                 if url.path == "/api/desktop-book":
                     from .desktop import book
@@ -808,6 +799,8 @@ def make_handler(app):
                             "token": app.token,
                             "schemas": e.SCHEMAS,
                             "template": e.read(ROOT / "config/template.json"),
+                            "desktop_update": (e.read(DATA / "desktop-updates/status.json")
+                                               if (DATA / "desktop-updates/status.json").is_file() else None),
                             "projects": app.repo.listing(),
                             "jobs": app.jobs.listing(),
                         },
@@ -833,7 +826,16 @@ def make_handler(app):
                     return
                 if url.path == "/api/prompt-exchange":
                     from .prompt_exchange import export_download
-                    self.send(200, export_download(app.repo, query["id"][0]))
+                    pid = query["id"][0]
+                    if "panel" in query:
+                        from .local_prompts import export_storyboard, panel_context
+                        document = export_storyboard(app.repo, pid)
+                        target = query["panel"][0]
+                        index = next((i for i, row in enumerate(document["panels"]) if row["panel_id"] == target), None)
+                        e.need(index is not None, "未找到目标格")
+                        self.send(200, panel_context(document, index))
+                    else:
+                        self.send(200, export_download(app.repo, pid))
                     return
                 if url.path == "/api/problems":
                     from .problem_panels import state
@@ -881,40 +883,35 @@ def make_handler(app):
                         ],
                     )
                     return
-                if url.path == "/api/art-comparison":
-                    folders = sorted(
-                        (DATA / "test-results/art-style").glob("*/report.json"),
-                        reverse=True,
-                    )
-                    self.send(
-                        200,
-                        [{"folder": f.parent.name, **e.read(f)} for f in folders[:5]],
-                    )
-                    return
-                if url.path == "/api/art-image":
-                    folder = safe_id(query["folder"][0])
-                    raw_file = query["file"][0]
-                    e.need(raw_file.endswith(".png"), "图片格式不符")
-                    file = safe_id(raw_file[:-4]) + ".png"
-                    path = DATA / "test-results/art-style" / folder / file
-                    e.need(path.suffix == ".png" and path.is_file(), "图片不存在")
-                    self.send(200, path.read_bytes(), "image/png")
-                    return
                 if url.path == "/api/characters":
                     from .clothing_policy import RULES
+                    cards = app.characters.searchable_listing()
+                    if query.get("compact") == ["1"]:
+                        cards = [
+                            {
+                                "id": c["id"],
+                                "name": c["name"],
+                                "revision": c["revision"],
+                                "image_id": c.get("image_id"),
+                                "profile": c["profile"],
+                                "pinyin": c.get("pinyin", ""),
+                                "english_aliases": c.get("english_aliases", []),
+                                "search_terms": c.get("search_terms", []),
+                                "source": {
+                                    k: c.get("source", {})[k]
+                                    for k in ("aliases", "drawing_prompt_cleanup")
+                                    if k in c.get("source", {})
+                                },
+                            }
+                            for c in cards
+                        ]
                     self.send(
-                        200, {"characters": app.characters.searchable_listing(), "fields": DETAILS,
+                        200, {"characters": cards, "fields": DETAILS,
                               "clothing_policy": RULES}
                     )
                     return
-                if url.path == "/api/hand-guide":
-                    from .guided_hand import preview_reference
-                    self.send(200,{**preview_reference(), 'local_repair_features': ['owner','outline','blend_mask']})
-                    return
                 if url.path == "/api/drawing-options":
                     from .anima_consistency import previous_panel_unavailable
-                    from .comparison_models import available
-                    from .hand_detail import capability as hand_detail_capability
                     selected_checkpoint = query.get("checkpoint", [None])[0]
                     preloaded = app.comfy.preloaded
                     if query.get("for") == ["import"] and preloaded:
@@ -922,6 +919,11 @@ def make_handler(app):
                         if preloaded != edit_checkpoint:  # This form has no per-panel edit references.
                             selected_checkpoint = preloaded
                     project_id = query.get("id", [None])[0]
+                    label_keys = ("name", "character_id", "character", "weight", "trigger_words", "confirmed", "preferred")
+                    compact_labels = {
+                        file: {k: v for k, v in info.items() if k in label_keys}
+                        for file, info in comfyui.lora_labels().items()
+                    }
                     self.send(
                         200,
                         {
@@ -929,14 +931,10 @@ def make_handler(app):
                             "preloaded_checkpoint": preloaded,
                             "selected_checkpoint": selected_checkpoint,
                             "previous_panel_unavailable": previous_panel_unavailable(selected_checkpoint or comfyui.config()["checkpoint"]),
-                            "art_presets": art_presets.PRESETS,
                             "prompt_characters": True,
                             "prompt_translate": True,
-                            "hand_detail": hand_detail_capability(),
-                            "comparison_models": available(),
                             "diffusion_models": {name: {"label": profile[0], "family": profile[1]} for name, profile in prompt_models.MODELS.items()},
-                            "art_sample_folder": art_presets.SAMPLE_FOLDER,
-                            "lora_labels": comfyui.lora_labels(),
+                            "lora_labels": compact_labels,
                             "lora_inspection": inspect_local(checkpoint=selected_checkpoint),
                             "drawing_settings": drawing_settings.load(
                                 app.repo, project_id
@@ -1003,26 +1001,16 @@ def make_handler(app):
                                            "problem_panel_review": True}}
                     )
                     return
-                if url.path == "/api/review-statistics":
-                    from .review_statistics import review_statistics
-
-                    self.send(200, review_statistics(app.repo, query["id"][0]))
-                    return
                 if url.path == "/api/drawing":
-                    from .comparison_models import available
                     pid = query["id"][0]
                     p = app.repo.get(pid)
                     self.send(
                         200,
                         {
                             "comfy": comfyui.discover(probe=False),
-                            "comparison_models": available(),
                             "diffusion_models": {name: {"label": profile[0], "family": profile[1]} for name, profile in prompt_models.MODELS.items()},
                             "images": comfyui.drawing_state(app.repo, pid),
                             "drawing_settings": drawing_settings.load(app.repo, pid),
-                            "art_preset": art_presets.get(
-                                drawing_settings.load(app.repo, pid)
-                            ),
                             "lora_labels": comfyui.lora_labels(),
                             "lora_inspection": inspect_local(),
                             "panel_hashes": {
@@ -1121,18 +1109,24 @@ def make_handler(app):
                     "/prompt.js": "prompt.js",
                     "/clothing.js": "clothing.js",
                     "/style.css": "style.css",
+                    "/fonts/manga-font.json.gz": "fonts/manga-font.json.gz",
                 }
                 e.need(url.path in allowed, "页面不存在")
                 path = ROOT / "web" / allowed[url.path]
-                self.send(
-                    200,
-                    path.read_bytes(),
-                    mimetypes.guess_type(path)[0] + "; charset=utf-8",
-                )
+                if path.suffix == ".gz":
+                    self.send(200, path.read_bytes(), "application/octet-stream")
+                else:
+                    self.send(
+                        200,
+                        path.read_bytes(),
+                        mimetypes.guess_type(path)[0] + "; charset=utf-8",
+                    )
             except Exception as exc:
                 self.send(400, {"error": str(exc)})
 
         def do_POST(self):
+            nonlocal writing, shutting_down
+            registered = False
             try:
                 self.check_host()
                 origin = self.headers.get("Origin")
@@ -1148,9 +1142,28 @@ def make_handler(app):
                 e.need(self.path == "/api/action", "未知接口")
                 length = int(self.headers.get("Content-Length", "0"))
                 e.need(0 < length <= 15_000_000, "请求大小无效")
-                self.send(200, app.action(json.loads(self.rfile.read(length))))
+                request = json.loads(self.rfile.read(length))
+                with lifecycle_lock:
+                    e.need(not shutting_down, "工作室正在加载更新")
+                    if request.get("action") == "desktop_idle_shutdown":
+                        with app.night_queue.lock, app.jobs.lock, app.model_downloads.lock:
+                            busy = (writing or app.jobs.controls or app.model_downloads.active
+                                    or app.night_queue.state["running"]
+                                    or any(j["status"] == "paused" for j in app.jobs.listing(limit=None)))
+                            if not busy:
+                                shutting_down = True
+                                threading.Thread(target=self.server.shutdown, daemon=True).start()
+                        self.send(200, {"stopping": shutting_down})
+                        return
+                    writing += 1
+                    registered = True
+                self.send(200, app.action(request))
             except Exception as exc:
                 self.send(400, {"error": str(exc)})
+            finally:
+                if registered:
+                    with lifecycle_lock:
+                        writing -= 1
 
     return Handler
 

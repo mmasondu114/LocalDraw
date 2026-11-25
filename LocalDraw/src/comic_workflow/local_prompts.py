@@ -4,7 +4,7 @@ import copy
 import re
 
 from . import creative, engine as e
-from .batch_drawing import story_fingerprint
+from .engine import story_fingerprint
 from .prompt_exchange import export_storyboard
 from .prompt_preflight import WRITING_GUIDANCE
 from .repository import safe_id
@@ -23,7 +23,8 @@ object is ONE shared object, not one for each person. Do not invent additional c
 Avoid broad negative terms that suppress the intended action (e.g. physical contact
 for a handover). Do not put an intended character trait in the global negative.
 Do not invent style exclusions such as cartoon style, anime or illustration in negative.
-For negative use an empty string or only the short watermark/text exclusions permitted by the schema.
+Translate explicit visual exclusions from avoid and the current panel into short English negative tags.
+Otherwise leave negative empty or use brief lettering/artifact exclusions.
 Never enumerate unrelated objects, art styles, natural phenomena, or body parts in negative.
 Use concise natural English, at most 180 words for positive and 50 for negative.
 Do not include dialogue text, commentary, LoRA syntax or requests to draw a comic page.
@@ -46,13 +47,26 @@ def panel_context(document, index):
     current = copy.deepcopy(rows[index])
     for role in current["storyboard"]["characters"]:
         role["character"].get("saved_character", {}).pop("source", None)
+    def action(row):
+        return row["original_prompt"]["positive"] if "original_prompt" in row else row["storyboard"]["action"]
+
     def summary(row):
         board = row["storyboard"]
-        return {"panel_id": row["panel_id"], "action": board["action"],
+        return {"panel_id": row["panel_id"], "action": action(row),
                 "shot": board["shot"], "description": board["description"]}
-    return {"title": document["title"], "current_panel": current,
-            "previous_panel": summary(rows[index - 1]) if index else None,
-            "next_panel": summary(rows[index + 1]) if index + 1 < len(rows) else None}
+    context = {
+        "title": document["title"],
+        "avoid": document.get("avoid", []),
+        "story_idea": document.get("story_idea", ""),
+        "current_panel": current,
+        "previous_panel": summary(rows[index - 1]) if index else None,
+        "next_panel": summary(rows[index + 1]) if index + 1 < len(rows) else None,
+    }
+    # Older text-only boards have actions but no state snapshots.
+    if index > 1 and not any(current["storyboard"].get("state_before", {}).values()):
+        context["earlier_actions"] = [{"panel_id": row["panel_id"], "action": action(row)}
+                                      for row in rows[:index - 1]]
+    return context
 
 
 @prompt_model()
@@ -66,6 +80,12 @@ def generate_draft(app, pid, request, update, jid):
     if path.exists():
         draft = e.read(path)
         e.need(draft["document"]["storyboard_hash"] == document["storyboard_hash"], "草稿分镜版本不符")
+        # Refresh context for unfinished pre-upgrade drafts; retain reviewed text by panel ID.
+        saved = {row["panel_id"]: row for row in draft["document"]["panels"]}
+        for row in document["panels"]:
+            previous = saved[row["panel_id"]]
+            row.update(positive=previous["positive"], negative=previous["negative"])
+        draft["document"] = document
     else:
         draft = {"id": draft_id, "created": e.stamp(), "device": "gpu",
                  "status": "running", "document": document, "completed": 0}
@@ -74,6 +94,7 @@ def generate_draft(app, pid, request, update, jid):
     e.save(path, draft)
     e.save(folder.parent / "current.json", {"id": draft_id})
     rows = draft["document"]["panels"]
+    completed = sum(bool(row["positive"].strip()) for row in rows)
     try:
         checkpoint()
         update("正在加载本地 Qwen，使用 GPU 逐格填写提示词")
@@ -81,17 +102,17 @@ def generate_draft(app, pid, request, update, jid):
         app.prepare_language(update=update)
         for index, row in enumerate(rows):
             checkpoint()
-            e.need(story_fingerprint(app.repo.get(pid)) == request["storyboard_hash"],
-                   "分镜或角色已变化，已停止填写；已有草稿保留，请重新生成")
             if row["positive"].strip():
                 continue
+            e.need(story_fingerprint(app.repo.get(pid)) == request["storyboard_hash"],
+                   "分镜或角色已变化，已停止填写；已有草稿保留，请重新生成")
             update({"message": f"Qwen 正在填写 {row['panel_id']}（{index + 1}/{len(rows)}）",
                     "progress": {"completed": draft["completed"], "total": len(rows), "unit": "格"}})
             schema = {"type": "object", "additionalProperties": False,
                       "required": ["panel_id", "positive", "negative"], "properties": {
                           "panel_id": {"type": "string", "const": row["panel_id"]},
                           "positive": {"type": "string", "minLength": 1, "maxLength": 1800, "pattern": "^[ -~]*$"},
-                          "negative": {"type": "string", "enum": ["", "text, watermark", "text, watermark, speech bubbles, comic borders"]}}}
+                          "negative": {"type": "string", "maxLength": 240, "pattern": "^[ -~]*$"}}}
             result, _ = creative.structured(PROMPT, panel_context(document, index), schema,
                                             folder / row["panel_id"] / jid, update,
                                             max_tokens=1200, language_policy="")
@@ -100,7 +121,8 @@ def generate_draft(app, pid, request, update, jid):
             e.need(not re.search(r"[\u4e00-\u9fff]", result["positive"] + result["negative"]),
                    f"{row['panel_id']} 未完整转换为英文，已有草稿保留")
             row.update(positive=result["positive"], negative=result["negative"])
-            draft.update(completed=sum(bool(r["positive"].strip()) for r in rows), status="running")
+            completed += 1
+            draft.update(completed=completed, status="running")
             e.save(path, draft)
             update({"progress": {"completed": draft["completed"], "total": len(rows), "unit": "格"}})
         checkpoint()

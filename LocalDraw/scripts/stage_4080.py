@@ -67,7 +67,8 @@ for folder in ('ComfyUI-KreaMoss','custom_nodes'):
 for folder in ('web','src','schemas','workflows','comfy_nodes','config'):
     copy_tree(APP/folder,OUT/folder)
 (OUT/'scripts').mkdir()
-for name in ('copy_prompt_images.ps1','detect_hands.py','comfy_person_mask_node.py','comfy_anime_mask.py','comfy_gpu_hooks_node.py'):
+for name in ('copy_prompt_images.ps1','detect_hands.py','comfy_person_mask_node.py','comfy_anime_mask.py','comfy_gpu_hooks_node.py',
+             'desktop_update.py','desktop_release.py','refresh_wardrobe.py','restart_studio_listener.ps1'):
     shutil.copy2(APP/'scripts'/name, OUT/'scripts'/name)
 copy_tree(APP/'scripts/vendor/anime_seg', OUT/'scripts/vendor/anime_seg')
 for file in ('LocalDraw.exe','LocalDraw.exe.config','launch.py','start_studio.py'):

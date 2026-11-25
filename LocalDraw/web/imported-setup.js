@@ -27,7 +27,7 @@ async function openImportedSetup(project, bundle, rows) {
   chain.checked = !chain.disabled && draft.reference_previous_panel !== false;
   chain.onchange = remember;
   const chainTitle = node("strong", "自动参考上一格"), chainHint = node("small",
-    unavailable || "第 1 格独立生成，后续每格参考上一格在本次任务中最先生成的图片。");
+    unavailable || "第 1 格独立生成。后续优先参考上一格在本轮已采用的图片，未选时使用本轮第一张。");
   chainTitle.id = "previous-panel-label"; chainHint.id = "previous-panel-hint";
   chain.setAttribute("aria-labelledby", chainTitle.id); chain.setAttribute("aria-describedby", chainHint.id);
   chainLabel.append(chain, chainTitle, chainHint);
@@ -38,6 +38,7 @@ async function openImportedSetup(project, bundle, rows) {
   count.type = "number"; count.min = "1"; count.max = "16"; count.required = true;
   count.value = draft.count ?? 2;
   const commonNegative = node("textarea"), negativeEdits = new Map();
+  const positiveEdits = new Map();
   commonNegative.rows = 2;
   commonNegative.maxLength = 20000;
   commonNegative.value = draft.common_negative ?? "";
@@ -51,6 +52,7 @@ async function openImportedSetup(project, bundle, rows) {
     const saved = cacheLocal(draftKey, JSON.stringify({count:count.value, counts:Object.fromEntries(counts),
       reference_previous_panel:chain.disabled ? draft.reference_previous_panel : chain.checked,
       common_negative:commonNegative.value, negative_by_panel:Object.fromEntries(negativeEdits),
+      positive_by_panel:Object.fromEntries(positiveEdits),
       roles:[...cast.keys()], weights:Object.fromEntries(weights)}));
     if (!saved) status.textContent = "本机未能保存设置草稿，关闭前请复制编辑过的提示词。";
     const valid = count.checkValidity() && [...counts.values()].every(n => Number.isInteger(Number(n)) && +n >= 1 && +n <= 16);
@@ -101,7 +103,7 @@ async function openImportedSetup(project, bundle, rows) {
           const strength = node("input"); strength.type = "number"; strength.min = "0"; strength.max = "2";
           strength.step = "any"; strength.required = true; strength.value = val;
           strength.setAttribute("aria-label", text + " 强度");
-          strength.oninput = () => {selected.set(k, strength.value); remember();};
+          strength.oninput = () => {selected.set(k, strength.value); window.rememberLoraWeight?.(k, strength.value); remember();};
           const weightLabel = node("label", "强度"); weightLabel.append(strength); chip.append(weightLabel);
         }
         const remove = button("×", () => {selected.delete(k); render(); remember();});
@@ -121,14 +123,14 @@ async function openImportedSetup(project, bundle, rows) {
   picker("LoRA", "当前模型 · " + (data.diffusion_models?.[model]?.label || model),
     files, weights, f=>f, f=>f.split("/").pop().replace(/\.[^.]+$/, "").replaceAll("_", " · "),
     (f,q)=>loraMatchesSearch(f,data.lora_inspection[f],q),
-    5, f=>data.lora_labels?.[f]?.weight ?? 0.7);
+    5, f=>window.defaultLoraWeight(f, data, 0.7));
 
   const quantities = node("section",undefined,"setup-section setup-quantities");
   const commonLabel = node("label","通用负面提示词", "setup-negative");
   commonLabel.append(commonNegative);
   const defaultLabel = node("label","默认每格张数"); defaultLabel.append(count);
   const details = node("details"), entries = node("div",undefined,"setup-panels");
-  details.append(node("summary","逐格编辑负面提示词和张数"),entries);
+  details.append(node("summary","逐格编辑提示词、衣装和张数"),entries);
   for (const row of rows) {
     const id = row.panel_id, label = row.source || id;
     if (draft.counts?.[id]) counts.set(id, draft.counts[id]);
@@ -148,13 +150,24 @@ async function openImportedSetup(project, bundle, rows) {
       remember();
     };
     negativeLabel.append(negative);
-    line.append(node("strong",label),node("p",row.positive),n,negativeLabel); entries.append(line);
+    const positive = node("textarea"), positiveLabel = node("label","本格正向提示词","setup-negative");
+    positive.rows=3;positive.maxLength=20000;positive.required=true;
+    positive.setAttribute("aria-label",label+" 正向提示词");
+    positive.value=draft.positive_by_panel?.[id] ?? row.positive;
+    if(positive.value!==row.positive)positiveEdits.set(id,positive.value);
+    positive.oninput=()=>{
+      if(positive.value===row.positive)positiveEdits.delete(id);
+      else positiveEdits.set(id,positive.value);
+      remember();
+    };
+    positiveLabel.append(positive);
+    line.append(node("strong",label),wardrobeButton(positive,undefined,undefined,()=>[...cast.values()]),n,positiveLabel,negativeLabel); entries.append(line);
   }
   count.oninput=()=>{for(const n of entries.querySelectorAll("input"))n.placeholder=count.value;remember();};
   const copyAll=button("复制全部画格 JSON",async()=>{
     const ids=rows.map(row=>/^P\d+-K\d+$/.test(row.source)?row.source:row.panel_id);
     const unique=new Set(ids).size===rows.length;
-    const output=rows.map((row,i)=>panelJson(unique?ids[i]:row.panel_id,row.positive,
+    const output=rows.map((row,i)=>panelJson(unique?ids[i]:row.panel_id,positiveEdits.get(row.panel_id) ?? row.positive,
       [negativeEdits.get(row.panel_id) ?? row.negative,commonNegative.value].filter(Boolean).join("\n")));
     const tooLong=output.find(row=>Array.from(row.negative).length>20000);
     if(tooLong){status.textContent=tooLong.id+" 合并后的负面提示词超过 20000 字，请缩短后再复制。";return;}
@@ -164,17 +177,22 @@ async function openImportedSetup(project, bundle, rows) {
   body.append(chainLabel,libraries,quantities);
   const start = button("开始生成", async () => {
     if (submitting) return;
-    const invalid = [...page.querySelectorAll("input")].find(input => !input.checkValidity());
+    const invalid = [...page.querySelectorAll("input,textarea")].find(input => !input.checkValidity());
     if (invalid) {if(entries.contains(invalid)) details.open=true; invalid.reportValidity(); return;}
     if (window.activeStudioJob) {status.textContent="当前任务正在运行，结束后即可开始。";return;}
     submitting=true; close.disabled=true; body.inert=true; status.textContent="正在提交出图任务…";
     try {
+      if (positiveEdits.size && !wardrobeCatalog) {
+        try { wardrobeCatalog = await api("/api/wardrobe"); }
+        catch { throw Error("请重启工作室后台，再提交本格编辑过的正向提示词。"); }
+      }
       await act("draw_imported", {project,bundle,targets:rows.map(r=>r.panel_id),checkpoint:model,
         candidate_count:Number(count.value),import_setup:{
           reference_previous_panel:chain.checked,
           characters:[...cast.values()].map(c=>({name:c.name,revision:c.revision})),
           loras:[...weights].map(([file,weight])=>({file,weight:Number(weight)})),
           common_negative:commonNegative.value, negative_by_panel:Object.fromEntries(negativeEdits),
+          positive_by_panel:Object.fromEntries(positiveEdits),
           counts:Object.fromEntries([...counts].map(([k,v])=>[k,Number(v)]))
         }});
     } catch(error) {status.textContent=error.message;return;}

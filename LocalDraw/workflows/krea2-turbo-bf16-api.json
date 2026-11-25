@@ -67,7 +67,7 @@
   "11": {
     "class_type": "CLIPLoader",
     "inputs": {
-      "clip_name": "qwen3vl_4b_bf16.safetensors",
+      "clip_name": "qwen3vl_4b_abliterated_bf16.safetensors",
       "type": "krea2",
       "device": "default"
     }

@@ -112,9 +112,8 @@ def translate(app, request, update, jid):
         temporary.cleanup()
 
 
-def selected_characters(repo, items, use_reference):
-    e.need(isinstance(items, list) and len(items) <= 4, "最多同时选择 4 个角色")
-    e.need(type(use_reference) is bool, "参考图选项无效")
+def selected_characters(repo, items, use_reference=False):
+    e.need(isinstance(items, list), "角色选择必须是列表")
     library = CharacterLibrary(repo.root.parent / "characters")
     refs, selections, seen = [], [], set()
     for item in items:
@@ -124,31 +123,10 @@ def selected_characters(repo, items, use_reference):
         e.need(item.get("revision") == card["revision"], "角色资料已更新，请刷新角色列表后重试")
         prompt = item.get("prompt", "")
         e.need(isinstance(prompt, str) and len(prompt) <= 6000, "角色提示词最多 6000 字符")
-        character_reference = item.get("use_reference", True)
-        e.need(type(character_reference) is bool, "角色参考图选项无效")
-        e.need(prompt.strip() or (use_reference and character_reference and card.get("image_id")),
-               "请填写角色外观提示词，或启用该角色的参考图")
-        if use_reference and character_reference and card.get("image_id"):
-            e.need(library.image_path(card["image_id"]).is_file(), card["name"] + " 的参考图不存在")
+        e.need(prompt.strip(), "请填写角色外观提示词")
         seen.add(card["id"])
         refs.append(card)
-        selection = {"name": card["name"], "revision": card["revision"], "prompt": prompt}
-        if "use_reference" in item:
-            selection["use_reference"] = item["use_reference"]
-        if item.get("region") is not None:
-            from .lora_binding import region_valid
-            e.need(region_valid(item["region"]), "角色区域无效")
-            selection["region"] = item["region"]
-        selections.append(selection)
-    if use_reference:
-        e.need(any(c.get("image_id") and s.get("use_reference", True)
-                   for c, s in zip(refs, selections)),
-               "请至少勾选一个角色的参考图，或取消使用参考图")
-        config = ROOT / "config/reference-models.json"
-        e.need(config.is_file() and e.read(config).get("enabled"), "角色参考图功能未启用")
-        for model in e.read(config)["models"]:
-            path = ROOT / model["directory"] / model["name"]
-            e.need(path.is_file() and path.stat().st_size == model["size"], "参考图模型未完整，请先运行 08-download-reference.bat")
+        selections.append({"name": card["name"], "revision": card["revision"], "prompt": prompt})
     return refs, selections
 
 
@@ -220,12 +198,9 @@ def prepare_sample(repo, request):
     count = request.get("count", 1)
     e.need(type(count) is int and 1 <= count <= 16, "一次请选择 1–16 张")
     checkpoint = request.get("checkpoint")
-    from .comparison_models import available
     discovery = comfyui.discover()
     installed = discovery["checkpoints"]
-    catalog = {m["name"]: m for m in available()}
-    e.need(checkpoint in installed and (checkpoint not in catalog or catalog[checkpoint]["installed"]),
-           "请先下载完整的绘图模型，再选择出图")
+    e.need(checkpoint in installed, "请先下载完整的绘图模型，再选择出图")
     ratio = request.get("aspect_ratio", "3:2")
     from .image_size import dimensions
     resolution = request.get("resolution", "default")
@@ -233,28 +208,7 @@ def prepare_sample(repo, request):
     loras = selected_loras(request.get("loras", []), checkpoint, discovery)
     # Only explicit selections bind characters; slash text remains literal.
     items = request.get("characters", [])
-    from .prompt_models import MODELS
-    using_anima = checkpoint in MODELS
-    # API callers also get image binding by default. An explicit false remains
-    # a supported text-only choice, including frozen historical projects.
-    use_reference = request.get("use_reference")
-    if "use_reference" not in request and using_anima:
-        use_reference = False
-    elif "use_reference" not in request:
-        e.need(isinstance(items, list) and len(items) <= 4, "最多同时选择 4 个角色")
-        library = CharacterLibrary(repo.root.parent / "characters")
-        use_reference = False
-        for item in items:
-            e.need(isinstance(item, dict), "无效角色选择")
-            card = library.get(item.get("name"))
-            if card.get("image_id") and item.get("use_reference", True) is not False:
-                use_reference = True
-    reference_weight = request.get("reference_weight", 0.6)
-    e.need(type(reference_weight) in (int, float) and 0 <= reference_weight <= 1,
-           "参考图强度须为 0–1")
-    refs, selections = selected_characters(repo, items, use_reference)
-    e.need(not use_reference or reference_weight > 0,
-           "参考图已启用，请设置大于 0 的强度，或取消角色的参考图勾选")
+    refs, selections = selected_characters(repo, items, False)
     for selection in selections:
         e.need(not character_prompt_problem(selection["prompt"]),
                selection["name"] + " 的外观提示词包含聊天设定，请先点击“整理 / 转换英文提示词”并核对")
@@ -264,23 +218,13 @@ def prepare_sample(repo, request):
         if source["prompt"] != selection["prompt"]:
             selection["source_prompt"] = source["prompt"]
     selections = resolved
-    regional = request.get("regional_characters", False)
-    if using_anima:
-        e.need(not use_reference and not regional,
-               "当前模型使用文字与同架构 LoRA；请关闭 SDXL 参考图和分区绘制")
-    e.need(type(regional) is bool, "分区绘制选项无效")
-    hand_detail = request.get("hand_detail", comfyui.config().get("hand_detail", False))
-    e.need(type(hand_detail) is bool, "手部增强选项无效")
     delta_matte_skin = request.get("delta_matte_skin", comfyui.config().get("delta_matte_skin", True))
     e.need(type(delta_matte_skin) is bool, "Invalid matte skin setting")
     consistency_lora = request.get("consistency_lora", comfyui.config().get("consistency_lora", False))
     e.need(type(consistency_lora) is bool, "一致性 LoRA 选项无效")
-    if regional:
-        from .lora_binding import separate_regions
-        regional = len(selections) >= 2 and separate_regions(c.get("region") for c in selections)
-    if regional:
-        from .regional_prompt import validate
-        validate(selections)
+    seed = request.get("seed")
+    if seed is not None:
+        e.need(type(seed) is int and 0 <= seed < 2**53, "种子须为 0 至 9007199254740991 的整数")
     positive = "\n\n".join([text] + [c["prompt"] for c in selections if c["prompt"].strip()])
     e.need(len(positive) <= 24000, "合并后的提示词过长，请精简角色外观描述")
     characters = prompt_characters(refs)
@@ -295,12 +239,10 @@ def prepare_sample(repo, request):
     p = {"version": 1, "workflow": "direct", "quick_sample": True, "script": text, "brief": brief,
          "prompt_input": {"text": text, "negative": negative, "count": count,
                           "checkpoint": checkpoint, "aspect_ratio": ratio, "resolution": resolution, "loras": loras,
-                          "characters": selections, "use_reference": use_reference,
-                          "regional_characters": regional,
-                          "hand_detail": hand_detail,
+                          "characters": selections,
                           "consistency_lora": consistency_lora,
                           "delta_matte_skin": delta_matte_skin,
-                          "reference_weight": reference_weight},
+                          **({"seed": seed} if seed is not None else {})},
          "provenance": "用户直接提示词出图；衣着按场景提示词优先，未指定时使用角色默认服装，不经过 Qwen",
          "canon": {"characters": characters, "scenes": [{"id": "S001", "name": "用户指定的场景",
             "layout": "按用户描述", "landmarks": [], "lighting": "按用户描述", "axis_rule": "独立画面"}],
@@ -320,10 +262,8 @@ def prepare_sample(repo, request):
         "identity_hash": identity_hash(p, panel), "payload": {"panel_id": "P001-K01",
         "positive": positive, "negative": negative, "character_anchors": [], "composition_variants": [],
         "adaptation_notes": "场景提示词原样发送；角色默认服装仅在提示词未指定衣着时补入"}}}
-    from .lora_binding import route, plan
+    from .lora_binding import route
     loras = route(loras, p, panel, comfyui.lora_labels())
-    if not using_anima:
-        plan(loras, p, panel, p["drawing_prompts"]["P001-K01"]["payload"])
     p["prompt_input"]["loras"] = loras
     return p
 
@@ -339,6 +279,33 @@ def create(repo, request, *, persistent=False):
         e.save(folder / "project.json", p)
         e.save(folder / "workspace.json", {"stage": "prompt", "target": "", "updated": 1, "views": {}})
     return {"project": pid}
+
+
+def draw_session(app, pid, request):
+    sample = prepare_sample(app.repo, request)
+    sample["transient"] = True
+    with app.jobs.lock, LOCK:
+        previous = None
+        if pid is not None:
+            e.need(pid in app.repo.transient_ids, "临时出图会话已结束，请重新打开提示词出图")
+            e.need(not any(c["job"].get("project") == pid for c in app.jobs.controls.values()),
+                   "请等待当前出图结束")
+            previous = app.repo.get(pid)
+        else:
+            pid = app.repo.create_transient()
+        path = app.repo.folder(pid) / "project.json"
+        try:
+            e.save(path, sample)
+            snapshot = app.snapshot(pid)
+            job = app.jobs.submit("提示词出图", lambda update, jid:
+                run(app, pid, {"base_hash": snapshot["hash"]}, update, jid), pid)
+        except Exception:
+            if previous is None:
+                app.repo.release_transient(pid)
+            else:
+                e.save(path, previous)
+            raise
+    return {"project": pid, "snapshot": snapshot, "job": job}
 
 
 def run(app, pid, request, update, jid):
@@ -395,14 +362,12 @@ def run(app, pid, request, update, jid):
                 batch = comfyui.run_batch(app.repo, pid, p.get("board_target", "P001-K01"), emit, spec["checkpoint"], 1,
                     "seeds", loras, candidate_indices=[i], review_required=False,
                     **({"board_sample": p} if p.get("board_target") else {}),
-                    render_options={"diagnostic": "small_batch", "direct_prompt": True,
+                    render_options={"direct_prompt": True,
                                     "aspect_ratio": spec["aspect_ratio"], "resolution": spec.get("resolution", "default"),
                                     "consistency_lora": spec.get("consistency_lora", comfyui.config().get("consistency_lora", False)),
                                     "delta_matte_skin": spec.get("delta_matte_skin", comfyui.config().get("delta_matte_skin", True)),
-                                    "reference": spec.get("use_reference", False),
-                                    "reference_weight": spec.get("reference_weight", 0.7),
-                                    "hand_detail": spec.get("hand_detail", comfyui.config().get("hand_detail", False)),
-                                    "control": False, "sample_job": jid, "queue_run": request.get("run_key")})
+                                    **({"seed": (spec["seed"] + i) % 2**53} if spec.get("seed") is not None else {}),
+                                    "sample_job": jid, "queue_run": request.get("run_key")})
                 report["batches"].append(batch["id"])
             except Exception as exc:
                 report["errors"].append({"number": i + 1, "error": str(exc)})

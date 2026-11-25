@@ -58,17 +58,38 @@ class CharacterLibrary:
     def __init__(self, root=None):
         self.root = Path(root) if root else DATA / "characters"
         self.root.mkdir(parents=True, exist_ok=True)
+        self._cache_key = None
+        self._cache_cards = None
+        self._cache_searchable = None
+
+    def _cards_signature(self):
+        cards_dir = self.root / "cards"
+        if not cards_dir.is_dir():
+            return ()
+        files = sorted(cards_dir.glob("*/current.json"))
+        return tuple((p.parent.name, p.stat().st_mtime_ns, p.stat().st_size) for p in files)
 
     def listing(self):
-        return sorted(
-            [e.read(p) for p in self.root.glob("cards/*/current.json")],
-            key=lambda x: x["name"],
-        )
+        sig = self._cards_signature()
+        if sig != self._cache_key or self._cache_cards is None:
+            cards_dir = self.root / "cards"
+            cards = sorted(
+                [e.read(cards_dir / cid / "current.json") for cid, _, _ in sig],
+                key=lambda x: x["name"],
+            )
+            self._cache_key = sig
+            self._cache_cards = cards
+            self._cache_searchable = None
+        return copy.deepcopy(self._cache_cards)
 
     def searchable_listing(self):
-        from .lora_names import card_search_identity, identities
-        roster = identities()
-        return [{**card, **card_search_identity(card, roster)} for card in self.listing()]
+        sig = self._cards_signature()
+        if sig != self._cache_key or self._cache_searchable is None:
+            cards = self.listing()
+            from .lora_names import card_search_identity, identities
+            roster = identities()
+            self._cache_searchable = [{**card, **card_search_identity(card, roster)} for card in cards]
+        return copy.deepcopy(self._cache_searchable)
 
     def get(self, name):
         valid_name(name)
@@ -131,6 +152,7 @@ class CharacterLibrary:
             folder = self.root / "cards" / item["id"]
             e.save(folder / "versions" / f"{item['revision']:06}.json", item)
             e.save(folder / "current.json", item)
+            self._cache_key = None
             return item
 
     def upload(self, data_url):

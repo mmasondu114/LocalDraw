@@ -4,9 +4,12 @@ from .paths import DATA
 
 
 class InstanceLock:
+    def __init__(self, path=None):
+        self.path = path if path is not None else DATA / "server.lock"
+
     def __enter__(self):
-        DATA.mkdir(parents=True, exist_ok=True)
-        self.file = (DATA / "server.lock").open("a+b")
+        self.path.parent.mkdir(parents=True, exist_ok=True)
+        self.file = self.path.open("a+b")
         if self.file.seek(0, 2) == 0:
             self.file.write(b"0")
             self.file.flush()

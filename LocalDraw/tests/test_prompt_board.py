@@ -35,8 +35,8 @@ class PromptBoardTests(unittest.TestCase):
         self.app.jobs.submit.return_value = jid
         self.app.prepare_language = Mock()
         with patch.object(prompt_board.creative, "structured", return_value=({"pages": [
-            {"panels": [{"description": "候车的人收起雨伞。", "aspect_ratio": "2:3"}]},
-            {"panels": [{"description": "列车驶进站台。", "aspect_ratio": "16:9"}]}]}, {})) as model:
+            {"panels": [{"description": "候车的人收起雨伞。", "aspect_ratio": "2:3", "visual_state": "雨伞已收起"}]},
+            {"panels": [{"description": "列车驶进站台。", "aspect_ratio": "16:9", "visual_state": ""}]}]}, {})) as model:
             self.assertEqual(prompt_board.generate(self.app, {"title": "雨夜"}), {"job": jid})
             label, worker = self.app.jobs.submit.call_args.args
             draft = worker(Mock(), jid)
@@ -49,6 +49,8 @@ class PromptBoardTests(unittest.TestCase):
         work = self.repo.get(saved["project"])
         self.assertEqual(work["pages"]["P002"]["panels"][0]["aspect_ratio"], "16:9")
         self.assertEqual(work["board_source"]["job"], jid)
+        self.assertEqual(work["pages"]["P002"]["state_in"], {"visual_state": "雨伞已收起"})
+        self.assertEqual(work["pages"]["P002"]["panels"][0]["state_after"], work["pages"]["P002"]["state_in"])
         self.app.jobs.get.return_value["status"] = "failed"
         with self.assertRaisesRegex(ValueError, "生成完成"):
             prompt_board.confirm(self.app, jid)

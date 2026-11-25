@@ -128,10 +128,10 @@ async function openTaskFusion(queueDialog) {
     body.append(button("返回调整顺序",()=>{order();persist();}),title,counter);
     if(panel.summary) body.append(node("p",panel.summary,"fusion-summary"));
     const positive=field("positive","正面提示词"),negative=field("negative","负面提示词");
-    const jsonState={enabled:draft.jsonMode || panel.jsonRaw!==undefined, raw:panel.jsonRaw};
+    const jsonState={mode:draft.editorMode,enabled:draft.jsonMode,raw:panel.jsonRaw};
     const jsonId=/^P\d+-K\d+$/.test(panel.panel_id)?panel.panel_id:"P001-K01";
     const editor=promptJsonEditor(positive,negative,jsonId,jsonState,(edited)=>{
-      draft.jsonMode=jsonState.enabled;panel.jsonRaw=jsonState.raw;
+      draft.editorMode=jsonState.mode;draft.jsonMode=jsonState.enabled;panel.jsonRaw=jsonState.raw;
       if(edited) {
         panel.positive=positive.value;panel.negative=negative.value;panel.approved=false;panel.skipped=false;
         update();

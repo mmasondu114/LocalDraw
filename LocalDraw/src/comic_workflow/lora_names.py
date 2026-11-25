@@ -33,7 +33,10 @@ def normalize_search(value):
 
 
 def display_name(filename):
-    return PurePosixPath(filename.replace("\\", "/")).stem.split("_", 1)[0]
+    path = PurePosixPath(filename.replace("\\", "/"))
+    if len(path.parts) == 2 and path.parts[0] in {"anime", "sdxl", "krea2", "moss_image", "qwen_edit"}:
+        return path.stem
+    return path.stem.split("_", 1)[0]
 
 
 def identities():

@@ -288,15 +288,6 @@ class ComfyManager:
         )
         (DATA / "logs").mkdir(parents=True, exist_ok=True)
         (DATA / "comfy-input").mkdir(parents=True, exist_ok=True)
-        if cfg.get("person_masks"):
-            from .person_mask import install
-            install()
-        if cfg.get('regional_lora_hooks'):
-            from .regional_lora import install
-            install()
-        if cfg.get('bv_regional_trial') or cfg.get('regional_lora_backend') == 'bv_sdxl':
-            from .bv_regional import install
-            install()
         self.log = (DATA / "logs/comfyui.log").open("a", encoding="utf-8")
         # Written at launch so moving the checkout does not leave stale absolute model paths.
         (ROOT / "config/comfy-model-paths.yaml").write_text(
@@ -333,13 +324,7 @@ class ComfyManager:
             *memory_flags,
             "--disable-all-custom-nodes",
             "--whitelist-custom-nodes",
-            "ComfyUI_IPAdapter_plus",
-            "local_draw_masks",
-            "local_draw_hooks",
             "local_draw_warmup",
-            "ComfyUI-Lora-Pipeline",
-            "ComfyUI-OpenPose-Studio",
-            "ComfyUI-Styler-Pipeline",
             "comfyui-anima-3-8B",
             "ComfyUI-Anima-3.8B-loraPatch",
             "ComfyUI-Anima-Delta-Q35-LoRA",
@@ -354,19 +339,6 @@ class ComfyManager:
             user = DATA / "comfy-user"
             user.mkdir(parents=True, exist_ok=True)
             args += ["--user-directory", str(user)]
-        if cfg.get('bv_regional_trial') or cfg.get('regional_lora_backend') == 'bv_sdxl':
-            # Trial only: load the author's pinned regional-attention backend.
-            args.insert(args.index('--disable-api-nodes'),'bv_nodepack')
-        if cfg.get('attention_couple_trial'):
-            args.insert(args.index('--disable-api-nodes'),'A8R8_ComfyUI_nodes')
-        if cfg.get('anima_regional_trial'):
-            args.insert(args.index('--disable-api-nodes'),'Comfyui-Anima-Regional-Conditioning')
-        if cfg.get('impact_hand_trial') or cfg.get('guided_hand_repair'):
-            args.insert(args.index('--disable-api-nodes'),'comfyui-impact-pack')
-        if cfg.get('fooocus_hand_trial') or cfg.get('guided_hand_backend')=='fooocus_depth':
-            args.insert(args.index('--disable-api-nodes'),'comfyui-inpaint-nodes')
-        if cfg.get('freefuse_trial'):
-            args.insert(args.index('--disable-api-nodes'),'FreeFuse')
         storage = cfg.get('unet_storage_dtype','fp16')
         e.need(storage in ('fp16','fp8_e4m3fn'),'绘图模型的显存存储设置无效')
         if storage=='fp8_e4m3fn': args.append('--fp8_e4m3fn-unet')
@@ -478,22 +450,9 @@ def run_batch(
         "角色绑定已更新，请重新生成此格绘图描述；旧图和选图保持不变",
     )
     cfg = config()
-    from . import art_presets, drawing_settings
+    from . import drawing_settings, lora_binding
 
     prefs = drawing_settings.load(repo, pid)
-    # Explicit small samples must use the requested model, never the saved recipe.
-    small_sample = (render_options or {}).get("diagnostic") == "small_batch"
-    hand_only_repair = ((render_options or {}).get('local_repair') or {}).get('hand_guidance')
-    from . import lora_binding
-    repair = (render_options or {}).get('local_repair') or {}
-    repair_owner = (lora_binding.repair_owner(p, panel, repair['owner'])
-                    if 'owner' in repair and not hand_only_repair else None)
-    preset = None if prompt_override is not None or small_sample or hand_only_repair or repair_owner else art_presets.get(prefs)
-    if preset:
-        drawing_settings.validate(prefs)
-        cfg.update(art_presets.PARAMETERS)
-        checkpoint = art_presets.CHECKPOINT
-        loras = drawing_settings.loras_for_panel(prefs, p, panel)
     indices = candidate_indices if candidate_indices is not None else list(range(count))
     e.need(
         len(indices) == count
@@ -518,10 +477,11 @@ def run_batch(
         cfg["delta_matte_skin"] = render_options["delta_matte_skin"]
     if (render_options or {}).get("direct_prompt"):
         cfg["literal_prompt"] = True
-    if using_anima:
-        cfg.update(regional_lora_hooks=False, hires_fix=False, hand_detail=False, guided_hand_repair=False)
+        if MODELS.get(checkpoint, (None, None))[1] == "krea2" and prompt["payload"]["negative"].strip():
+            # Turbo normally runs without CFG. Explicit negative text opts into mild guidance.
+            cfg["cfg"] = 1.2
     if prompt_override is not None:
-        cfg.update(literal_prompt=True, regional_lora_hooks=False, hires_fix=False, hand_detail=False, guided_hand_repair=False)
+        cfg["literal_prompt"] = True
     if MODELS.get(checkpoint, (None, None))[1] == 'qwen_edit':
         from .qwen_edit import validate_frozen, freeze_assets, RECIPE
         cfg['edit_references'] = validate_frozen((render_options or {}).get('edit_references'))
@@ -546,25 +506,13 @@ def run_batch(
     lora_files = status.get("lora_files") or {
         lora_file_key(name): name for name in status.get("loras", [])
     }
-    e.need(
-        checkpoint in status["checkpoints"],
-        "选定绘图权重未安装；对照模型请运行 10-download-comparison-models.bat",
-    )
-    from . import lora_binding
+    e.need(checkpoint in status["checkpoints"], "选定绘图权重未安装，请在模型下载中安装后再试")
     loras = (copy.deepcopy(loras or []) if prompt_override is not None else
              lora_binding.route(loras or [], p, panel, lora_labels(), prefs))
-    if using_anima or prompt_override is not None:
-        # Imported prompts describe the complete scene; load all resolved weights
-        # without inventing regional character text or rewriting the import.
-        global_loras, character_passes = loras, []
-    else:
-        global_loras, character_passes = lora_binding.plan(loras, p, panel, prompt["payload"],
-            owner=repair_owner['id'] if repair_owner else None)
-    if repair_owner:
-        loras = global_loras
     e.need(
         isinstance(loras, list) and len(loras) <= lora_binding.MAX_LORAS, "最多同时使用五个已核对底模的 LoRA"
     )
+    allow_experimental = bool((render_options or {}).get("direct_prompt") or prompt_override is not None)
     for lora in loras:
         from .lora_folders import matches
         lora["file"] = lora_file_key(lora.get("file", ""))
@@ -591,7 +539,7 @@ def run_batch(
         e.need(
             (lora.get("compatible_checkpoint") == checkpoint
              and lora.get("confirmed_compatibility") is True)
-            or ((small_sample or prompt_override is not None) and structural_match
+            or (allow_experimental and structural_match
                 and lora.get("experimental_checkpoint") == checkpoint),
             "请先根据 LoRA 资源说明确认适配当前底模",
         )
@@ -604,32 +552,17 @@ def run_batch(
         )
         e.need(isinstance(lora.get("trigger_words", ""), str), "触发词须为文本")
     bid = uuid.uuid4().hex
-    from .reference_images import references_for_panel, apply_references
-
-    from .framing import guide_image, apply_control, apply_camera, apply_local_repair
+    from .framing import apply_camera
 
     options = {
         **({"consistency_lora": prefs["consistency_lora"]} if prefs and "consistency_lora" in prefs else {}),
-        **({"reference": preset["reference"], "control": False} if preset else {}),
         **(render_options or {}),
     }
-    if using_anima:
-        e.need(not options.get("local_repair"), "当前模型暂不支持现有 SDXL 局部修复流程")
-        e.need(not options.get("reference") and not options.get("control"),
-               "Anima 请关闭 SDXL 角色参考图和 ControlNet，使用角色提示词与 Anima LoRA")
-        options.update(reference=False, control=False, hand_detail=False)
-    if repair_owner:
-        options.update(reference=False, control=False)
-    options.setdefault("hand_detail", (prefs or {}).get("hand_detail", cfg.get("hand_detail", False)))
-    e.need(type(options["hand_detail"]) is bool, "手部增强选项无效")
-    # Explicit manual repairs and model comparison tests retain their own workflow.
-    if options.get("local_repair") or (small_sample and not options.get("direct_prompt")):
-        options["hand_detail"] = False
     from . import anima_consistency
     from .characters import CharacterLibrary
     if (MODELS.get(checkpoint, (None, None))[1] != 'qwen_edit'
             and (prefs or {}).get("reference_character_id") and not options.get("external_prompt")
-            and not options.get("local_repair") and not options.get("diagnostic")
+            and not options.get("diagnostic")
             and not options.get("consistency_reference") and options.get("consistency_lora", True)):
         selected = anima_consistency.selected_character_reference(p, panel, checkpoint, prefs,
             library=CharacterLibrary(repo.root.parent / "characters"))
@@ -643,48 +576,6 @@ def run_batch(
                    "一致性参考节点未加载，请重启绘图服务")
         update({"message": "自动加载 Anima Edit v2" + (
             "，使用固定参考图保持外观" if consistency.get("reference") else "，本次无图像参考")})
-    framing = prompt["payload"].get("framing")
-    references = []
-    if options.get("reference") is not False:
-        references = (
-            references_for_panel(p, panel, framing)
-            if framing
-            else references_for_panel(p, panel)
-        )
-    if options.get("reference") is False:
-        references = []
-    elif preset and preset["reference"]:
-        # Preserve the approved full-image recipe while omitting full portraits
-        # for explicitly hand-only framing.
-        hand_ids = {
-            s["character_id"]
-            for s in (framing or {}).get("subjects", [])
-            if s["visible"] == "hands"
-        }
-        references = [
-            r
-            for r in references_for_panel(p, panel)
-            if r["character_id"] not in hand_ids
-        ]
-        for reference in references:
-            reference.update(weight=0.7, end_at=0.8)
-    if options.get("direct_prompt") and options.get("reference_weight") is not None:
-        weight = options["reference_weight"]
-        e.need(type(weight) in (int, float) and 0 <= weight <= 1, "参考图强度须为 0–1")
-        for reference in references:
-            reference["weight"] = weight
-    if options.get("direct_prompt") and options.get("reference") is True:
-        choices = {c["name"]: c for c in p.get("prompt_input", {}).get("characters", [])}
-        expected = {c["name"] for c in p["brief"].get("character_refs", [])
-                    if c.get("image_id") and choices.get(c["name"], {}).get("use_reference", True)}
-        loaded = {r["name"] for r in references if r["weight"] > 0}
-        e.need(expected and expected == loaded,
-               "所选角色参考图未完整加载，已停止出图；请检查参考图设置和模型安装")
-    guide = (
-        guide_image(prompt["payload"], cfg["width"], cfg["height"])
-        if framing and options.get("control", False)
-        else None
-    )
     folder = repo.folder(pid) / "images" / bid
     folder.mkdir(parents=True)
     batch = {
@@ -703,15 +594,9 @@ def run_batch(
         "candidate_indices": indices,
         "mode": mode,
         "loras": loras,
-        "character_lora_passes": character_passes,
         "review_required": review_required,
-        "references": references,
         "consistency": consistency,
         "render_options": options,
-        "art_preset": preset,
-        "art_preset_hash": (None if small_sample else options['local_repair'].get('source_art_preset_hash')
-                            if hand_only_repair or repair_owner else art_presets.signature(prefs)),
-        "guide": guide,
     }
 
     def persist():
@@ -750,16 +635,7 @@ def run_batch(
             )
             if repairs and repairs.get(indices[i]):
                 positive += ", " + repairs[indices[i]]
-            if repair_owner:
-                choices = {c['name']: c for c in p.get('prompt_input', {}).get('characters', [])}
-                anchors = {a['character_id']: a['tags'] for a in prompt['payload']['character_anchors']}
-                positive = choices.get(repair_owner['name'], {}).get('prompt') or anchors.get(repair_owner['id'], '')
-                from .prompt_adapter import compile_prompt
-                positive, negative, dialect = compile_prompt(positive, prompt['payload']['negative'], checkpoint)
-                batch['prompt_adapter'] = dialect
-                batch['local_repair_owner'] = {'id': repair_owner['id'], 'name': repair_owner['name'],
-                    'original_position_regions_used': False, 'other_character_loras_loaded': False}
-            elif options.get("direct_prompt"):
+            if options.get("direct_prompt"):
                 # Dedicated raw-prompt entry: no automatic camera/quality/identity words.
                 negative = prompt["payload"]["negative"]
                 batch["prompt_adapter"] = {"id": "user_raw", "checkpoint": checkpoint}
@@ -777,68 +653,20 @@ def run_batch(
                 batch["visual_plan"] = copy.deepcopy(prompt["payload"].get("visual_plan"))
             if loras and not options.get("direct_prompt"):
                 positive = (
-                    ", ".join(l.get("trigger_words", "") for l in global_loras)
+                    ", ".join(l.get("trigger_words", "") for l in loras)
                     + ", "
                     + positive
                 )
-            workflow = graph(checkpoint, positive, negative, seed, cfg, global_loras)
+            workflow = graph(checkpoint, positive, negative, seed, cfg, loras)
             from .delta_style import CHECKPOINT as DELTA_CHECKPOINT
             if checkpoint == DELTA_CHECKPOINT:
                 positive = workflow["2"]["inputs"]["text"]
                 negative = workflow["3"]["inputs"]["text"]
                 batch["delta_matte_skin"] = cfg.get("delta_matte_skin", True)
             anima_consistency.apply(workflow, consistency, cfg)
-            if options.get("direct_prompt") and not repair_owner and not using_anima and prompt_override is None:
-                from .regional_prompt import apply as apply_regional_prompt
-                batch["character_prompt_regions"] = apply_regional_prompt(
-                    workflow, p.get("prompt_input", {}), cfg, character_passes)
-            hooked = cfg.get('regional_lora_hooks') and character_passes and not options.get('local_repair')
-            if hooked:
-                regional_cfg = {**cfg, 'regional_auto_pose': cfg.get('regional_auto_pose') and not guide}
-                regional_characters = batch.get('character_prompt_regions')
-                if cfg.get('regional_lora_backend') in ('bv_sdxl', 'native_masked') and not regional_characters:
-                    regional_characters = lora_binding.regional_cast(p, panel, prompt['payload'])
-                lora_binding.apply_passes(workflow, character_passes, global_loras, regional_cfg, seed, negative,
-                                          add_triggers=not options.get("direct_prompt"),
-                                          characters=regional_characters)
-            apply_references(workflow, references, cfg)
-            apply_control(workflow, guide)
-            if options.get("local_repair"):
-                repair = options["local_repair"]
-                if repair.get('hand_guidance'):
-                    from . import guided_hand
-                    workflow=guided_hand.workflow(checkpoint,seed,repair)
-                    positive=workflow['34']['inputs']['text']
-                    negative=workflow['35']['inputs']['text']
-                    batch['hand_guided_repair']={'owner':repair['hand_guidance']['owner'],
-                        'placement':repair['placement'],'method':'Published two-pass Impact hand Detailer with reviewed mesh depth',
-                        'actual_loras':[*guided_hand.source_style_loras(repair,guided_hand.settings()),guided_hand.settings()['hand_lora']],
-                        'character_loras_in_patch':False,'gpu_only':True}
-                    if guided_hand.settings().get('pose_only'):
-                        batch['hand_guided_repair'].update(
-                            method='Published two-pass Impact hand Detailer with compatible Illustrious finger-pose control',
-                            control_mode='pose_only',production_recipe_acceptance=False)
-                    if guided_hand.settings().get('backend','impact')=='fooocus_depth':
-                        batch['hand_guided_repair'].update(
-                            method=('Published SDXL Fooocus inpaint with compatible finger-pose control and masked edge blend'
-                                    if guided_hand.settings().get('pose_only') else
-                                    'Published SDXL Fooocus inpaint with reviewed hand depth and masked edge blend'),
-                            author='https://github.com/Acly/comfyui-inpaint-nodes',
-                            backend='fooocus_depth',production_recipe_acceptance=False)
-                else:
-                    apply_local_repair(
-                        workflow, repair["original"], repair["mask"], repair["instruction"], repair.get('blend_mask')
-                    )
-            guided_repair=bool((options.get('local_repair') or {}).get('hand_guidance'))
-            if not hooked and not guided_repair and not using_anima:
-                lora_binding.apply_passes(workflow, character_passes, global_loras, cfg, seed, negative,
-                                          add_triggers=not options.get("direct_prompt"))
-            if cfg.get('hires_fix') and not options.get('local_repair'):
-                from .hires import apply as apply_hires
-                batch['hires_fix'] = apply_hires(workflow, cfg, seed)
             # ComfyUI validates enum values exactly, including Windows separators.
             for node in workflow.values():
-                if node["class_type"] in ('LoraLoader', 'CreateHookLora', 'DeltaMixQ35LoraLoader'):
+                if node["class_type"] in ('LoraLoader', 'DeltaMixQ35LoraLoader'):
                     inputs = node["inputs"]
                     inputs["lora_name"] = lora_files[lora_file_key(inputs["lora_name"])]
             if p.get("transient"):
@@ -942,23 +770,6 @@ def run_batch(
                     clean.info.clear()
                 clean.save(folder / name)
                 cleanup_prompt_output(job, record)
-            hand_report = None
-            if options["hand_detail"]:
-                from .hand_detail import enhance
-                def save_hand_state(report):
-                    saved = copy.deepcopy(report)
-                    saved["base_file"] = f"{bid}/" + saved["base_file"]
-                    batch["active_hand_detail"] = saved
-                    batch["active_candidate"]["hand_detail"] = saved
-                    persist()
-                detail_loras = [dict(lora, file=lora_files[lora_file_key(lora["file"])])
-                                for lora in global_loras]
-                hand_report = enhance(folder / name, checkpoint, cfg, seed, detail_loras, update,
-                                      on_state=save_hand_state)
-                hand_report["base_file"] = f"{bid}/" + hand_report["base_file"]
-                if hand_report["status"] == "uncertain":
-                    batch["submission_pending"] = True
-                    batch["active_hand_detail"] = hand_report
             batch["images"].append(
                 {
                     "id": f"{bid}-{i + 1}",
@@ -968,15 +779,12 @@ def run_batch(
                     "view_index": indices[i] + 1,
                     "positive": positive,
                     "negative": negative,
-                    **({"hand_detail": hand_report} if hand_report else {}),
                     "review": {"verdict": "pending"}
                     if review_required
                     else {"verdict": "unreviewed"},
                 }
             )
             persist()
-            e.need(not hand_report or hand_report["status"] != "uncertain",
-                   "手部增强任务状态未确认，已保存原图；请检查 ComfyUI 队列后再继续")
             update(
                 {
                     "message": f"已保存候选 {i + 1}/{count}",

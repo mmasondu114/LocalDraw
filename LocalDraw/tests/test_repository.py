@@ -8,7 +8,6 @@ from comic_workflow import engine as e
 from comic_workflow.repository import Repository
 from comic_workflow.paths import ROOT
 from comic_workflow.model import build_context
-from comic_workflow.sudowrite import package, import_result
 
 
 class RepositoryTests(unittest.TestCase):
@@ -168,16 +167,3 @@ class RepositoryTests(unittest.TestCase):
         ctx = build_context(self.p, "panel", "P002-K03", "")
         self.assertNotIn("pages", ctx)
         self.assertIn("start_state", ctx)
-
-    def test_sudowrite_preserves_invalid_source(self):
-        h = package(self.repo, self.pid, "panel", "P002-K03", "修改对白")
-        with self.assertRaises(ValueError):
-            import_result(self.repo, self.pid, h["id"], "只有散文")
-        self.assertEqual(
-            len(
-                list(
-                    (self.repo.folder(self.pid) / "sudowrite/responses").glob("*.json")
-                )
-            ),
-            1,
-        )

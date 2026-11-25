@@ -68,6 +68,11 @@ class DirectImportsTest(unittest.TestCase):
         preview = self.call("preview_direct_prompts", project=result["project"], document=prompt_doc)
         self.assertEqual(preview["mapped_from"], self.pid)
         self.assertEqual(preview["panels"][0]["panel_id"], export["panels"][0]["panel_id"])
+        legacy = {k: v for k, v in prompt_doc.items() if k != "avoid"}
+        row = prompt_doc["panels"][0]
+        legacy["panels"] = [{**row, "storyboard": {k: v for k, v in row["storyboard"].items()
+                                                   if k not in {"state_before", "state_after", "props"}}}]
+        self.assertEqual(self.call("preview_direct_prompts", project=result["project"], document=legacy)["mapped_from"], self.pid)
         prompt_doc["panels"][0]["storyboard"]["action"] += " changed"
         with self.assertRaisesRegex(ValueError, "摘要不匹配"):
             self.call("preview_direct_prompts", project=result["project"], document=prompt_doc)
@@ -145,6 +150,26 @@ class DirectImportsTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "重复"):
             self.call("preview_direct_prompts", document=[row, row])
 
+    def test_standalone_exchange_supplies_full_source_to_remote_and_local_prompts(self):
+        from comic_workflow.local_prompts import panel_context
+        original = "camera and scene details " * 6 + "\nThe coat is on the chair."
+        args = {"project": "", "document": [{"positive": original, "negative": "animal tail"}, "looks up", "opens door"]}
+        preview = self.call("preview_direct_prompts", **args)
+        saved = self.call("save_direct_prompts", **args, confirm=True, import_key="d"*32, preview_hash=preview["preview_hash"])
+        doc = prompt_exchange.export_storyboard(self.repo, saved["project"])
+        row = doc["panels"][0]
+        self.assertLess(len(row["storyboard"]["action"]), len(original))
+        self.assertEqual(row["original_prompt"], args["document"][0])
+        self.assertEqual((row["positive"], row["negative"]), ("", ""))
+        self.assertEqual(panel_context(doc, 2)["earlier_actions"][0]["action"], original)
+
+    def test_positive_with_short_id_and_negative_alias_targets_the_requested_panel(self):
+        row = {"id": "P001-K02", "positive": "white shirt", "negative_prompt": "animal tail"}
+        preview = self.call("preview_direct_prompts", document=[row])
+        panel = preview["panels"][0]
+        self.assertEqual((panel["panel_id"], panel["positive"], panel["negative"]),
+                         ("P001-K02", "white shirt", "animal tail"))
+
     def test_fusion_uses_reviewed_order_and_never_overwrites_either_source(self):
         sources = []
         for key, prompts in [("a", ["A1", "A2"]), ("b", ["B1", "B2"])]:
@@ -203,7 +228,8 @@ class DirectImportsTest(unittest.TestCase):
     def test_negative_edits_preserve_import_and_survive_job_reload(self):
         ids = ["P001-K01", "P001-K02"]
         saved = self.save_prompts([{"panel_id": k, "positive": "rain", "negative": "  blur  "} for k in ids])
-        setup = {"common_negative": "watermark\ntext", "negative_by_panel": {ids[1]: ""}}
+        setup = {"common_negative": "watermark\ntext", "negative_by_panel": {ids[1]: ""},
+                 "positive_by_panel": {ids[1]: "rain, sailor dress"}}
         request = {**saved, "candidate_count": 1, "checkpoint": "test", "import_setup": setup}
         for edited in ("", "  extra hands  "):
             setup["negative_by_panel"][ids[1]] = edited
@@ -211,6 +237,8 @@ class DirectImportsTest(unittest.TestCase):
             with patch.object(prompt_exchange.comfyui, "run_batch", return_value={"id": "demo"}) as draw:
                 prompt_exchange.draw_imported(Mock(repo=self.repo), self.pid, frozen, lambda _: None, "run")
             negatives = [call.kwargs["prompt_override"]["negative"] for call in draw.call_args_list]
+            self.assertEqual([call.kwargs["prompt_override"]["positive"] for call in draw.call_args_list],
+                             ["rain", "rain, sailor dress"])
             self.assertEqual(negatives, ["  blur  \nwatermark\ntext", (edited + "\n" if edited else "") + "watermark\ntext"])
         original = prompt_exchange.load_import(self.repo, self.pid, saved["bundle"])
         self.assertEqual([row["negative"] for row in original["panels"]], ["  blur  "] * 2)
@@ -218,6 +246,22 @@ class DirectImportsTest(unittest.TestCase):
                         {"negative_by_panel": {ids[0]: None}}):
             with self.assertRaisesRegex(ValueError, "负面提示词"):
                 prompt_exchange.prepare_request(self.repo, self.pid, {**request, "import_setup": invalid})
+
+    def test_previous_panel_prefers_approved_candidate_and_freezes_on_resume(self):
+        source, target = "P001-K01", "P001-K02"
+        options = {"import_run": "this-run"}
+        index = {"batches": [{"panel_id": source, "render_options": options, "images": [{"id":"one"}, {"id":"two"}]}],
+                 "selections": {source: {"image": {"id": "two"}}}}
+        with patch.object(prompt_exchange.comfyui, "drawing_state", return_value=index), patch(
+            "comic_workflow.anima_consistency.freeze_reference", side_effect=lambda repo, pid, key: key
+        ):
+            def resolve():
+                return prompt_exchange.previous_panel_reference(self.repo, self.pid, "this-run", source, target)
+            self.assertEqual(resolve(), "two")
+            index["selections"][source]["image"]["id"] = "another-run"
+            self.assertEqual(resolve(), "one")
+            index["batches"].append({"panel_id": target, "render_options": {**options, "consistency_reference": {"source_image_id":"two"}}})
+            self.assertEqual(resolve(), {"source_image_id":"two"})
 
     def test_previous_panel_uses_this_runs_first_image_in_reading_order_and_on_resume(self):
         from PIL import Image

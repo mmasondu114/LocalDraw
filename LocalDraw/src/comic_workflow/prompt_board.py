@@ -18,7 +18,7 @@ def generate(app, request):
     e.need(isinstance(title, str) and 0 < len(title.strip()) <= 120, "请填写 1–120 字的标题")
     e.need(isinstance(idea, str) and len(idea) <= 20000, "故事构想最多 2 万字")
     source = {"title": title.strip(), "idea": idea.strip()}
-    panel = obj({"description": S, "aspect_ratio": enum("1:1", "2:3", "3:2", "16:9", "9:16")})
+    panel = obj({"description": S, "visual_state": {**S, "maxLength": 1200}, "aspect_ratio": enum("1:1", "2:3", "3:2", "16:9", "9:16")})
     schema = obj({"pages": arr(obj({"panels": {**arr(panel, 1), "maxItems": 9}}), 1)})
 
     def draft(update, jid):
@@ -28,6 +28,7 @@ def generate(app, request):
             "你是漫画分镜导演。根据作品标题和可选的故事构想创作完整的逐页分镜。仅有标题时自行构思短篇。"
             "遵守用户给出的剧情、页数和格数。未指定篇幅时用简洁的短篇。"
             "每格只画一个瞬间，description 写清景别、人物动作、构图、环境和必要对白，保持相邻格连贯。"
+            "首次交代或改变衣着、道具归属和位置时，visual_state 写格末仍生效的完整状态；没有变化填空字符串，由程序跨格跨页继承。description 只写镜头内可见的当前状态。"
             "按构图为每格选择 aspect_ratio。不要生成正负面绘图提示词。",
             source, schema, app.jobs.root.parent / "creative" / jid, update)
         rows = []
@@ -36,7 +37,7 @@ def generate(app, request):
                 description = panel["description"].strip()
                 e.need(description, "模型返回了空画格，请重新生成")
                 rows.append({"source": f"P{page_no:03}-K{number:02}", "description": description,
-                             "aspect_ratio": panel["aspect_ratio"]})
+                             "aspect_ratio": panel["aspect_ratio"], "visual_state": panel["visual_state"]})
         e.need(1 <= len(rows) <= 1000, "模型返回的分镜超出作品支持的范围，请缩短篇幅后重试")
         return {**source, "panels": rows}
 
@@ -90,7 +91,12 @@ def create(app, request):
         e.need(isinstance(desc, str) and desc.strip(), f"第 {i} 格缺少分镜内容")
         ratio = item.get("aspect_ratio", "3:2")
         validate_ratio(ratio)
-        rows.append({"source": f"P{page:03}-K{number:02}", "description": desc.strip(), "aspect_ratio": ratio})
+        row = {"source": f"P{page:03}-K{number:02}", "description": desc.strip(), "aspect_ratio": ratio}
+        if "visual_state" in item:
+            state = item["visual_state"]
+            e.need(isinstance(state, str) and len(state) <= 1200, f"第 {i} 格的 visual_state 须为 1200 字以内的文本")
+            row["visual_state"] = state
+        rows.append(row)
     with LOCK:
         return direct_imports.save_panel_work(app.repo, app.characters, rows, request.get("import_key"),
                                               title.strip(), e.digest([title.strip(), rows]), board=True)

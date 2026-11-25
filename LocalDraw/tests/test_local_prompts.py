@@ -37,13 +37,44 @@ class LocalPromptTests(unittest.TestCase):
         def check(prompt, context, schema, *args, **kwargs):
             result, metrics = self.response(prompt, context, schema)
             e.jsonschema.validate(result, schema)
-            for changed in ({'negative':'night, lights, lamps, all body parts, blood platelets'},
+            e.jsonschema.validate({**result, "negative": "animal tail, watermark"}, schema)
+            for changed in ({'negative': 'night, ' * 40}, {'negative': '中文'},
                             {'positive':'A lantern with Chinese text 中文'}):
                 with self.assertRaises(e.jsonschema.ValidationError):
                     e.jsonschema.validate({**result, **changed}, schema)
             return result, metrics
         with patch.object(lp.creative, 'structured', side_effect=check):
             self.run_draft()
+
+    def test_text_only_boards_supply_earlier_actions_without_future_events(self):
+        rows = [{"panel_id": str(i), "storyboard": {"characters": [], "description": "", "shot": "",
+                 "action": action, "state_before": {}}} for i, action in enumerate(
+                     ["hangs coat on chair", "looks up", "opens door", "puts coat back on"])]
+        context = lp.panel_context({"title": "Test", "panels": rows}, 2)
+        self.assertEqual(context["earlier_actions"], [{"panel_id": "0", "action": "hangs coat on chair"}])
+        self.assertEqual(context["previous_panel"]["action"], "looks up")
+        rows[2]["storyboard"]["state_before"] = {"clothing": "shirt"}
+        self.assertNotIn("earlier_actions", lp.panel_context({"title": "Test", "panels": rows}, 2))
+
+    def test_confirmed_state_and_exclusions_reach_independent_panel_requests(self):
+        project = self.repo.get(self.pid)
+        project["brief"]["avoid"] = ["动物尾巴"]
+        page = project["pages"]["P001"]
+        wearing = {"C001.clothing": "white shirt and jacket"}
+        removed = {"C001.clothing": "white shirt", "jacket.location": "chair"}
+        page["state_in"] = wearing
+        for panel in page["panels"]:
+            panel["state_after"] = removed
+        e.save(self.repo.folder(self.pid) / "project.json", project)
+        document = lp.export_storyboard(self.repo, self.pid)
+        context = lp.panel_context(document, len(page["panels"]) - 1)
+        board = context["current_panel"]["storyboard"]
+        self.assertEqual(context["avoid"], ["动物尾巴"])
+        self.assertEqual(document["panels"][0]["storyboard"]["state_before"], wearing)
+        self.assertEqual((board["state_before"], board["state_after"]), (removed, removed))
+        self.assertEqual(board["props"], page["panels"][-1]["props"])
+        drawing = model.build_context(project, "drawing_prompt", page["panels"][-1]["id"], "")
+        self.assertEqual(drawing["state_before"], removed)
 
     def test_gpu_draft_preserves_story_and_confirmed_import_until_review(self):
         previous = copy.deepcopy(self.doc)
@@ -84,10 +115,19 @@ class LocalPromptTests(unittest.TestCase):
         draft = lp.current_draft(self.repo, self.pid)["draft"]
         self.assertEqual(draft["completed"], 1)
         self.assertEqual(draft["status"], "failed")
+        # Resume a draft written before panel state was included in exports.
+        for row in draft["document"]["panels"]:
+            row["storyboard"].pop("state_before")
+        saved_prompt = draft["document"]["panels"][0]["positive"]
+        e.save(self.repo.folder(self.pid) / "local-prompts" / draft["id"] / "draft.json", draft)
         self.app.model.stop.assert_not_called()  # Jobs owns final idle release
         with patch.object(lp.creative, "structured", side_effect=self.response) as generate:
             self.run_draft()
         self.assertEqual(generate.call_count, len(self.doc["panels"]) - 1)
+        for call in generate.call_args_list:
+            self.assertIn("state_before", call.args[1]["current_panel"]["storyboard"])
+        resumed = lp.current_draft(self.repo, self.pid)["draft"]
+        self.assertEqual(resumed["document"]["panels"][0]["positive"], saved_prompt)
         self.assertIsNone(current_import(self.repo, self.pid)["bundle"])
 
     def test_load_failure_stale_story_and_invalid_output_never_apply(self):

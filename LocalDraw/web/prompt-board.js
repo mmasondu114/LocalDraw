@@ -73,7 +73,7 @@ function pastedBoardPrompt(text) {
       if(row.length!==1) throw Error("每次粘贴一格提示词。");
       row=row[0];
     }
-    const id=boardPanelId(row?.id || row?.panel_id), positive=row?.visual_prompt ?? row?.positive ?? row?.prompt;
+    const id=boardPanelId(row?.panel_id ?? row?.id), positive=row?.positive ?? row?.visual_prompt ?? row?.prompt;
     const negative=row?.negative ?? row?.negative_prompt ?? "";
     if(!id || typeof positive!=="string" || typeof negative!=="string") throw Error("需要页格编号和本格提示词，例如 id 和 visual_prompt。");
     return {id,positive,negative};

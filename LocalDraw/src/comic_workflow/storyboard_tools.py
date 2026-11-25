@@ -2,6 +2,7 @@
 
 import copy
 import json
+import re
 from jsonschema import ValidationError
 from . import engine as e
 from .model import generate
@@ -9,6 +10,66 @@ from .repository import LOCK, safe_id, stage_value
 from .task_control import checkpoint, TaskCancelled
 
 PAGE_INSTRUCTION = "保留原剧情和对白；每格单一瞬间，页面格子大小有变化。"
+
+
+def preserve_source_lettering(payload, source, characters):
+    page = copy.deepcopy(payload)
+    names = {c["name"].lstrip("/"): c["id"] for c in characters}
+    texts = []
+    for panel, block in zip(page["panels"], source["panels"], strict=True):
+        order = 0
+        for match in re.finditer(
+            r"(?m)^\s*\*\*([^*]+)\*\*([^：:\n]*)[：:]\s*(.+)$", block
+        ):
+            name, annotation, words = match.groups()
+            name = name.lstrip("/")
+            if name not in names and name not in ["音效", "旁白", "拟声"]:
+                continue
+            order += 1
+            kind = (
+                "dialogue"
+                if name in names
+                else "narration"
+                if name == "旁白"
+                else "sfx"
+            )
+            if kind == "sfx":
+                words = re.split(r"[（(]", words)[0].strip(" *")
+            else:
+                words = (
+                    words.strip()
+                    .removeprefix("“")
+                    .removesuffix("”")
+                    .removeprefix("「")
+                    .removesuffix("」")
+                )
+            old = next(
+                (
+                    t
+                    for t in page["lettering"]
+                    if t["panel_id"] == panel["id"] and t["order"] == order
+                ),
+                {},
+            )
+            position = old.get(
+                "bubble_position", "上方留白，按阅读顺序排列，不遮挡人物"
+            )
+            annotation = annotation.strip()
+            if annotation and annotation not in position:
+                position += "；" + annotation
+            texts.append(
+                {
+                    "id": f"{panel['id']}-T{order:02}",
+                    "panel_id": panel["id"],
+                    "kind": kind,
+                    "speaker_id": names.get(name),
+                    "text": words,
+                    "bubble_position": position,
+                    "order": order,
+                }
+            )
+    page["lettering"] = texts
+    return page
 
 
 def load_checkpoint(repo, pid, request):
@@ -158,8 +219,6 @@ def generate_all(app, pid, request, update, jid):
                 emit,
             )
             if p.get("script_pages", {}).get(key):
-                from .automatic import preserve_source_lettering
-
                 payload = preserve_source_lettering(
                     payload, p["script_pages"][key], p["canon"]["characters"]
                 )

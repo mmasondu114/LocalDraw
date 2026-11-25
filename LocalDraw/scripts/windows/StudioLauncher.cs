@@ -207,6 +207,7 @@ internal sealed class StudioWindow : Form
         status.Text = "本地漫画工作室\n\n正在准备你的创作空间…";
         try
         {
+            Task<string> serverTask = smoke ? null : Task.Run(() => StudioLauncher.StartServer());
             if (view.CoreWebView2 == null)
             {
                 CoreWebView2Environment.SetLoaderDllFolderPath(StudioLauncher.SdkPath);
@@ -246,7 +247,7 @@ internal sealed class StudioWindow : Form
                 };
             }
             if (smoke) { view.NavigateToString("<!doctype html><title>LocalDraw desktop test</title><h1>Local Draw</h1>"); return; }
-            string url = await Task.Run(() => StudioLauncher.StartServer());
+            string url = await serverTask;
             if (IsDisposed) return;
             origin = new Uri(url);
             view.CoreWebView2.Navigate(url);

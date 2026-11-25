@@ -45,9 +45,7 @@ class ManualDrawingTests(unittest.TestCase):
     def test_default_two_literal_candidates_no_model_no_review_no_retry(self):
         frozen = manual.prepare_request(self.repo,self.pid,self.confirmed())
         self.assertEqual(frozen["candidate_count"],2)
-        with patch.object(comfyui,"run_batch",side_effect=ValueError("render failed")) as draw, \
-             patch("comic_workflow.creative.review_image") as review, \
-             patch("comic_workflow.drawing_tools.prepare") as rewrite:
+        with patch.object(comfyui,"run_batch",side_effect=ValueError("render failed")) as draw:
             result = exchange.draw_imported(self.app,self.pid,frozen,lambda _:None,"run")
         self.assertEqual(draw.call_count,2)
         self.assertEqual(len(result["errors"]),2)
@@ -55,7 +53,7 @@ class ManualDrawingTests(unittest.TestCase):
             self.assertEqual(call.kwargs["prompt_override"]["positive"],self.p["drawing_prompts"][self.panel["id"]]["payload"]["positive"])
             self.assertFalse(call.kwargs["review_required"])
             self.assertTrue(call.kwargs["render_options"]["direct_prompt"])
-        review.assert_not_called();rewrite.assert_not_called();self.app.prepare_language.assert_not_called()
+        self.app.prepare_language.assert_not_called()
         self.app.model.start.assert_not_called()
         self.assertEqual(self.repo.get(self.pid),self.p)
 
