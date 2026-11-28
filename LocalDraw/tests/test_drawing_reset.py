@@ -6,7 +6,7 @@ from unittest.mock import patch
 from comic_workflow import comfyui, engine as e, manual_drawing
 from comic_workflow.jobs import Jobs
 from comic_workflow.repository import Repository
-from comic_workflow.server import Application
+from comic_workflow.app_core import StudioApp as Application
 
 
 class DrawingResetTests(unittest.TestCase):

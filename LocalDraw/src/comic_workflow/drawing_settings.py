@@ -85,11 +85,7 @@ def loras_for_panel(value, project, panel, *, labels=None):
         matched = targets(owner, project, panel)
         scope = "story" if matched is None else "characters"
         matches = bool(matched)
-        chosen = (
-            (matches or (item["selected"] and scope == "story"))
-            if value["mode"] == "characters"
-            else item["selected"] and (scope == "story" or matches)
-        )
+        chosen = bool(item["selected"]) or (value["mode"] == "characters" and matches)
         if chosen:
             result.append(
                 {

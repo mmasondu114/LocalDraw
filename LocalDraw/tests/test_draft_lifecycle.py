@@ -6,7 +6,7 @@ from unittest.mock import ANY, Mock, patch
 from comic_workflow import engine as e
 from comic_workflow.model import GENERATION_LOCK
 from comic_workflow.repository import Repository
-from comic_workflow.server import Application
+from comic_workflow.app_core import StudioApp as Application
 
 
 class DraftLifecycleTests(unittest.TestCase):
@@ -24,11 +24,11 @@ class DraftLifecycleTests(unittest.TestCase):
             result = {"profile": {"name": "测试角色"}, "metrics": {"seconds": 1}}
             with (
                 patch("comic_workflow.jobs.DATA", root),
-                patch("comic_workflow.server.DATA", root),
-                patch("comic_workflow.server.ModelManager", return_value=model),
+                patch("comic_workflow.app_core.DATA", root),
+                patch("comic_workflow.app_core.ModelManager", return_value=model),
                 patch.object(Application, "prepare_language") as prepare,
                 patch(
-                    f"comic_workflow.server.creative.{action}", return_value=result
+                    f"comic_workflow.app_core.creative.{action}", return_value=result
                 ) as generate,
                 patch("comic_workflow.jobs.threading.Thread") as thread,
             ):
@@ -46,7 +46,7 @@ class DraftLifecycleTests(unittest.TestCase):
                         events.append("save")
                     original_save(path, value)
 
-                with patch("comic_workflow.server.e.save", side_effect=save):
+                with patch("comic_workflow.app_core.e.save", side_effect=save):
                     jid = app.action({"action": action, "mode": mode})["job"]
                     # Run the real Jobs worker synchronously so cleanup and lock
                     # release are complete before inspecting the final job.

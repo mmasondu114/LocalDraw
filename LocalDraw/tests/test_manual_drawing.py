@@ -7,7 +7,7 @@ from unittest.mock import Mock, patch
 from comic_workflow import engine as e, comfyui, manual_drawing as manual, prompt_exchange as exchange
 from comic_workflow.character_binding import identity_hash
 from comic_workflow.repository import Repository
-from comic_workflow.server import Application
+from comic_workflow.app_core import StudioApp as Application
 
 
 class ManualDrawingTests(unittest.TestCase):

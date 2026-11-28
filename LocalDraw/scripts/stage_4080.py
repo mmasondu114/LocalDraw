@@ -47,8 +47,9 @@ for source in [gpu, overlay]:
 # Add only the app's dependencies missing from the drawing environment.
 from importlib.metadata import Distribution
 app_lib = SOURCE / ".venv/Lib/site-packages"
-for name in ('attrs','jsonschema','jsonschema-specifications','referencing','rpds-py','typing_extensions','Pillow','websocket-client','pypinyin','fontTools'):
-    dist = next(d for d in Distribution.discover(path=[str(app_lib)]) if d.metadata['Name'].lower().replace('_','-')==name.lower().replace('_','-'))
+for name in ('attrs','jsonschema','jsonschema-specifications','referencing','rpds-py','typing_extensions','Pillow','websocket-client','pypinyin','fontTools','shiboken6','PySide6','PySide6-Essentials','PySide6-Addons'):
+    dist = next((d for d in Distribution.discover(path=[str(app_lib)]) if d.metadata['Name'].lower().replace('_','-')==name.lower().replace('_','-')), None)
+    if dist is None: continue
     for f in dist.files or []:
         if '..' in f.parts or '__pycache__' in f.parts or f.suffix=='.pyc': continue
         target = LIB/f
@@ -64,12 +65,13 @@ for pattern in ('llama-server.exe','llama-server-impl.dll','llama.dll','llama-co
     for f in (SOURCE/'runtime').glob(pattern): shutil.copy2(f,OUT/'runtime'/f.name)
 for folder in ('ComfyUI-KreaMoss','custom_nodes'):
     copy_tree(APP/'runtime'/folder,OUT/'runtime'/folder)
-for folder in ('web','src','schemas','workflows','comfy_nodes','config'):
+for folder in ('src','schemas','workflows','comfy_nodes','config'):
     copy_tree(APP/folder,OUT/folder)
 (OUT/'scripts').mkdir()
 for name in ('copy_prompt_images.ps1','detect_hands.py','comfy_person_mask_node.py','comfy_anime_mask.py','comfy_gpu_hooks_node.py',
-             'desktop_update.py','desktop_release.py','refresh_wardrobe.py','restart_studio_listener.ps1'):
-    shutil.copy2(APP/'scripts'/name, OUT/'scripts'/name)
+             'desktop_release.py'):
+    if (APP/'scripts'/name).is_file():
+        shutil.copy2(APP/'scripts'/name, OUT/'scripts'/name)
 copy_tree(APP/'scripts/vendor/anime_seg', OUT/'scripts/vendor/anime_seg')
 for file in ('LocalDraw.exe','LocalDraw.exe.config','launch.py','start_studio.py'):
     shutil.copy2(APP/file,OUT/file)

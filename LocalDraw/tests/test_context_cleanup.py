@@ -6,7 +6,7 @@ from pathlib import Path
 from unittest.mock import Mock, patch
 from comic_workflow.model import ModelManager, GENERATION_LOCK
 from comic_workflow.jobs import Jobs
-from comic_workflow.server import Application
+from comic_workflow.app_core import StudioApp as Application
 
 class ContextCleanupTests(unittest.TestCase):
     def test_llama_erases_context_but_keeps_weights_loaded(self):
@@ -72,7 +72,7 @@ class ContextCleanupTests(unittest.TestCase):
             self.assertEqual(label,'启动分析模型');work(Mock(),'start');return 'job'
         app.jobs.submit.side_effect=submit
         app.model.start.side_effect=lambda **kw:observed.append(settings())
-        with patch('comic_workflow.server.comfyui.discover',return_value={'ready':False}):
+        with patch('comic_workflow.app_core.comfyui.discover',return_value={'ready':False}):
             app.action({'action':'start_model'})
         self.assertEqual(observed[0]['model_backend'],'strata')
         self.assertIn('flash-next',observed[0]['model_name'])

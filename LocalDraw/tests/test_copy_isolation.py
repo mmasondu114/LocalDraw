@@ -6,17 +6,16 @@ from tempfile import TemporaryDirectory
 from unittest import TestCase
 from unittest.mock import MagicMock, Mock, patch
 
-from comic_workflow import comfyui, startup
+from comic_workflow import comfyui
 from comic_workflow.installed_assets import models
+from comic_workflow.paths import ROOT
 
 
 class CopyIsolationTests(TestCase):
-    def test_only_reuse_our_studio(self):
-        with patch.object(startup.urllib.request, "build_opener") as opener:
-            for workspace, expected in [(str(startup.ROOT), True), ("other", False), (None, False)]:
-                response = io.BytesIO(json.dumps({"token": "fixture", "workspace": workspace}).encode())
-                opener.return_value.open.return_value = response
-                self.assertEqual(startup.ready("http://127.0.0.1:18765"), expected)
+    def test_native_app_has_no_web_or_http_server(self):
+        self.assertFalse((ROOT / "web").exists())
+        self.assertFalse((ROOT / "src/comic_workflow/server.py").exists())
+        self.assertFalse((ROOT / "src/comic_workflow/startup.py").exists())
 
     def test_foreign_comfy_never_receives_free(self):
         cfg = {"endpoint": "http://127.0.0.1:18188", "private_service": True}

@@ -7,7 +7,7 @@ import copy
 from . import engine as e
 from .model import GENERATION_LOCK
 from .paths import DATA
-from .repository import safe_id
+from .repository import PROMPT_WORKSPACE_ID, safe_id
 from .task_control import local, TaskCancelled
 
 
@@ -26,7 +26,7 @@ class Jobs:
                 resumable = bool(j.get("request")) and j["status"] != "cancelling"
                 j.update(
                     status="paused" if resumable else "interrupted",
-                    message="服务重启，任务已暂停；点击继续可复用已保存结果" if resumable else "上次应用关闭，任务中断；已确认内容未改变",
+                    message="已暂停" if resumable else "已中断",
                 )
                 e.save(f, j)
 
@@ -103,7 +103,7 @@ class Jobs:
                 live["condition"].notify_all()
                 return {"job": jid, "status": current["status"]}
             if job["status"] == "interrupted" and command == "cancel":
-                job.update(status="cancelled", message="任务已结束，已有图片、剧本和选图均已保留", finished_at=time.time())
+                job.update(status="cancelled", message="已取消", finished_at=time.time())
                 self.save(jid, job)
                 return {"job": jid, "status": "cancelled"}
             e.need(job["status"] == ("failed" if command == "retry" else "paused"),
@@ -111,14 +111,14 @@ class Jobs:
             if command == "pause":
                 return {"job": jid, "status": "paused"}
             if command == "cancel":
-                job.update(status="cancelled", message="已取消，已有图片和选图均已保留", finished_at=time.time())
+                job.update(status="cancelled", message="已取消", finished_at=time.time())
                 self.save(jid, job)
                 return {"job": jid, "status": "cancelled"}
             e.need(job.get("request") and resume_fn, "此任务无法直接恢复，请重新发起")
             request = {**job["request"], "resume_existing": True} if command == "retry" else job["request"]
             new_id = self.submit(job["label"], resume_fn, job["project"], request=request, resume_of=jid, initial_progress=job.get("progress"))
             job.update(status="resumed", resumed_as=new_id,
-                       message="已重新生成出错部分，复用已保存页面" if command == "retry" else "已继续，复用已有结果")
+                       message="已重试" if command == "retry" else "已继续")
             self.save(jid, job)
             return {"job": new_id, "status": "running"}
 
@@ -132,7 +132,7 @@ class Jobs:
         jid = uuid.uuid4().hex
         job = {
             "id": jid,
-            "transient": transient or bool(pid and pid.startswith("tmp-")),
+            "transient": transient or bool(pid and (pid.startswith("tmp-") or pid == PROMPT_WORKSPACE_ID)),
             "project": pid,
             "label": label,
             "status": "running",
@@ -172,7 +172,7 @@ class Jobs:
                         job["pause_warning"] = warning
                         job["message"] = "已暂停；模型释放未完成：" + warning
                     elif self.on_pause:
-                        job["message"] = "已暂停，模型已释放；继续时自动加载"
+                        job["message"] = "已暂停"
                     while control["command"] == "pause":
                         job["status"] = "paused"
                         job["eta"] = None
@@ -235,7 +235,7 @@ class Jobs:
             except TaskCancelled:
                 with self.lock:
                     job.update(status="cancelled", finished_at=time.time())
-                update("已取消，已有图片、剧本和选图均已保留")
+                update("已取消")
             except Exception as exc:
                 with self.lock:
                     job["status"] = "failed"

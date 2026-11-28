@@ -362,9 +362,18 @@ def draw_imported(app, pid, request, update, jid):
             if pending.get("status") in {"running", "uncertain"}:
                 recovered = recover_batch(repo, pid, pending)
                 e.need(recovered["status"] not in {"running", "uncertain"}, "之前的出图尚未确认结束，暂不提交新的图片")
+        from .lora_inspection import insert_trigger_phrase, resolve_lora_trigger
+        lora_labels = comfyui.lora_labels()
         for index, row in enumerate(rows):
             chain_reference = None
-            row = {**row, "negative": effective_negative(row, request), "positive": effective_positive(row, request)}
+            panel_loras = copy.deepcopy(request.get("loras_by_panel", {}).get(row["panel_id"], []))
+            pos_text = effective_positive(row, request)
+            for item in panel_loras:
+                trig = str(item.get("trigger_words") or "").strip() or resolve_lora_trigger(item.get("file", ""), lora_labels)
+                if trig:
+                    item["trigger_words"] = trig
+                    pos_text, _ = insert_trigger_phrase(pos_text, trig)
+            row = {**row, "negative": effective_negative(row, request), "positive": pos_text}
             handled = set()
             while True:
                 check()
@@ -378,7 +387,6 @@ def draw_imported(app, pid, request, update, jid):
                 if slot in request.get('retired_candidate_slots_by_panel', {}).get(row['panel_id'], []):
                     handled.add(slot)
                     done += 1
-                    emit('保留之前已结束的候选记录，不占本次新增数量')
                     continue
                 previous = [b for b in comfyui.drawing_state(repo, pid)["batches"]
                             if b.get("render_options", {}).get("import_run") == request["run_key"]
@@ -422,7 +430,7 @@ def draw_imported(app, pid, request, update, jid):
                 emit(f"按导入原文绘制 {row['panel_id']} · {slots.index(slot) + 1}/{len(slots)}")
                 try:
                     batch = comfyui.run_batch(repo, pid, row["panel_id"], emit, request["checkpoint"], 1,
-                        "seeds", copy.deepcopy(request.get("loras_by_panel", {}).get(row["panel_id"], [])),
+                        "seeds", copy.deepcopy(panel_loras),
                         [slot], review_required=False, render_options=options, prompt_override=row)
                     report["batches"].append(batch["id"])
                 except Exception as exc:
@@ -434,7 +442,11 @@ def draw_imported(app, pid, request, update, jid):
                 handled.add(slot)
                 e.save(path, report)
                 emit("当前结果已保存")
-        report["completion_message"] = f"按原文出图结束：已处理 {done} 张，失败 {len(report['errors'])} 张；由你选图，不自动审核或补画。"
+        report["completion_message"] = (
+            f"完成 {done} 张，失败 {len(report['errors'])} 张"
+            if report["errors"]
+            else f"已完成 {done} 张"
+        )
         return report
     finally:
         e.save(path, report)

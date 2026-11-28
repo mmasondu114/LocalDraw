@@ -8,7 +8,7 @@ from unittest.mock import Mock, patch
 from comic_workflow import engine as e, local_prompts as lp, model
 from comic_workflow.repository import Repository
 from comic_workflow.prompt_exchange import current_import, preview, save_import
-from comic_workflow.server import Application
+from comic_workflow.app_core import StudioApp as Application
 from comic_workflow.task_control import TaskCancelled
 
 
@@ -207,8 +207,8 @@ class GpuLifecycleTests(unittest.TestCase):
         app.comfy.process.poll.return_value = None
         events = Mock()
         events.attach_mock(app.model.start, "start")
-        with patch("comic_workflow.server.comfyui.discover", return_value={"ready": True}), \
-             patch("comic_workflow.server.comfyui.api", return_value={"queue_running": [], "queue_pending": []}) as api:
+        with patch("comic_workflow.app_core.comfyui.discover", return_value={"ready": True}), \
+             patch("comic_workflow.app_core.comfyui.api", return_value={"queue_running": [], "queue_pending": []}) as api:
             events.attach_mock(api, "api")
             update = Mock()
             app.prepare_language(update=update)
@@ -219,8 +219,8 @@ class GpuLifecycleTests(unittest.TestCase):
     def test_preparation_does_not_load_qwen_while_drawing_is_busy(self):
         app = Application.__new__(Application)
         app.model = Mock()
-        with patch("comic_workflow.server.comfyui.discover", return_value={"ready": True}), \
-             patch("comic_workflow.server.comfyui.api", return_value={"queue_running": ["active"], "queue_pending": []}) as api:
+        with patch("comic_workflow.app_core.comfyui.discover", return_value={"ready": True}), \
+             patch("comic_workflow.app_core.comfyui.api", return_value={"queue_running": ["active"], "queue_pending": []}) as api:
             with self.assertRaises(ValueError):
                 app.prepare_language()
             api.assert_called_once_with("/queue")

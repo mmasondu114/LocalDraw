@@ -62,7 +62,7 @@ class QuickSampleTests(unittest.TestCase):
             self.assertEqual(call.kwargs["render_options"]["resolution"], "1536")
 
     def test_queued_prompt_is_durable_and_retry_reuses_successful_images(self):
-        from comic_workflow.server import Application
+        from comic_workflow.app_core import StudioApp as Application
         from comic_workflow.night_queue import NightQueue
         app = Application.__new__(Application)
         app.repo = self.repo
@@ -308,6 +308,20 @@ class QuickSampleTests(unittest.TestCase):
             for call in render.call_args_list:
                 self.assertEqual(call.args[7],saved)
             app.prepare_language.assert_not_called(); app.model.start.assert_not_called()
+
+    def test_checked_character_bound_lora_survives_without_selected_character(self):
+        lora_file = "sdxl/character_bound.safetensors"
+        self.req["loras"] = [{"file": lora_file, "weight": 0.8}]
+        self.req["characters"] = []
+        info = {lora_file: {"structurally_compatible": True}}
+        labels = {lora_file: {"name": "绑定角色", "character_id": "saved-char-id", "character": "可露希尔"}}
+        with patch.object(comfyui, "discover", return_value={"checkpoints": [self.model], "loras": [lora_file]}), \
+             patch("comic_workflow.lora_inspection.inspect_local", return_value=info), \
+             patch.object(comfyui, "lora_labels", return_value=labels):
+            pid = self.create()
+            saved = self.repo.get(pid)["prompt_input"]["loras"]
+        self.assertEqual([l["file"] for l in saved], [lora_file])
+        self.assertEqual(saved[0]["weight"], 0.8)
 
     def test_invalid_loras_rejected_before_project_or_gpu_creation(self):
         discovery={"checkpoints":[self.model],"loras":["good","bad","unknown"]}

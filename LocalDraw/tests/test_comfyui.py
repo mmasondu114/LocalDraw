@@ -388,3 +388,56 @@ class DrawingTests(unittest.TestCase):
         unknown = comfyui.drawing_state(self.repo, self.pid)["batches"][-1]
         self.assertEqual(unknown["status"], "uncertain")
         self.assertEqual(unknown["candidate_indices"], [15])
+
+    def test_direct_prompt_silently_injects_lora_triggers_and_preserves_user_positive(self):
+        self.prompts = []
+        buf = io.BytesIO()
+        Image.new("RGB", (32, 32), "white").save(buf, format="PNG")
+        raw = buf.getvalue()
+
+        class Response:
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *_):
+                pass
+
+            def read(self, _):
+                return raw
+
+        class Opener:
+            def open(self, *_, **kwargs):
+                return Response()
+
+        file_a = "sdxl/closure.safetensors"
+        file_b = "sdxl/ink_style.safetensors"
+        loras = [
+            {"file": file_a, "weight": 0.7, "clip_weight": 0.7, "trigger_words": "closure_ark",
+             "compatible_checkpoint": "test.safetensors", "confirmed_compatibility": True},
+            {"file": file_b, "weight": 0.5, "clip_weight": 0.5, "trigger_words": "ink_wash",
+             "compatible_checkpoint": "test.safetensors", "confirmed_compatibility": True},
+        ]
+        proj = self.repo.get(self.pid)
+        proj["drawing_prompts"][self.target]["payload"]["positive"] = "sunlit workshop, warm light"
+        e.save(self.repo.folder(self.pid) / "project.json", proj)
+        with patch.object(comfyui, "discover", return_value={"ready": True, "checkpoints": ["test.safetensors"], "loras": [file_a, file_b]}), \
+             patch.object(comfyui, "api", self.mock_api), \
+             patch("urllib.request.build_opener", return_value=Opener()), \
+             patch("comic_workflow.telemetry.websocket.create_connection", side_effect=ConnectionError("offline")):
+            res = comfyui.run_batch(
+                self.repo, self.pid, self.target, lambda _: None, "test.safetensors", 1, "seeds", loras,
+                render_options={"direct_prompt": True},
+            )
+            self.assertEqual(self.prompts[-1]["2"]["inputs"]["text"], "closure_ark, ink_wash, sunlit workshop, warm light")
+            self.assertEqual(res["images"][0]["positive"], "closure_ark, ink_wash, sunlit workshop, warm light")
+            self.assertEqual(res["images"][0]["user_positive"], "sunlit workshop, warm light")
+
+            # Dedup when user manually places one trigger inside their prompt
+            proj["drawing_prompts"][self.target]["payload"]["positive"] = "closure_ark standing in sunlit workshop"
+            e.save(self.repo.folder(self.pid) / "project.json", proj)
+            res2 = comfyui.run_batch(
+                self.repo, self.pid, self.target, lambda _: None, "test.safetensors", 1, "seeds", loras,
+                render_options={"direct_prompt": True},
+            )
+            self.assertEqual(self.prompts[-1]["2"]["inputs"]["text"], "ink_wash, closure_ark standing in sunlit workshop")
+            self.assertEqual(res2["images"][0]["user_positive"], "closure_ark standing in sunlit workshop")

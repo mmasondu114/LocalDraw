@@ -10,7 +10,7 @@ from unittest.mock import Mock, patch
 from comic_workflow import engine as e
 from comic_workflow.jobs import Jobs
 from comic_workflow.repository import Repository
-from comic_workflow.server import Application
+from comic_workflow.app_core import StudioApp as Application
 from comic_workflow.storyboard_tools import generate_all, restore_jobs, PAGE_INSTRUCTION
 from comic_workflow.task_control import TaskCancelled
 

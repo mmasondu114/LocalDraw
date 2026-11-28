@@ -153,6 +153,104 @@ class PromptSessionTests(unittest.TestCase):
                 self.assertTrue(matches("anime/example.safetensors", checkpoint))
                 self.assertFalse(matches("sdxl/example.safetensors", checkpoint))
 
+    def test_prompt_workspace_persists_and_delete_cache_15_step_cap(self):
+        from comic_workflow import image_delete_cache as idc
+        from comic_workflow.repository import PROMPT_WORKSPACE_ID
+
+        with patch("comic_workflow.jobs.DATA", Path(self.tmp.name)):
+            jobs = Jobs()
+        app = SimpleNamespace(repo=self.repo, jobs=jobs)
+        ws_dir = self.repo.folder(PROMPT_WORKSPACE_ID)
+        e.save(ws_dir / "project.json", {"quick_sample": True, "transient": True, "prompt_input": {"text": "keep me"}})
+        self.assertTrue(self.repo.has_prompt_workspace())
+        self.assertEqual(self.repo.listing(), [])
+
+        # Populate 18 base images + 1 second-pass variant attached to img-18
+        imgs = []
+        for i in range(1, 19):
+            rel = f"b1/{i}.png"
+            p = ws_dir / "images" / rel
+            p.parent.mkdir(parents=True, exist_ok=True)
+            p.write_bytes(f"png-{i}".encode("utf-8"))
+            imgs.append({"id": f"img-{i}", "file": rel, "seed": i})
+        sp_rel = "sp1/1.png"
+        sp_path = ws_dir / "images" / sp_rel
+        sp_path.parent.mkdir(parents=True, exist_ok=True)
+        sp_path.write_bytes(b"sp-18")
+        e.save(
+            ws_dir / "images/index.json",
+            {
+                "batches": [
+                    {"id": "b1", "status": "done", "images": imgs},
+                    {
+                        "id": "sp1",
+                        "kind": "second_pass",
+                        "source_image_id": "img-18",
+                        "status": "done",
+                        "images": [{"id": "sp1-1", "file": sp_rel, "seed": 99}],
+                    },
+                ],
+                "selections": {},
+                "second_pass_applied": {"img-18": "sp1-1"},
+            },
+        )
+
+        # Workspace survives transient temp cleanup and fresh Repository re-open
+        self.repo._temporary.cleanup()
+        reopened = Repository(Path(self.tmp.name) / "projects")
+        self.addCleanup(reopened._temporary.cleanup)
+        self.assertTrue(reopened.has_prompt_workspace())
+        self.assertEqual(len(comfyui.drawing_state(reopened, PROMPT_WORKSPACE_ID)["batches"][0]["images"]), 18)
+        app = SimpleNamespace(repo=reopened, jobs=jobs)
+
+        # Delete 17 images (img-1 .. img-17); after 15 steps oldest cache entries are permanently deleted
+        entry_dirs = []
+        cache_dir = idc.cache_root(reopened)
+        for i in range(1, 18):
+            res = idc.delete_image(app, PROMPT_WORKSPACE_ID, f"img-{i}")
+            entry_dirs.append(cache_dir / res["cache_entry_id"])
+            self.assertFalse((ws_dir / f"images/b1/{i}.png").exists())
+            self.assertTrue((cache_dir / res["cache_entry_id"] / f"files/b1/{i}.png").is_file())
+            if i <= 15:
+                self.assertEqual(res["undo_depth"], i)
+                self.assertEqual(res["evicted"], 0)
+            else:
+                self.assertEqual(res["undo_depth"], 15)
+                self.assertEqual(res["evicted"], 1)
+
+        # Entries 1 and 2 (beyond 15 steps) must be permanently deleted from cache
+        self.assertFalse(entry_dirs[0].exists())
+        self.assertFalse(entry_dirs[1].exists())
+        for d in entry_dirs[2:]:
+            self.assertTrue(d.is_dir())
+
+        # Undo 15 times restores img-17 down to img-3; 16th undo reports nothing left
+        for expected_i in range(17, 2, -1):
+            undone = idc.undo_delete_image(app, PROMPT_WORKSPACE_ID)
+            self.assertTrue(undone["restored"])
+            self.assertEqual(undone["restored_image_id"], f"img-{expected_i}")
+            self.assertEqual((ws_dir / f"images/b1/{expected_i}.png").read_bytes(), f"png-{expected_i}".encode("utf-8"))
+        self.assertFalse(idc.undo_delete_image(app, PROMPT_WORKSPACE_ID)["restored"])
+        self.assertFalse((ws_dir / "images/b1/1.png").exists())
+        self.assertFalse((ws_dir / "images/b1/2.png").exists())
+
+        # Deleting base image with applied second-pass variant moves both in 1 step and restores both in 1 undo
+        res_group = idc.delete_image(app, PROMPT_WORKSPACE_ID, "img-18", delete_variants=True)
+        self.assertEqual(res_group["deleted_count"], 2)
+        self.assertFalse((ws_dir / "images/b1/18.png").exists())
+        self.assertFalse((ws_dir / "images/sp1/1.png").exists())
+        self.assertNotIn("img-18", comfyui.drawing_state(reopened, PROMPT_WORKSPACE_ID).get("second_pass_applied", {}))
+
+        undone_group = idc.undo_delete_image(app, PROMPT_WORKSPACE_ID)
+        self.assertTrue(undone_group["restored"])
+        self.assertEqual(undone_group["restored_count"], 2)
+        self.assertEqual((ws_dir / "images/b1/18.png").read_bytes(), b"png-18")
+        self.assertEqual((ws_dir / "images/sp1/1.png").read_bytes(), b"sp-18")
+        self.assertEqual(
+            comfyui.drawing_state(reopened, PROMPT_WORKSPACE_ID).get("second_pass_applied", {}).get("img-18"),
+            "sp1-1",
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

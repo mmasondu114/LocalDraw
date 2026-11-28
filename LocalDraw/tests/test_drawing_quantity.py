@@ -166,7 +166,7 @@ class PausedQuantityIntegrationTests(unittest.TestCase):
         self.assertTrue(all(slots == [0, 1, 2] for slots in restarted.get('restored')['request']['candidate_slots_by_panel'].values()))
 
     def test_restarted_worker_then_pause_and_change_uses_authoritative_request(self):
-        from comic_workflow.server import Application
+        from comic_workflow.app_core import StudioApp as Application
         self.request['candidate_count'] = 8
         self.jobs.save('restored', {'id':'restored', 'project':self.pid, 'label':'draw',
             'created':'1', 'status':'paused', 'request':self.request})

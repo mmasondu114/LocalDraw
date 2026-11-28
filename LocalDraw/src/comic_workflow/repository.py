@@ -15,6 +15,7 @@ from .paths import PROJECTS, ROOT
 
 LOCK = threading.RLock()
 STAGES = ["brief", "canon", "options", "outline", "plan", "page", "audit"]
+PROMPT_WORKSPACE_ID = "prompt-workspace"
 
 
 def safe_id(value):
@@ -78,7 +79,15 @@ class Repository:
                 shutil.rmtree(path)
             self.transient_ids.discard(pid)
 
+    def prompt_workspace_dir(self):
+        return self.root.parent / "prompt-workspace"
+
+    def has_prompt_workspace(self):
+        return (self.prompt_workspace_dir() / "project.json").is_file()
+
     def folder(self, pid):
+        if pid == PROMPT_WORKSPACE_ID:
+            return self.prompt_workspace_dir()
         if isinstance(pid, str) and pid.startswith("tmp-"):
             e.need(pid in self.transient_ids, "临时出图已结束，请重新输入提示词")
             return self.transient_root / safe_id(pid)
@@ -132,7 +141,7 @@ class Repository:
             ids = [safe_id(item.get("id")) for item in items]
             e.need(len(set(ids)) == len(ids), "作品列表重复")
             for pid, item in zip(ids, items):
-                e.need(not pid.startswith("tmp-"), "临时出图不属于作品库")
+                e.need(not pid.startswith("tmp-") and pid != PROMPT_WORKSPACE_ID, "临时出图不属于作品库")
                 e.need(e.digest(self.get(pid)) == item.get("base_hash"), "作品已变化，请刷新后再删除")
             records = []
             try:

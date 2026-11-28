@@ -160,7 +160,7 @@ class CreativeTests(unittest.TestCase):
 
     def test_simplified_storyboard_attaches_audit_without_silent_page_commit(self):
         import time
-        from comic_workflow.server import Application
+        from comic_workflow.app_core import StudioApp as Application
 
         p = self.repo.get(self.pid)
         audit = {
@@ -173,7 +173,7 @@ class CreativeTests(unittest.TestCase):
             patch("comic_workflow.jobs.DATA", self.root),
             patch.object(Application, "prepare_language"),
             patch(
-                "comic_workflow.server.generate",
+                "comic_workflow.app_core.generate",
                 side_effect=[(p["pages"]["P001"], {}), (audit, {})],
             ),
         ):

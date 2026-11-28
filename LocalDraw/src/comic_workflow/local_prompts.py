@@ -130,7 +130,7 @@ def generate_draft(app, pid, request, update, jid):
         draft.update(status="complete")
         e.save(path, draft)
         return {"draft_id": draft_id, "completed": len(rows),
-                "completion_message": "本地提示词已填写，请核对并确认使用；尚未出图"}
+                "completion_message": "提示词已填写"}
     except TaskCancelled:
         draft.update(status="cancelled")
         e.save(path, draft)

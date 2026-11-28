@@ -17,7 +17,7 @@ from . import engine as e
 from .model import request_json
 from .paths import ROOT, DATA, local_path
 from .repository import LOCK, safe_id
-from .processes import attach_exit_job, close_job, terminate_tree
+from .processes import AttachedProcess, attach_exit_job, close_job, find_listening_pid, is_pid_running, terminate_tree
 from .telemetry import ComfyProgress, emit
 from . import prompt_models
 
@@ -112,6 +112,7 @@ def discover(checkpoint=None, *, probe=True):
             "configured": config()["checkpoint"],
             "consistency_enabled": config().get("consistency_lora", False),
             "delta_matte_enabled": config().get("delta_matte_skin", True),
+            "krea2_abliterated_available": prompt_models.krea2_abliterated_available(),
         }
     except Exception as exc:
         return {
@@ -128,6 +129,7 @@ def discover(checkpoint=None, *, probe=True):
             "configured": config()["checkpoint"],
             "consistency_enabled": config().get("consistency_lora", False),
             "delta_matte_enabled": config().get("delta_matte_skin", True),
+            "krea2_abliterated_available": prompt_models.krea2_abliterated_available(),
             "error": str(exc) if probe else None,
             "lora_path_aliases": lora_path_aliases(),
             "lora_directory": directory(checkpoint or config()["checkpoint"]),
@@ -245,29 +247,144 @@ def graph(checkpoint, positive, negative, seed, cfg, loras=None):
 
 
 class ComfyManager:
-    def __init__(self):
+    def __init__(self, *, keep_alive=True, session_dir=None):
         self.process = None
         self.log = None
         self.job = None
+        self.keep_alive = keep_alive
+        self.last_used = 0.0
+        self.session_file = (Path(session_dir) if session_dir is not None else DATA) / "comfy-session.json"
+        if self.keep_alive and self.session_file.is_file():
+            self.attach_existing()
+
+    def is_running(self):
+        return self.process is not None and self.process.poll() is None
+
+    def save_session(self):
+        process = self.process
+        pid = getattr(process, "pid", None)
+        if not self.is_running() or not isinstance(pid, int) or pid <= 0:
+            return
+        cfg = config()
+        port = urllib.parse.urlparse(cfg["endpoint"]).port
+        e.save(
+            self.session_file,
+            {
+                "pid": pid,
+                "port": port,
+                "user_directory": str(DATA / "comfy-user"),
+                "preloaded_checkpoint": getattr(process, "preloaded_checkpoint", None),
+            },
+        )
+
+    def clear_session(self):
+        try:
+            self.session_file.unlink(missing_ok=True)
+        except OSError:
+            pass
+
+    @staticmethod
+    def _matches_own_marker(stats, marker):
+        argv = (stats or {}).get("system", {}).get("argv", [])
+        return (
+            "--user-directory" in argv
+            and argv[argv.index("--user-directory") + 1 : argv.index("--user-directory") + 2] == [marker]
+        )
+
+    def _validate_running_service(self, cfg):
+        stats = api("/system_stats")
+        e.need(
+            any(d.get("type") == "cuda" for d in stats.get("devices", [])),
+            "绘图服务未使用 CUDA 显卡，禁止回退到 CPU",
+        )
+        argv = stats.get("system", {}).get("argv", [])
+        if cfg.get("memory_mode") == "auto_cuda":
+            managed_preload = self.process is not None and "--disable-dynamic-vram" in argv
+            matching_memory = (
+                "--reserve-vram" in argv
+                and ("--disable-smart-memory" in argv or managed_preload)
+                and not any(flag in argv for flag in ("--cpu", "--gpu-only", "--highvram"))
+            )
+        else:
+            matching_memory = (
+                ("--highvram" in argv)
+                if cfg.get("memory_mode") == "staged_cuda"
+                else ("--gpu-only" in argv)
+            )
+        e.need(
+            matching_memory,
+            "现有绘图服务的显存模式与配置不一致，请重启绘图服务；推理必须使用 CUDA",
+        )
+        self.last_used = time.monotonic()
+
+    def _adopt_orphaned_own_service(self, cfg, port):
+        """Re-attach to this copy's own running ComfyUI if session file was lost or stale."""
+        global _private_process, _verified_process
+        marker = str(DATA / "comfy-user")
+        try:
+            stats = request_json(cfg["endpoint"] + "/system_stats", timeout=2.0)
+        except Exception:
+            return False
+        if cfg.get("private_service") and not self._matches_own_marker(stats, marker):
+            return False
+        pid = find_listening_pid(port)
+        if not pid or not is_pid_running(pid):
+            return False
+        attached = AttachedProcess(pid, preloaded_checkpoint=None)
+        self.process = attached
+        _private_process = attached
+        _verified_process = attached
+        self.last_used = time.monotonic()
+        if self.keep_alive:
+            self.save_session()
+        return True
+
+    def attach_existing(self):
+        global _private_process, _verified_process
+        if self.is_running():
+            return True
+        if not self.session_file.is_file():
+            return False
+        pid = 0
+        try:
+            saved = e.read(self.session_file)
+            pid = int(saved.get("pid") or 0)
+            cfg = config()
+            port = urllib.parse.urlparse(cfg["endpoint"]).port
+            marker = str(DATA / "comfy-user")
+            if (
+                pid <= 0
+                or saved.get("port") != port
+                or saved.get("user_directory") != marker
+                or not is_pid_running(pid)
+            ):
+                self.clear_session()
+                return False
+            stats = request_json(cfg["endpoint"] + "/system_stats", timeout=1.5)
+            if cfg.get("private_service") and not self._matches_own_marker(stats, marker):
+                self.clear_session()
+                return False
+            attached = AttachedProcess(pid, preloaded_checkpoint=saved.get("preloaded_checkpoint"))
+            self.process = attached
+            _private_process = attached
+            _verified_process = attached
+            self.last_used = time.monotonic()
+            return True
+        except Exception:
+            # Keep session file if the recorded PID is still alive (e.g. transient busy timeout).
+            if not (pid > 0 and is_pid_running(pid)):
+                self.clear_session()
+            return False
 
     def start(self, runtime_options=None):
         global _private_process
-        if runtime_options and self.preloaded:
-            self.shutdown()  # A specialized drawing may require a different node whitelist.
+        if self.process is None and self.keep_alive and self.session_file.is_file():
+            self.attach_existing()
+        if runtime_options and (self.preloaded or self.is_running()):
+            self.shutdown()  # A specialized drawing may require a different node whitelist or flags.
         cfg = {**config(), **(runtime_options or {})}
         if discover()["ready"]:
-            stats = api("/system_stats")
-            e.need(any(d.get("type") == "cuda" for d in stats.get("devices", [])),
-                   "绘图服务未使用 CUDA 显卡，禁止回退到 CPU")
-            argv = stats.get('system', {}).get('argv', [])
-            if cfg.get('memory_mode') == 'auto_cuda':
-                managed_preload = self.process is not None and '--disable-dynamic-vram' in argv
-                matching_memory = ('--reserve-vram' in argv and ('--disable-smart-memory' in argv or managed_preload)
-                                   and not any(flag in argv for flag in ('--cpu', '--gpu-only', '--highvram')))
-            else:
-                matching_memory = ('--highvram' in argv) if cfg.get('memory_mode') == 'staged_cuda' else ('--gpu-only' in argv)
-            e.need(matching_memory,
-                   '现有绘图服务的显存模式与配置不一致，请重启绘图服务；推理必须使用 CUDA')
+            self._validate_running_service(cfg)
             return
         port = urllib.parse.urlparse(cfg["endpoint"]).port
         if cfg.get("private_service"):
@@ -279,6 +396,9 @@ class ComfyManager:
                 try:
                     probe.bind(("127.0.0.1", port))
                 except OSError as exc:
+                    if not runtime_options and self._adopt_orphaned_own_service(cfg, port):
+                        self._validate_running_service(cfg)
+                        return
                     raise ValueError("副本绘图端口已被占用，已保留原有服务") from exc
         source = local_path(cfg["source_directory"])
         python = local_path(cfg["python_path"])
@@ -343,15 +463,18 @@ class ComfyManager:
         e.need(storage in ('fp16','fp8_e4m3fn'),'绘图模型的显存存储设置无效')
         if storage=='fp8_e4m3fn': args.append('--fp8_e4m3fn-unet')
         e.save(DATA / "logs/comfy-command.json", args)
+        creation_flags = getattr(subprocess, "CREATE_NO_WINDOW", 0)
+        if self.keep_alive:
+            creation_flags |= getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0)
         self.process = subprocess.Popen(
             args,
             cwd=source,
             stdout=self.log,
             stderr=subprocess.STDOUT,
-            creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
+            creationflags=creation_flags,
         )
         _private_process = self.process
-        self.job = attach_exit_job(self.process)
+        self.job = None if self.keep_alive else attach_exit_job(self.process)
         deadline = time.monotonic() + 180
         while time.monotonic() < deadline:
             e.need(
@@ -359,13 +482,17 @@ class ComfyManager:
                 "ComfyUI 启动失败，详情见 data/logs/comfyui.log",
             )
             if discover()["ready"]:
+                self.last_used = time.monotonic()
+                if self.keep_alive:
+                    self.save_session()
                 return
             time.sleep(1)
-        self.stop()
+        self.shutdown()
         raise ValueError("ComfyUI 启动超时")
 
     def stop(self):
-        if not self.preloaded:
+        self.last_used = time.monotonic()
+        if not self.keep_alive and not self.preloaded:
             self.shutdown()
 
     @property
@@ -375,13 +502,40 @@ class ComfyManager:
             return getattr(process, "preloaded_checkpoint", None)
         return None
 
+    def detach(self):
+        """Release local handles while leaving the ComfyUI server alive across restarts."""
+        global _private_process, _verified_process
+        if self.is_running():
+            self.save_session()
+        if self.log:
+            try:
+                self.log.close()
+            except OSError:
+                pass
+            self.log = None
+        if _private_process is self.process:
+            _private_process = None
+        if _verified_process is self.process:
+            _verified_process = None
+        self.process = None
+
     def shutdown(self):
-        terminate_tree(self.process)
+        global _private_process, _verified_process
+        proc = self.process
+        terminate_tree(proc)
         close_job(self.job)
         self.job = None
         if self.log:
-            self.log.close()
+            try:
+                self.log.close()
+            except OSError:
+                pass
             self.log = None
+        self.clear_session()
+        if _private_process is proc:
+            _private_process = None
+        if _verified_process is proc:
+            _verified_process = None
         self.process = None
 
 
@@ -475,6 +629,9 @@ def run_batch(
     if "delta_matte_skin" in (render_options or {}):
         e.need(type(render_options["delta_matte_skin"]) is bool, "Invalid matte skin setting")
         cfg["delta_matte_skin"] = render_options["delta_matte_skin"]
+    if "krea2_abliterated_encoder" in (render_options or {}):
+        e.need(type(render_options["krea2_abliterated_encoder"]) is bool, "Invalid abliterated encoder setting")
+        cfg["krea2_abliterated_encoder"] = render_options["krea2_abliterated_encoder"]
     if (render_options or {}).get("direct_prompt"):
         cfg["literal_prompt"] = True
         if MODELS.get(checkpoint, (None, None))[1] == "krea2" and prompt["payload"]["negative"].strip():
@@ -507,8 +664,9 @@ def run_batch(
         lora_file_key(name): name for name in status.get("loras", [])
     }
     e.need(checkpoint in status["checkpoints"], "选定绘图权重未安装，请在模型下载中安装后再试")
-    loras = (copy.deepcopy(loras or []) if prompt_override is not None else
-             lora_binding.route(loras or [], p, panel, lora_labels(), prefs))
+    loras = (copy.deepcopy(loras or [])
+             if prompt_override is not None or (render_options or {}).get("direct_prompt")
+             else lora_binding.route(loras or [], p, panel, lora_labels(), prefs))
     e.need(
         isinstance(loras, list) and len(loras) <= lora_binding.MAX_LORAS, "最多同时使用五个已核对底模的 LoRA"
     )
@@ -651,12 +809,11 @@ def run_batch(
                 positive, negative, dialect = compile_prompt(positive, negative, checkpoint)
                 batch["prompt_adapter"] = dialect
                 batch["visual_plan"] = copy.deepcopy(prompt["payload"].get("visual_plan"))
-            if loras and not options.get("direct_prompt"):
-                positive = (
-                    ", ".join(l.get("trigger_words", "") for l in loras)
-                    + ", "
-                    + positive
-                )
+            user_positive = positive
+            if loras and not options.get("external_prompt") and not options.get("diagnostic"):
+                from .lora_inspection import apply_lora_triggers
+
+                positive = apply_lora_triggers(positive, loras)
             workflow = graph(checkpoint, positive, negative, seed, cfg, loras)
             from .delta_style import CHECKPOINT as DELTA_CHECKPOINT
             if checkpoint == DELTA_CHECKPOINT:
@@ -699,12 +856,22 @@ def run_batch(
                 "seed": seed,
                 "view_index": indices[i] + 1,
                 "positive": positive,
+                "user_positive": user_positive,
                 "negative": negative,
                 "review": {"verdict": "pending" if review_required else "unreviewed"},
             }
             persist()
             if _private_process and getattr(_private_process, "preloaded_checkpoint", None) != checkpoint:
                 _private_process.preloaded_checkpoint = None
+                session_path = DATA / "comfy-session.json"
+                if session_path.is_file():
+                    try:
+                        sess = e.read(session_path)
+                        if sess.get("pid") == getattr(_private_process, "pid", None) and sess.get("preloaded_checkpoint") is not None:
+                            sess["preloaded_checkpoint"] = None
+                            e.save(session_path, sess)
+                    except Exception:
+                        pass
             response = api("/prompt", {"prompt": workflow, "client_id": bid})
             batch["submission_pending"] = False
             e.need(
@@ -778,6 +945,7 @@ def run_batch(
                     "prompt_id": job,
                     "view_index": indices[i] + 1,
                     "positive": positive,
+                    "user_positive": user_positive,
                     "negative": negative,
                     "review": {"verdict": "pending"}
                     if review_required

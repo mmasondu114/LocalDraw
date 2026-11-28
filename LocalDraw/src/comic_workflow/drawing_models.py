@@ -12,13 +12,29 @@ def installed():
     return prompt_models.installed() + sorted(str(p.relative_to(directory)) for p in directory.rglob("*.safetensors"))
 
 
+def open_folder(checkpoint=None, root=None):
+    import os
+    if checkpoint is not None:
+        e.need(isinstance(checkpoint, str), "无效模型名称")
+    base = models(root or ROOT).resolve()
+    sub = "diffusion_models" if (not checkpoint or checkpoint in prompt_models.MODELS) else "checkpoints"
+    directory = (base / sub).resolve()
+    e.need(directory.is_relative_to(base), "无效模型目录")
+    directory.mkdir(parents=True, exist_ok=True)
+    os.startfile(str(directory))
+    return {"opened": str(directory)}
+
+
 def snapshot(app):
     with app.jobs.lock:
         active = next(iter(app.jobs.controls.values()), None)
         busy = active["job"]["message"] if active else None
     return {"models": [{"value": name, "label": prompt_models.MODELS[name][0] if name in prompt_models.MODELS else name}
                        for name in installed()],
-            "loaded": app.comfy.preloaded, "default": comfyui.config()["checkpoint"],
+            "loaded": app.comfy.preloaded,
+            "comfy_running": bool(getattr(app.comfy, "is_running", lambda: False)()),
+            "keep_alive": bool(getattr(app.comfy, "keep_alive", False)),
+            "default": comfyui.config()["checkpoint"],
             "busy": busy}
 
 
@@ -55,6 +71,8 @@ def preload(app, name, update, jid):
             submitted = comfyui.api("/prompt", {"prompt": graph, "client_id": jid})
             wait_for_load(submitted["prompt_id"])
             manager.process.preloaded_checkpoint = name
+            if hasattr(manager, "save_session"):
+                manager.save_session()
             check_task()  # Pausing frees weights. Warm them again when resumed.
     except BaseException:
         manager.shutdown()

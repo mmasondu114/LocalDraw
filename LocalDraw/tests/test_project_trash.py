@@ -8,7 +8,7 @@ from unittest.mock import patch
 from comic_workflow import engine as e
 from comic_workflow.model import GENERATION_LOCK
 from comic_workflow.repository import Repository
-from comic_workflow.server import Application
+from comic_workflow.app_core import StudioApp as Application
 
 
 class ProjectTrashTests(unittest.TestCase):

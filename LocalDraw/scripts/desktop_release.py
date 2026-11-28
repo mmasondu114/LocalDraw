@@ -17,8 +17,8 @@ from comic_workflow.paths import ROOT
 from comic_workflow.updates import VERSION, REPO
 
 STATE = ROOT / "data/desktop-updates"
-TREES = {"src", "web", "scripts", "schemas", "workflows", "comfy_nodes", "runtime", "config"}
-FILES = {"LocalDraw.exe", "LocalDraw.exe.config", "LocalDraw-Repair.cmd", "launch.py", "start_studio.py",
+TREES = {"src", "scripts", "schemas", "workflows", "comfy_nodes", "runtime", "config"}
+FILES = {"LocalDraw.exe", "LocalDraw.exe.config", "launch.py", "start_studio.py",
          "pyproject.toml", "README.md", "requirements.txt"}
 LOCAL_CONFIG = {"config/installed-runtime.json", "config/settings.json", "config/comfyui.json"}
 HIDDEN = getattr(subprocess, "CREATE_NO_WINDOW", 0)
@@ -224,7 +224,7 @@ def apply_pending(desktop_open):
             staged.parent.mkdir(parents=True, exist_ok=True)
             staged.write_bytes(content)
             changes.append((name, target.exists()))
-        if not {"src/comic_workflow/updates.py", "web/app.js", "launch.py"}.issubset(manifest):
+        if not {"src/comic_workflow/updates.py", "src/comic_workflow/app_core.py", "launch.py"}.issubset(manifest):
             raise ValueError("更新包缺少程序入口")
         backup = STATE / "backup"
         for name, existed in changes:

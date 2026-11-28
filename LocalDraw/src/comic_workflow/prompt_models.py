@@ -17,6 +17,17 @@ MODELS = {
 }
 
 
+KREA2_ABLITERATED_CLIP = "qwen3vl_4b_abliterated_bf16.safetensors"
+
+
+def krea2_abliterated_available():
+    return (model_directory(ROOT) / "text_encoders" / KREA2_ABLITERATED_CLIP).is_file()
+
+
+def default_krea2_abliterated(checkpoint):
+    return False
+
+
 def installed():
     from .qwen_edit import CHECKPOINT, ASSETS
     return [name for name in MODELS if (model_directory(ROOT) / "diffusion_models" / name).is_file()
@@ -56,9 +67,13 @@ def graph(checkpoint, positive, negative, seed, cfg, loras=None):
                  else "qwen3vl_4b_fp8_scaled.safetensors" if krea
                  else "qwen3.5_9b_bf16.safetensors" if moss else "qwen_3_06b_base.safetensors")
     if krea:
-        encoder = model_directory(ROOT) / "text_encoders" / "qwen3vl_4b_abliterated_bf16.safetensors"
-        if encoder.is_file():
-            clip_name = encoder.name
+        use_abliterated = cfg.get("krea2_abliterated_encoder")
+        if use_abliterated is None:
+            use_abliterated = default_krea2_abliterated(checkpoint)
+        if use_abliterated:
+            encoder = model_directory(ROOT) / "text_encoders" / KREA2_ABLITERATED_CLIP
+            if encoder.is_file():
+                clip_name = encoder.name
     nodes = {
         "1": base_loader(checkpoint),
         "10": {"class_type": "CLIPLoader", "inputs": {

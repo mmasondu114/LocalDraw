@@ -58,3 +58,23 @@ class PreloadTests(unittest.TestCase):
             self.load()
         self.assertEqual(self.wait.call_count, 2)
         self.assertEqual(self.manager.preloaded, "base.safetensors")
+
+
+class OpenModelFolderTests(unittest.TestCase):
+    def test_opens_diffusion_or_checkpoint_folder_by_model_type(self):
+        import tempfile
+        from pathlib import Path
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            with patch("os.startfile", create=True) as startfile:
+                res_diff = drawing_models.open_folder("krea2_turbo_bf16.safetensors", root=root)
+                self.assertEqual(res_diff["opened"], str((root / "models/diffusion_models").resolve()))
+                self.assertTrue((root / "models/diffusion_models").is_dir())
+                res_empty = drawing_models.open_folder("", root=root)
+                self.assertEqual(res_empty["opened"], str((root / "models/diffusion_models").resolve()))
+                res_ckpt = drawing_models.open_folder("NoobAI-XL-v1.1.safetensors", root=root)
+                self.assertEqual(res_ckpt["opened"], str((root / "models/checkpoints").resolve()))
+                self.assertTrue((root / "models/checkpoints").is_dir())
+                self.assertEqual(startfile.call_count, 3)
+            with self.assertRaises(ValueError):
+                drawing_models.open_folder(123, root=root)

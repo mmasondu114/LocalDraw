@@ -37,3 +37,33 @@ class LoraNamesTests(unittest.TestCase):
         custom = card_search_identity({"name": "林晴", "profile": {"clothing": "red jacket"}}, {})
         self.assertEqual(normalize_search(custom["pinyin"]), "linqing")
         self.assertNotIn("red jacket", custom["search_terms"])
+
+    def test_model_prefix_in_subdirectory_exposes_real_name_for_search(self):
+        file = "krea2/原神/角色/krea2_mitya.safetensors"
+        self.assertEqual(display_name(file), "mitya")
+        self.assertTrue(matches_query(file, "mitya", {}))
+        self.assertEqual(display_name("krea2/原神/角色/krea2_mitya_v2.safetensors"), "mitya")
+        self.assertEqual(display_name("krea2/Krea2_HMNSFW_AIO.safetensors"), "Krea2_HMNSFW_AIO")
+        roster = {("原神", "雷电将军"): {"pinyin": "lei dian jiang jun", "english": "Raiden Shogun"}}
+        self.assertTrue(matches_query("krea2/原神/角色/雷电将军_版本3383815.safetensors", "raiden", roster))
+
+    def test_spaced_and_multi_segment_model_prefixes_extract_character_names(self):
+        cases = [
+            ("krea2/原神/角色/Krea 2_钟离_mmasondu_1000步.safetensors", "钟离"),
+            ("krea2/原神/角色/Krea 2_枫原万叶_mmasondu_1000步.safetensors", "枫原万叶"),
+            ("krea2/无畏契约/角色/Krea 2_黑梦_mmasondu_1000步.safetensors", "黑梦"),
+            ("krea2/无畏契约/角色/Krea 2_捷风_mmasondu_1000步.safetensors", "捷风"),
+            ("krea2/明日方舟/角色/Krea2_可露希尔_mmasondu_1000步.safetensors", "可露希尔"),
+            ("krea2/原神/角色/Krea_2_芙宁娜_1000步.safetensors", "芙宁娜"),
+            ("krea2/原神/角色/Krea 2 Raw_温迪_1000步.safetensors", "温迪"),
+            ("krea2/画风/Krea2Rella_c1-st8000.safetensors", "Krea2Rella"),
+            ("krea2/画风/Detailer-KREA2.safetensors", "Detailer-KREA2"),
+        ]
+        for file, expected in cases:
+            with self.subTest(file=file):
+                self.assertEqual(display_name(file), expected)
+        self.assertTrue(matches_query("krea2/无畏契约/角色/Krea 2_黑梦_mmasondu_1000步.safetensors", "fade", {}))
+        self.assertTrue(matches_query("krea2/无畏契约/角色/Krea 2_黑梦_mmasondu_1000步.safetensors", "heimeng", {}))
+        self.assertTrue(matches_query("krea2/原神/角色/Krea 2_米提亚_mmasondu_1000步.safetensors", "mitya", {}))
+        self.assertTrue(matches_query("krea2/明日方舟/角色/Krea2_可露希尔_mmasondu_1000步.safetensors", "closure", {}))
+        self.assertFalse(matches_query("krea2/无畏契约/角色/Krea 2_黑梦_mmasondu_1000步.safetensors", "mmasondu", {}))

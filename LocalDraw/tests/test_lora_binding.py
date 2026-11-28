@@ -81,6 +81,18 @@ class LoraBindingTests(unittest.TestCase):
             result=drawing_settings.loras_for_panel(prefs,self.p,panel)
         self.assertEqual([l["file"] for l in result],["arknights/same.safetensors"])
 
+    def test_checked_character_lora_applies_even_when_character_absent(self):
+        empty_panel={**self.panel,"characters":[]}
+        for mode in ("manual", "characters"):
+            prefs={"mode":mode,"checkpoint":"test","items":[
+                {**self.loras[1],"name":"甲","selected":True,"confirmed":True},
+                {**self.loras[2],"name":"甲乙","selected":False,"confirmed":True},
+            ]}
+            with self.subTest(mode=mode), patch.object(comfyui,"lora_labels",return_value={}):
+                result=drawing_settings.loras_for_panel(prefs,self.p,empty_panel)
+            self.assertEqual([l["file"] for l in result],["genshin/same.safetensors"])
+            self.assertNotIn("target_character_ids", result[0])
+
 
 
 

@@ -21,24 +21,300 @@ from .repository import LOCK
 from .telemetry import ComfyProgress, emit
 
 UPSCALE_MODEL = "RealESRGAN_x4plus_anime_6B.pth"
+PREFERRED_UPSCALER = "4x-UltraSharp.pth"
 ALLOWED_SCALES = (1.0, 1.25, 1.4, 1.5, 2.0)
 ALLOWED_MODES = ("auto", "full", "tiled")
-ALLOWED_METHODS = ("latent", "upscale")
+ALLOWED_METHODS = ("latent", "upscale", "upscale_only")
 ALLOWED_POST_UPSCALES = (1.0, 1.5, 2.0)
+ALLOWED_SAMPLERS = (
+    "er_sde",
+    "dpmpp_2m_sde",
+    "res_multistep",
+    "heunpp2",
+    "dpmpp_2m",
+    "euler",
+    "euler_ancestral",
+    "uni_pc",
+)
+ALLOWED_SCHEDULERS = (
+    "beta",
+    "simple",
+    "sgm_uniform",
+    "karras",
+    "kl_optimal",
+    "normal",
+)
 VAE_TILED_THRESHOLD = 5_000_000
 
 
+def available_upscalers():
+    """Return installed upscale model filenames, preferring 4x-UltraSharp when present."""
+    folder = model_directory(ROOT) / "upscale_models"
+    if not folder.is_dir():
+        return []
+    found = sorted(
+        p.name for p in folder.iterdir()
+        if p.is_file() and p.suffix.lower() in {".pth", ".safetensors", ".pt"}
+    )
+    priority = {PREFERRED_UPSCALER: 0, UPSCALE_MODEL: 1}
+    return sorted(found, key=lambda name: (priority.get(name, 2), name.lower()))
+
+
+def resolve_upscaler(requested=None):
+    installed = available_upscalers()
+    if requested:
+        e.need(isinstance(requested, str) and "/" not in requested and "\\" not in requested, "超分模型名称无效")
+        e.need(requested in installed, "选定的超分模型未安装：" + requested)
+        return requested
+    if PREFERRED_UPSCALER in installed:
+        return PREFERRED_UPSCALER
+    if UPSCALE_MODEL in installed:
+        return UPSCALE_MODEL
+    return installed[0] if installed else UPSCALE_MODEL
+
+
 def default_params(checkpoint, method="latent"):
-    """Per-model second-pass defaults, full-pass comfort limit, and tile size."""
+    """Per-model second-pass defaults, full-pass comfort limit, tile size, and sampler."""
     family = prompt_models.MODELS.get(checkpoint, (None, None))[1]
+    base = prompt_models.defaults(checkpoint)
     latent = method == "latent"
     if family == "krea2":
-        return {"denoise": 0.5 if latent else 0.3, "steps": 8, "comfort_pixels": 4_800_000, "tile_size": 1280}
+        return {
+            "denoise": 0.35 if latent else 0.28,
+            "steps": 8,
+            "comfort_pixels": 2_850_000,
+            "tile_size": 1280,
+            "sampler_name": "euler",
+            "scheduler": "simple",
+        }
     if family == "moss_image":
-        return {"denoise": 0.45 if latent else 0.3, "steps": 20 if latent else 16, "comfort_pixels": 2_600_000, "tile_size": 1280}
+        return {
+            "denoise": 0.45 if latent else 0.3,
+            "steps": 20 if latent else 16,
+            "comfort_pixels": 3_100_000,
+            "tile_size": 1280,
+            "sampler_name": base["sampler_name"],
+            "scheduler": base["scheduler"],
+        }
     if family in ("anima", "anima38", "delta"):
-        return {"denoise": 0.45 if latent else 0.35, "steps": 24, "comfort_pixels": 2_400_000, "tile_size": 1024}
-    return {"denoise": 0.45 if latent else 0.35, "steps": 20, "comfort_pixels": 2_000_000, "tile_size": 1024}
+        return {
+            "denoise": 0.45 if latent else 0.35,
+            "steps": min(24, base["steps"]),
+            "comfort_pixels": 2_400_000,
+            "tile_size": 1024,
+            "sampler_name": base["sampler_name"],
+            "scheduler": base["scheduler"],
+        }
+    return {
+        "denoise": 0.45 if latent else 0.35,
+        "steps": 20,
+        "comfort_pixels": 2_000_000,
+        "tile_size": 1024,
+        "sampler_name": base["sampler_name"],
+        "scheduler": base["scheduler"],
+    }
+
+
+def base_used_krea2_abliterated(base_batch):
+    """Return True iff the round-1 base batch explicitly ran with Krea2 abliterated text encoder."""
+    if not isinstance(base_batch, dict):
+        return False
+    ro = base_batch.get("render_options") or {}
+    if "krea2_abliterated_encoder" in ro and ro["krea2_abliterated_encoder"] is not None:
+        return bool(ro["krea2_abliterated_encoder"])
+    st = base_batch.get("settings") or {}
+    if "krea2_abliterated_encoder" in st and st["krea2_abliterated_encoder"] is not None:
+        return bool(st["krea2_abliterated_encoder"])
+    return False
+
+
+def resolution_tier(orig_w, orig_h):
+    """Classify base image resolution into ('1k'|'1.5k'|'2k'|'4k', human label)."""
+    w = max(1, int(orig_w or 1024))
+    h = max(1, int(orig_h or 1024))
+    pixels = w * h
+    longest = max(w, h)
+    if pixels > 3_100_000 or longest >= 2560:
+        return ("4k", "3K/4K 档")
+    if pixels >= 1_950_000 or longest >= 1920:
+        return ("2k", "2K 档")
+    if pixels > 1_250_000 or longest > 1360:
+        return ("1.5k", "1.5K 档")
+    return ("1k", "1K 档")
+
+
+def recommend_preset(
+    preset_key,
+    orig_w,
+    orig_h,
+    *,
+    base_checkpoint="",
+    installed_checkpoints=(),
+    installed_upscalers=(),
+):
+    """Compute sharp, resolution-adaptive second-pass preset parameters for the given base image."""
+    ckpts = list(installed_checkpoints or [])
+    ups_list = list(installed_upscalers or [])
+    upscaler = (
+        PREFERRED_UPSCALER
+        if PREFERRED_UPSCALER in ups_list
+        else (ups_list[0] if ups_list else "")
+    )
+    has_up = bool(upscaler)
+    tier, tier_label = resolution_tier(orig_w, orig_h)
+
+    if preset_key == "krea2":
+        base_fam = prompt_models.MODELS.get(base_checkpoint, (None, None))[1]
+        if base_fam == "krea2" and base_checkpoint in ckpts:
+            cp = base_checkpoint
+        else:
+            cp = next(
+                (
+                    c
+                    for c in (
+                        "krea2_anime_uwu_v2_w8a8.safetensors",
+                        "krea2_turbo_bf16.safetensors",
+                        "krea2_turbo_fp8_scaled.safetensors",
+                        "moodyKrea2Mix_v3_Global_BF16_abilirated.safetensors",
+                    )
+                    if c in ckpts
+                ),
+                None,
+            )
+        if tier == "1k":
+            spec = dict(
+                method="upscale" if has_up else "latent",
+                scale=1.5,
+                mode="auto",
+                post_upscale=1.0,
+                denoise=0.30 if has_up else 0.40,
+            )
+        elif tier == "1.5k":
+            spec = dict(
+                method="upscale" if has_up else "latent",
+                scale=1.25,
+                mode="auto",
+                post_upscale=1.0,
+                denoise=0.30 if has_up else 0.38,
+            )
+        elif tier == "2k":
+            spec = dict(
+                method="latent",
+                scale=1.0,
+                mode="auto",
+                post_upscale=1.5 if has_up else 1.0,
+                denoise=0.32,
+            )
+        else:
+            spec = dict(
+                method="latent",
+                scale=1.0,
+                mode="tiled",
+                post_upscale=1.0,
+                denoise=0.26,
+            )
+        return {
+            "preset": "krea2",
+            "tier": tier,
+            "tier_label": tier_label,
+            "checkpoint": cp,
+            "sampler_name": "euler",
+            "scheduler": "simple",
+            "steps": 8,
+            "upscaler": upscaler,
+            **spec,
+        }
+
+    if preset_key == "moss":
+        cp = "moss_image_sft_bf16.safetensors" if "moss_image_sft_bf16.safetensors" in ckpts else None
+        if tier == "1k":
+            spec = dict(
+                method="upscale" if has_up else "latent",
+                scale=1.5,
+                mode="auto",
+                post_upscale=1.0,
+                denoise=0.28 if has_up else 0.38,
+            )
+        elif tier == "1.5k":
+            spec = dict(
+                method="upscale" if has_up else "latent",
+                scale=1.25,
+                mode="auto",
+                post_upscale=1.0,
+                denoise=0.28 if has_up else 0.35,
+            )
+        elif tier == "2k":
+            spec = dict(
+                method="latent",
+                scale=1.0,
+                mode="auto",
+                post_upscale=1.5 if has_up else 1.0,
+                denoise=0.30,
+            )
+        else:
+            spec = dict(
+                method="latent",
+                scale=1.0,
+                mode="tiled",
+                post_upscale=1.0,
+                denoise=0.25,
+            )
+        return {
+            "preset": "moss",
+            "tier": tier,
+            "tier_label": tier_label,
+            "checkpoint": cp,
+            "sampler_name": "er_sde",
+            "scheduler": "simple",
+            "steps": 20,
+            "upscaler": upscaler,
+            **spec,
+        }
+
+    cp = "2.9DeMixV7.5.safetensors" if "2.9DeMixV7.5.safetensors" in ckpts else None
+    if tier == "1k":
+        spec = dict(
+            method="upscale" if has_up else "latent",
+            scale=1.5,
+            mode="auto",
+            post_upscale=1.0,
+            denoise=0.32 if has_up else 0.42,
+        )
+    elif tier == "1.5k":
+        spec = dict(
+            method="upscale" if has_up else "latent",
+            scale=1.25,
+            mode="auto",
+            post_upscale=1.0,
+            denoise=0.30 if has_up else 0.38,
+        )
+    elif tier == "2k":
+        spec = dict(
+            method="latent",
+            scale=1.0,
+            mode="auto",
+            post_upscale=1.5 if has_up else 1.0,
+            denoise=0.30,
+        )
+    else:
+        spec = dict(
+            method="latent",
+            scale=1.0,
+            mode="tiled",
+            post_upscale=1.0,
+            denoise=0.26,
+        )
+    return {
+        "preset": "anima29",
+        "tier": tier,
+        "tier_label": tier_label,
+        "checkpoint": cp,
+        "sampler_name": "euler_ancestral",
+        "scheduler": "normal",
+        "steps": 24,
+        "upscaler": upscaler,
+        **spec,
+    }
 
 
 def find_image(index, image_id):
@@ -114,13 +390,15 @@ def compute_tiles(tw, th, tile_size, overlap=192, alignment=8):
     return [[(x0, y0, x1, y1) for (x0, x1) in xs] for (y0, y1) in ys]
 
 
-def _cosine_ramp(length, total):
-    """1D cosine ramp of length `total` ramping 0..255 over the first `length` pixels."""
+def _cosine_ramp(length, total, max_feather=64):
+    """1D cosine ramp centered inside the `length`-pixel overlap to avoid wide double-exposure ghosting."""
     ramp = bytearray(total)
-    fade = max(1, min(length, total))
+    ov = max(1, min(length, total))
+    fade = min(ov, max_feather)
+    pad = (ov - fade) // 2
     for i in range(fade):
-        ramp[i] = int(round(255.0 * 0.5 * (1.0 - math.cos(math.pi * (i + 0.5) / fade))))
-    for i in range(fade, total):
+        ramp[pad + i] = int(round(255.0 * 0.5 * (1.0 - math.cos(math.pi * (i + 0.5) / fade))))
+    for i in range(pad + fade, total):
         ramp[i] = 255
     return bytes(ramp)
 
@@ -159,8 +437,9 @@ def blend_tiles(canvas_size, tile_rows):
     return out
 
 
-def build_upscale_graph(source_rel_path, tw, th, transient=False):
-    """Build a lightweight upscale-only ComfyUI graph using RealESRGAN + lanczos."""
+def build_upscale_graph(source_rel_path, tw, th, transient=False, upscale_model=None):
+    """Build a lightweight upscale-only ComfyUI graph using an installed upscaler + lanczos."""
+    model_name = upscale_model or UPSCALE_MODEL
     save_node = (
         {"class_type": "PreviewImage", "inputs": {"images": ["53", 0]}}
         if transient
@@ -168,7 +447,7 @@ def build_upscale_graph(source_rel_path, tw, th, transient=False):
     )
     return {
         "50": {"class_type": "LoadImage", "inputs": {"image": source_rel_path}},
-        "51": {"class_type": "UpscaleModelLoader", "inputs": {"model_name": UPSCALE_MODEL}},
+        "51": {"class_type": "UpscaleModelLoader", "inputs": {"model_name": model_name}},
         "52": {"class_type": "ImageUpscaleWithModel",
                "inputs": {"upscale_model": ["51", 0], "image": ["50", 0]}},
         "53": {"class_type": "ImageScale",
@@ -188,11 +467,16 @@ def post_upscale_dimensions(width, height, post_upscale):
 
 
 def build_graph(checkpoint, positive, negative, seed, cfg, loras, source_rel_path,
-                orig_size, scale, denoise, *, has_upscaler=False, method="latent", post_upscale=1.0):
-    """Build a second-pass ComfyUI workflow (latent bicubic detail-regen or pixel upscale + optional post-upscale)."""
+                orig_size, scale, denoise, *, has_upscaler=False, method="latent",
+                post_upscale=1.0, upscale_model=None):
+    """Build a second-pass ComfyUI workflow (latent bicubic, pixel upscale, or pure upscale_only)."""
+    upscaler = upscale_model or UPSCALE_MODEL
+    tw, th = target_dimensions(orig_size[0], orig_size[1], scale, checkpoint)
+    if method == "upscale_only":
+        e.need(has_upscaler, "未找到可用的超分模型，无法执行纯超分")
+        return build_upscale_graph(source_rel_path, tw, th, transient=bool(cfg.get("transient")), upscale_model=upscaler), (tw, th)
     family = prompt_models.MODELS.get(checkpoint, (None, None))[1]
     e.need(family != "qwen_edit", "Qwen 编辑模型暂不支持作为二采底模")
-    tw, th = target_dimensions(orig_size[0], orig_size[1], scale, checkpoint)
     run_cfg = {**cfg, "width": tw, "height": th}
     workflow = comfyui.graph(checkpoint, positive, negative, seed, run_cfg, loras)
     workflow.pop("4", None)
@@ -210,8 +494,8 @@ def build_graph(checkpoint, positive, negative, seed, cfg, loras, source_rel_pat
             latent_ref = ["54", 0]
     else:
         pixels_ref = ["50", 0]
-        if scale >= 1.5 and has_upscaler:
-            workflow["51"] = {"class_type": "UpscaleModelLoader", "inputs": {"model_name": UPSCALE_MODEL}}
+        if scale >= 1.4 and has_upscaler:
+            workflow["51"] = {"class_type": "UpscaleModelLoader", "inputs": {"model_name": upscaler}}
             workflow["52"] = {"class_type": "ImageUpscaleWithModel",
                               "inputs": {"upscale_model": ["51", 0], "image": ["50", 0]}}
             workflow["53"] = {"class_type": "ImageScale",
@@ -244,7 +528,7 @@ def build_graph(checkpoint, positive, negative, seed, cfg, loras, source_rel_pat
     out_w, out_h = post_upscale_dimensions(tw, th, post_upscale)
     if post_upscale > 1.0:
         if has_upscaler:
-            workflow["61"] = {"class_type": "UpscaleModelLoader", "inputs": {"model_name": UPSCALE_MODEL}}
+            workflow["61"] = {"class_type": "UpscaleModelLoader", "inputs": {"model_name": upscaler}}
             workflow["62"] = {"class_type": "ImageUpscaleWithModel",
                               "inputs": {"upscale_model": ["61", 0], "image": ["6", 0]}}
             post_src = ["62", 0]
@@ -285,14 +569,24 @@ def validate_request(repo, pid, request):
     e.need(mode in ALLOWED_MODES, "二采模式无效（仅支持 auto / full / tiled）")
 
     method = request.get("method", "latent")
-    e.need(method in ALLOWED_METHODS, "二采方式无效（仅支持 latent / upscale）")
+    e.need(method in ALLOWED_METHODS, "二采方式无效（仅支持 latent / upscale / upscale_only）")
 
-    post_upscale = request.get("post_upscale", 1.0)
+    post_upscale = 1.0 if method == "upscale_only" else request.get("post_upscale", 1.0)
     e.need(type(post_upscale) in (int, float) and float(post_upscale) in ALLOWED_POST_UPSCALES,
            "二采后超分仅支持 关闭 / 1.5× / 2.0×")
     post_upscale = float(post_upscale)
 
+    upscale_model = resolve_upscaler(request.get("upscale_model"))
+    if method == "upscale_only":
+        e.need((model_directory(ROOT) / "upscale_models" / upscale_model).is_file(),
+               "未找到可用的超分模型，无法执行纯超分")
+
     defaults = default_params(checkpoint, method)
+    sampler_name = request.get("sampler_name") or defaults["sampler_name"]
+    e.need(sampler_name in ALLOWED_SAMPLERS, "采样器无效：" + str(sampler_name))
+    scheduler = request.get("scheduler") or defaults["scheduler"]
+    e.need(scheduler in ALLOWED_SCHEDULERS, "调度器无效：" + str(scheduler))
+
     denoise = request.get("denoise", defaults["denoise"])
     e.need(type(denoise) in (int, float) and 0.05 <= float(denoise) <= 1.0, "重绘幅度须为 0.05–1.0")
     denoise = round(float(denoise), 3)
@@ -303,7 +597,7 @@ def validate_request(repo, pid, request):
     else:
         e.need(type(steps) is int and 1 <= steps <= 100, "采样步数须为 1–100 的整数")
 
-    count = request.get("count", 1)
+    count = 1 if method == "upscale_only" else request.get("count", 1)
     e.need(type(count) is int and 1 <= count <= 8, "二采张数须为 1–8 张")
 
     seed = request.get("seed")
@@ -312,28 +606,38 @@ def validate_request(repo, pid, request):
 
     positive = request.get("positive")
     if positive is None:
-        positive = base_image.get("positive", "")
-    e.need(isinstance(positive, str) and 1 <= len(positive.strip()) <= 24000, "正向提示词无效")
+        positive = base_image.get("user_positive") or base_image.get("positive", "")
+    if method != "upscale_only":
+        e.need(isinstance(positive, str) and 1 <= len(positive.strip()) <= 24000, "正向提示词无效")
+    else:
+        positive = str(positive or "")
 
     negative = request.get("negative")
     if negative is None:
         negative = base_image.get("negative", "")
     e.need(isinstance(negative, str) and len(negative) <= 12000, "负面提示词过长")
 
-    raw_loras = request.get("loras")
-    if raw_loras is None:
-        raw_loras = [
-            {"file": l["file"], "weight": l.get("weight", 0.7)}
-            for l in base_batch.get("loras", [])
-            if lora_matches_checkpoint(comfyui.lora_file_key(l.get("file", "")), checkpoint)
-        ]
-    loras = selected_loras(raw_loras, checkpoint, discovery)
+    if method == "upscale_only":
+        loras = []
+        final_positive = positive
+    else:
+        from .lora_inspection import apply_lora_triggers
+
+        raw_loras = request.get("loras")
+        if raw_loras is None:
+            raw_loras = [
+                {"file": l["file"], "weight": l.get("weight", 0.7)}
+                for l in base_batch.get("loras", [])
+                if lora_matches_checkpoint(comfyui.lora_file_key(l.get("file", "")), checkpoint)
+            ]
+        loras = selected_loras(raw_loras, checkpoint, discovery)
+        final_positive = apply_lora_triggers(positive, loras)
 
     with Image.open(source_path) as im:
         orig_size = im.size
     tw, th = target_dimensions(orig_size[0], orig_size[1], scale, checkpoint)
     out_w, out_h = post_upscale_dimensions(tw, th, post_upscale)
-    effective_mode = resolve_mode(mode, tw, th, checkpoint)
+    effective_mode = "full" if method == "upscale_only" else resolve_mode(mode, tw, th, checkpoint)
 
     return {
         "project": p,
@@ -349,15 +653,24 @@ def validate_request(repo, pid, request):
         "mode": mode,
         "method": method,
         "post_upscale": post_upscale,
+        "upscale_model": upscale_model,
         "effective_mode": effective_mode,
+        "sampler_name": sampler_name,
+        "scheduler": scheduler,
         "denoise": denoise,
         "steps": steps,
         "count": count,
         "seed": seed,
-        "positive": positive,
+        "positive": final_positive,
+        "user_positive": positive,
         "negative": negative,
         "loras": loras,
         "delta_matte_skin": bool(request.get("delta_matte_skin", False)),
+        "krea2_abliterated_encoder": bool(
+            request["krea2_abliterated_encoder"]
+            if "krea2_abliterated_encoder" in request and request["krea2_abliterated_encoder"] is not None
+            else base_used_krea2_abliterated(base_batch)
+        ),
         "panel_id": base_batch.get("panel_id", "P001-K01"),
         "panel_hash": base_batch.get("panel_hash", ""),
     }
@@ -475,8 +788,11 @@ def run(app, pid, request, update, jid):
     cfg = comfyui.config()
     cfg.update(prompt_models.defaults(checkpoint))
     cfg["steps"] = spec["steps"]
+    cfg["sampler_name"] = spec["sampler_name"]
+    cfg["scheduler"] = spec["scheduler"]
     cfg["literal_prompt"] = True
     cfg["delta_matte_skin"] = spec["delta_matte_skin"]
+    cfg["krea2_abliterated_encoder"] = spec["krea2_abliterated_encoder"]
     cfg["transient"] = bool(p.get("transient"))
     family = prompt_models.MODELS.get(checkpoint, (None, None))[1]
     if family == "krea2" and spec["negative"].strip():
@@ -489,7 +805,8 @@ def run(app, pid, request, update, jid):
     if not comfy_input.exists():
         shutil.copyfile(spec["source_path"], comfy_input)
     source_rel = "second-pass/" + comfy_input.name
-    has_upscaler = (model_directory(ROOT) / "upscale_models" / UPSCALE_MODEL).is_file()
+    upscale_model = spec["upscale_model"]
+    has_upscaler = (model_directory(ROOT) / "upscale_models" / upscale_model).is_file()
     transient = bool(p.get("transient"))
 
     bid = uuid.uuid4().hex
@@ -501,6 +818,11 @@ def run(app, pid, request, update, jid):
         else None
     )
     tile_total = sum(len(row) for row in tile_grid) if tile_grid else 0
+    uses_upscaler = (
+        spec["method"] == "upscale_only"
+        or (spec["method"] == "upscale" and spec["scale"] >= 1.4)
+        or post_upscale > 1.0
+    ) and has_upscaler
     batch = {
         "id": bid,
         "kind": "second_pass",
@@ -522,11 +844,13 @@ def run(app, pid, request, update, jid):
             "method": spec["method"],
             "post_upscale": post_upscale,
             "tiles": tile_total,
+            "sampler_name": spec["sampler_name"],
+            "scheduler": spec["scheduler"],
             "denoise": spec["denoise"],
             "steps": spec["steps"],
             "width": out_w,
             "height": out_h,
-            "upscaler": UPSCALE_MODEL if (((spec["method"] == "upscale" and spec["scale"] >= 1.5) or post_upscale > 1.0) and has_upscaler) else None,
+            "upscaler": upscale_model if uses_upscaler else None,
         },
         "render_options": {"direct_prompt": True, "second_pass": True, "sample_job": jid},
     }
@@ -557,9 +881,9 @@ def run(app, pid, request, update, jid):
         tiled_canvas = None
         if effective_mode == "tiled":
             task_checkpoint()
-            if spec["method"] == "upscale" and spec["scale"] >= 1.5 and has_upscaler:
+            if spec["method"] == "upscale" and spec["scale"] >= 1.4 and has_upscaler:
                 update(f"正在超分准备分块画布（{tw}×{th}）")
-                up_wf = build_upscale_graph(source_rel, tw, th, transient=transient)
+                up_wf = build_upscale_graph(source_rel, tw, th, transient=transient, upscale_model=upscale_model)
                 _, up_bytes = _submit_and_fetch(
                     up_wf, cfg, bid, update, batch, persist,
                     f"超分预处理 · {tw}×{th}", transient,
@@ -620,7 +944,10 @@ def run(app, pid, request, update, jid):
                     if has_upscaler:
                         post_in = tile_input_dir / f"merged-{i + 1}.png"
                         merged.save(post_in, format="PNG")
-                        post_wf = build_upscale_graph(f"second-pass/{tile_input_dir.name}/{post_in.name}", out_w, out_h, transient=transient)
+                        post_wf = build_upscale_graph(
+                            f"second-pass/{tile_input_dir.name}/{post_in.name}",
+                            out_w, out_h, transient=transient, upscale_model=upscale_model,
+                        )
                         update(f"正在二采后超分第 {i + 1}/{spec['count']} 张（{out_w}×{out_h}）")
                         _, post_bytes = _submit_and_fetch(
                             post_wf, cfg, bid, update, batch, persist,
@@ -635,7 +962,8 @@ def run(app, pid, request, update, jid):
             else:
                 remaining = (time.monotonic() - started) / i * (spec["count"] - i) if i else None
                 update({
-                    "message": f"二次采样第 {i + 1}/{spec['count']} 张",
+                    "message": (f"纯超分锐化第 {i + 1}/{spec['count']} 张" if spec["method"] == "upscale_only"
+                                else f"二次采样第 {i + 1}/{spec['count']} 张"),
                     "progress": {"completed": i, "total": spec["count"], "unit": "张（二采）"},
                     "eta": {"remaining_seconds": remaining, "scope": "二次采样", "basis": "本轮实测耗时"},
                 })
@@ -643,6 +971,7 @@ def run(app, pid, request, update, jid):
                     checkpoint, spec["positive"], spec["negative"], seed, cfg, spec["loras"],
                     source_rel, spec["orig_size"], spec["scale"], spec["denoise"],
                     has_upscaler=has_upscaler, method=spec["method"], post_upscale=post_upscale,
+                    upscale_model=upscale_model,
                 )
                 _rewrite_workflow_for_run(workflow, lora_files, transient)
                 e.save(folder / f"workflow-{i + 1}.json", workflow)
@@ -665,6 +994,7 @@ def run(app, pid, request, update, jid):
                 "seed": seed,
                 "prompt_id": job,
                 "positive": spec["positive"],
+                "user_positive": spec["user_positive"],
                 "negative": spec["negative"],
                 "width": out_w,
                 "height": out_h,

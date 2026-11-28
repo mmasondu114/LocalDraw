@@ -11,7 +11,7 @@ from unittest.mock import Mock, patch
 from comic_workflow import analysis_models as profiles, paths
 from comic_workflow.jobs import Jobs
 from comic_workflow.model import ModelManager
-from comic_workflow.server import Application
+from comic_workflow.app_core import StudioApp as Application
 from comic_workflow.strata_model import StrataManager
 from comic_workflow.task_control import checkpoint
 
@@ -160,7 +160,7 @@ class AnalysisModelTests(unittest.TestCase):
         app.night_queue = SimpleNamespace(lock=threading.RLock(),state={"items":[]})
         app.jobs = SimpleNamespace(lock=threading.RLock(), controls={})
         app.idle_release_timer = None
-        with patch("comic_workflow.server.threading.Timer") as timer:
+        with patch("comic_workflow.app_core.threading.Timer") as timer:
             app.clear_finished_context({"id":"last","label":"分析"})
             self.assertIs(app.pending_idle_worker, owner)
             delay, retry = timer.call_args.args

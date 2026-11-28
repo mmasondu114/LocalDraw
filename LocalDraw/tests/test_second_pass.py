@@ -190,8 +190,9 @@ class SecondPassTests(unittest.TestCase):
         self.assertEqual(th_m % 16, 0)
 
     def test_resolve_mode_compute_tiles_and_seamless_blend(self):
-        # 2048x1152 @ 1.4x (2864x1616 = 4.63MP) stays full on Krea2 (zero ghost clones), auto-tiles at 4K
-        self.assertEqual(second_pass.resolve_mode("auto", 2864, 1616, self.krea2), "full")
+        # 2048x1152 (2.36MP) stays full on Krea2; 2864x1616 (4.63MP) auto-tiles into 1280 tiles to prevent blur
+        self.assertEqual(second_pass.resolve_mode("auto", 2048, 1152, self.krea2), "full")
+        self.assertEqual(second_pass.resolve_mode("auto", 2864, 1616, self.krea2), "tiled")
         self.assertEqual(second_pass.resolve_mode("auto", 4096, 2304, self.krea2), "tiled")
         self.assertEqual(second_pass.resolve_mode("auto", 2048, 1152, self.anima), "full")
         self.assertEqual(second_pass.resolve_mode("auto", 4096, 2304, self.anima), "tiled")
@@ -221,6 +222,16 @@ class SecondPassTests(unittest.TestCase):
         self.assertEqual(blended.getpixel((800, 600)), (100, 180, 220))
         self.assertEqual(blended.getpixel((1599, 1199)), (100, 180, 220))
 
+        # Wide overlap (e.g. 1536x864 with 1280 tile -> 1024px overlap) only feathers a narrow centered seam
+        # so pixels away from the seam keep pure single-tile sharpness without double-exposure blur.
+        wide_tiles = [[
+            ((0, 0, 1280, 864), Image.new("RGB", (1280, 864), (20, 40, 60))),
+            ((256, 0, 1536, 864), Image.new("RGB", (1280, 864), (220, 200, 180))),
+        ]]
+        wide_out = second_pass.blend_tiles((1536, 864), wide_tiles)
+        self.assertEqual(wide_out.getpixel((400, 432)), (20, 40, 60))
+        self.assertEqual(wide_out.getpixel((1100, 432)), (220, 200, 180))
+
     def test_validate_request_isolates_loras_and_rejects_invalid_inputs(self):
         pid, base_id = self._create_project_with_base(
             checkpoint=self.anima,
@@ -246,7 +257,7 @@ class SecondPassTests(unittest.TestCase):
         })
         self.assertEqual(spec_cross["loras"], [])
         self.assertEqual(spec_cross["steps"], 8)
-        self.assertEqual(spec_cross["denoise"], 0.5)
+        self.assertEqual(spec_cross["denoise"], 0.35)
         self.assertEqual(spec_cross["seed"], 777)
 
         for bad in (
@@ -372,6 +383,163 @@ class SecondPassTests(unittest.TestCase):
         applied = second_pass.apply_result(self.repo, pid, base_id, res["images"][1])
         self.assertEqual(applied["second_pass_applied"][base_id], res["images"][1])
         self.assertEqual(applied["selections"]["P001-K01"]["image"]["id"], res["images"][1])
+
+    def test_custom_sampler_scheduler_upscaler_and_pure_upscale_only(self):
+        pid, base_id = self._create_project_with_base(width=1024, height=576, checkpoint=self.krea2)
+        spec_krea = second_pass.validate_request(self.repo, pid, {
+            "source_image_id": base_id,
+            "checkpoint": self.krea2,
+            "scale": 1.4,
+            "method": "upscale",
+            "sampler_name": "dpmpp_2m_sde",
+            "scheduler": "beta",
+        })
+        self.assertEqual(spec_krea["sampler_name"], "dpmpp_2m_sde")
+        self.assertEqual(spec_krea["scheduler"], "beta")
+        # Default Krea2 second pass uses sharp native euler + simple
+        spec_def = second_pass.validate_request(self.repo, pid, {
+            "source_image_id": base_id,
+            "checkpoint": self.krea2,
+            "scale": 1.0,
+        })
+        self.assertEqual(spec_def["sampler_name"], "euler")
+        self.assertEqual(spec_def["scheduler"], "simple")
+        self.assertFalse(spec_def["krea2_abliterated_encoder"])
+
+        # Resolution-adaptive presets choose sharp scaling & tiling per tier and never force abliterated checkpoint
+        ckpts = [
+            "krea2_anime_uwu_v2_w8a8.safetensors",
+            "krea2_turbo_bf16.safetensors",
+            "moodyKrea2Mix_v3_Global_BF16_abilirated.safetensors",
+            "moss_image_sft_bf16.safetensors",
+            "2.9DeMixV7.5.safetensors",
+        ]
+        ups = ["4x-UltraSharp.pth"]
+        r1k = second_pass.recommend_preset("krea2", 1216, 832, base_checkpoint=self.anima, installed_checkpoints=ckpts, installed_upscalers=ups)
+        self.assertEqual((r1k["tier"], r1k["scale"], r1k["post_upscale"], r1k["method"]), ("1k", 1.5, 1.0, "upscale"))
+        self.assertEqual(r1k["checkpoint"], "krea2_anime_uwu_v2_w8a8.safetensors")
+        self.assertEqual((r1k["sampler_name"], r1k["scheduler"]), ("euler", "simple"))
+
+        r15k = second_pass.recommend_preset("krea2", 1536, 864, base_checkpoint="krea2_turbo_bf16.safetensors", installed_checkpoints=ckpts, installed_upscalers=ups)
+        self.assertEqual((r15k["tier"], r15k["scale"], r15k["post_upscale"]), ("1.5k", 1.25, 1.0))
+        self.assertEqual(r15k["checkpoint"], "krea2_turbo_bf16.safetensors")
+
+        r2k = second_pass.recommend_preset("krea2", 2048, 1152, base_checkpoint="krea2_anime_uwu_v2_w8a8.safetensors", installed_checkpoints=ckpts, installed_upscalers=ups)
+        self.assertEqual((r2k["tier"], r2k["scale"], r2k["post_upscale"], r2k["method"], r2k["mode"]), ("2k", 1.0, 1.5, "latent", "auto"))
+        self.assertEqual(r2k["checkpoint"], "krea2_anime_uwu_v2_w8a8.safetensors")
+
+        r4k = second_pass.recommend_preset("krea2", 2048, 2048, base_checkpoint="krea2_anime_uwu_v2_w8a8.safetensors", installed_checkpoints=ckpts, installed_upscalers=ups)
+        self.assertEqual((r4k["tier"], r4k["scale"], r4k["post_upscale"], r4k["mode"]), ("4k", 1.0, 1.0, "tiled"))
+
+        # MOSS and Anima presets also adapt across 1K / 1.5K / 2K / 4K
+        self.assertEqual(second_pass.recommend_preset("moss", 1216, 832, installed_checkpoints=ckpts, installed_upscalers=ups)["scale"], 1.5)
+        self.assertEqual(second_pass.recommend_preset("moss", 1536, 864, installed_checkpoints=ckpts, installed_upscalers=ups)["scale"], 1.25)
+        self.assertEqual(second_pass.recommend_preset("moss", 2048, 1152, installed_checkpoints=ckpts, installed_upscalers=ups)["post_upscale"], 1.5)
+        self.assertEqual(second_pass.recommend_preset("anima29", 1024, 1024, installed_checkpoints=ckpts, installed_upscalers=ups)["scale"], 1.5)
+        self.assertEqual(second_pass.recommend_preset("anima29", 2048, 2048, installed_checkpoints=ckpts, installed_upscalers=ups)["mode"], "tiled")
+
+        # Backend validate_request inherits krea2_abliterated_encoder strictly from round-1 base batch
+        idx_path = self.repo.folder(pid) / "images/index.json"
+        idx = e.read(idx_path)
+        idx["batches"][0]["render_options"] = {"krea2_abliterated_encoder": True}
+        e.save(idx_path, idx)
+        spec_inh_true = second_pass.validate_request(self.repo, pid, {
+            "source_image_id": base_id, "checkpoint": self.krea2, "scale": 1.0,
+        })
+        self.assertTrue(spec_inh_true["krea2_abliterated_encoder"])
+        idx["batches"][0]["render_options"] = {"krea2_abliterated_encoder": False}
+        e.save(idx_path, idx)
+        spec_inh_false = second_pass.validate_request(self.repo, pid, {
+            "source_image_id": base_id, "checkpoint": self.krea2, "scale": 1.0,
+        })
+        self.assertFalse(spec_inh_false["krea2_abliterated_encoder"])
+        # 1.4x upscale method now runs UpscaleModelLoader with custom upscaler
+        cfg = {**comfyui.config(), "steps": 8, "cfg": 1.0, "sampler_name": "er_sde", "scheduler": "beta", "delta_matte_skin": False}
+        wf14, (tw14, th14) = second_pass.build_graph(
+            self.krea2, "1girl", "", 11, cfg, [], "second-pass/abc.png", (1024, 576), 1.4, 0.3,
+            has_upscaler=True, method="upscale", upscale_model="4x-UltraSharp.pth",
+        )
+        self.assertEqual(wf14["51"]["inputs"]["model_name"], "4x-UltraSharp.pth")
+        self.assertEqual(wf14["5"]["inputs"]["sampler_name"], "er_sde")
+        self.assertEqual(wf14["5"]["inputs"]["scheduler"], "beta")
+        # upscale_only skips VAEEncode and KSampler completely
+        wf_pure, (tw_p, th_p) = second_pass.build_graph(
+            self.krea2, "", "", 11, cfg, [], "second-pass/abc.png", (1024, 576), 1.5, 0.3,
+            has_upscaler=True, method="upscale_only", upscale_model="4x-UltraSharp.pth",
+        )
+        self.assertEqual((tw_p, th_p), (1536, 864))
+        self.assertNotIn("5", wf_pure)
+        self.assertNotIn("54", wf_pure)
+        self.assertEqual(wf_pure["51"]["inputs"]["model_name"], "4x-UltraSharp.pth")
+        # Per-model Anima defaults match prompt_models (e.g. 2.9DeMixV7.5 -> euler_ancestral/normal, anima-turbo -> 10 steps)
+        demix_def = second_pass.default_params("2.9DeMixV7.5.safetensors")
+        self.assertEqual(demix_def["sampler_name"], "euler_ancestral")
+        self.assertEqual(demix_def["scheduler"], "normal")
+        self.assertEqual(demix_def["steps"], 24)
+        turbo_def = second_pass.default_params("anima-turbo-v1.1.safetensors")
+        self.assertEqual(turbo_def["sampler_name"], "euler")
+        self.assertEqual(turbo_def["scheduler"], "simple")
+        self.assertEqual(turbo_def["steps"], 10)
+        # Invalid sampler/scheduler rejected
+        with self.assertRaises(ValueError):
+            second_pass.validate_request(self.repo, pid, {
+                "source_image_id": base_id, "checkpoint": self.krea2, "sampler_name": "bogus",
+            })
+        with self.assertRaises(ValueError):
+            second_pass.validate_request(self.repo, pid, {
+                "source_image_id": base_id, "checkpoint": self.krea2, "scheduler": "bogus",
+            })
+
+    def test_backend_injects_lora_triggers_silently_without_duplicates(self):
+        pid, base_id = self._create_project_with_base(width=1024, height=576, checkpoint=self.krea2)
+        lora_a = "krea2/明日方舟/Closure.safetensors"
+        lora_b = "krea2/画风/InkStyle.safetensors"
+        fake_disc = {
+            "checkpoints": [self.krea2, self.anima],
+            "loras": [lora_a, lora_b],
+            "upscale_models": ["4x-UltraSharp.pth"],
+        }
+        fake_insp = {
+            lora_a: {"structurally_compatible": True, "family": "Krea2"},
+            lora_b: {"structurally_compatible": True, "family": "Krea2"},
+        }
+        fake_labels = {
+            lora_a: {"name": "Closure", "trigger_words": "closure_ark"},
+            lora_b: {"name": "InkStyle", "trigger_words": "ink_wash"},
+        }
+        with patch.object(comfyui, "discover", return_value=fake_disc), \
+                patch.object(comfyui, "lora_labels", return_value=fake_labels), \
+                patch("comic_workflow.lora_inspection.inspect_local", return_value=fake_insp):
+            # 1. Second pass silently injects missing LoRA triggers into positive while keeping user_positive clean
+            spec = second_pass.validate_request(self.repo, pid, {
+                "source_image_id": base_id,
+                "checkpoint": self.krea2,
+                "scale": 1.0,
+                "positive": "sunlit workshop, warm light",
+                "loras": [{"file": lora_a, "weight": 0.7}, {"file": lora_b, "weight": 0.5}],
+            })
+            self.assertEqual(spec["user_positive"], "sunlit workshop, warm light")
+            self.assertEqual(spec["positive"], "closure_ark, ink_wash, sunlit workshop, warm light")
+
+            # 2. If user manually placed one trigger in prompt, backend does not duplicate it
+            spec_dedup = second_pass.validate_request(self.repo, pid, {
+                "source_image_id": base_id,
+                "checkpoint": self.krea2,
+                "scale": 1.0,
+                "positive": "closure_ark standing in sunlit workshop",
+                "loras": [{"file": lora_a, "weight": 0.7}, {"file": lora_b, "weight": 0.5}],
+            })
+            self.assertEqual(spec_dedup["positive"], "ink_wash, closure_ark standing in sunlit workshop")
+
+            # 3. Explicitly cleared trigger_words="" suppresses injection for that LoRA
+            spec_clear = second_pass.validate_request(self.repo, pid, {
+                "source_image_id": base_id,
+                "checkpoint": self.krea2,
+                "scale": 1.0,
+                "positive": "sunlit workshop",
+                "loras": [{"file": lora_a, "weight": 0.7, "trigger_words": ""}],
+            })
+            self.assertEqual(spec_clear["positive"], "sunlit workshop")
 
 
 if __name__ == "__main__":

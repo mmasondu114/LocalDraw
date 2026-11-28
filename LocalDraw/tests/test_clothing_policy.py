@@ -49,17 +49,12 @@ class ClothingPolicyTests(unittest.TestCase):
                 self.assertEqual(resolve_prompt(text, prompt, self.cards[index], self.cards), expected)
         self.assertEqual(self.cards, before)
 
-    @unittest.skipUnless(shutil.which("node"), "Node required for browser/server parity")
-    def test_browser_preview_matches_server_for_every_case(self):
-        script = """
-const fs = require('fs'); global.window = {};
-eval(fs.readFileSync('web/clothing.js', 'utf8'));
-const input = JSON.parse(fs.readFileSync(0, 'utf8'));
-const policy = window.createClothingPolicy(input.rules);
-process.stdout.write(JSON.stringify(input.cases.map(([text, prompt, i]) =>
-  policy.resolve(text, prompt, input.cards[i], input.cards))));
-"""
-        result = subprocess.run([shutil.which("node"), "-e", script], cwd=ROOT,
-            input=json.dumps({"rules": RULES, "cards": self.cards, "cases": self.cases()}),
-            text=True, encoding="utf-8", capture_output=True, check=True)
-        self.assertEqual(json.loads(result.stdout), [case[3] for case in self.cases()])
+    def test_resolve_selections_matches_resolve_prompt_for_every_case(self):
+        from comic_workflow.clothing_policy import resolve_selections
+
+        for text, prompt, index, expected in self.cases():
+            with self.subTest(text=text, index=index):
+                # Single-character cases match resolve_selections directly; multi-character prompt includes all cards
+                selected = [{"name": c["name"], "prompt": prompt if i == index else ""} for i, c in enumerate(self.cards)]
+                resolved = resolve_selections(text, selected, self.cards)
+                self.assertEqual(resolved[index]["prompt"], expected)

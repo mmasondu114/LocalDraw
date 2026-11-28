@@ -4,7 +4,7 @@ import uuid
 import time
 import re
 from . import engine as e, comfyui
-from .repository import LOCK
+from .repository import LOCK, PROMPT_WORKSPACE_ID
 from .schemas import CHARACTER
 from .characters import CharacterLibrary
 from .paths import ROOT, prompt_model
@@ -136,7 +136,7 @@ def selected_loras(items, checkpoint, installed=None):
     e.need(isinstance(items, list) and len(items) <= MAX_LORAS, "最多同时选择 5 个 LoRA")
     if not items:
         return []
-    from .lora_inspection import inspect_local
+    from .lora_inspection import inspect_local, resolve_lora_trigger
     inspections = inspect_local(checkpoint=checkpoint)
     available = {comfyui.lora_file_key(name)
                  for name in (installed or comfyui.discover()).get("loras", [])}
@@ -144,8 +144,6 @@ def selected_loras(items, checkpoint, installed=None):
     selected, seen = [], set()
     for item in items:
         e.need(isinstance(item, dict), "无效 LoRA 选择")
-        e.need(item.get("character_id") != "unresolved",
-               "角色 LoRA 尚未关联，请先指定对应的角色；单人整图使用时可明确选择全图")
         file = item.get("file")
         e.need(isinstance(file, str), "LoRA 文件未找到，请刷新列表")
         file = comfyui.lora_file_key(file)
@@ -158,8 +156,13 @@ def selected_loras(items, checkpoint, installed=None):
                file + " 不兼容或结构未能确认，不能用于当前底模出图")
         weight = item.get("weight", 0.7)
         e.need(type(weight) in (float, int) and 0 <= weight <= 2, "LoRA 强度须为 0–2")
+        if "trigger_words" in item and item.get("trigger_words") is not None:
+            resolved_trig = str(item.get("trigger_words") or "").strip()
+        else:
+            resolved_trig = resolve_lora_trigger(file, labels)
         selected.append({"file": file, "label": labels.get(file, {}).get("name") or file,
-                         "weight": weight, "clip_weight": weight, "trigger_words": "",
+                         "weight": weight, "clip_weight": weight,
+                         "trigger_words": resolved_trig,
                          **({"character_id": labels[file]["character_id"], "character": labels[file].get("character", "")}
                             if "character_id" in labels.get(file, {}) else
                             {k: item[k] for k in ("character_id", "character", "scope", "characters", "target_character_ids") if k in item}),
@@ -220,6 +223,12 @@ def prepare_sample(repo, request):
     selections = resolved
     delta_matte_skin = request.get("delta_matte_skin", comfyui.config().get("delta_matte_skin", True))
     e.need(type(delta_matte_skin) is bool, "Invalid matte skin setting")
+    from . import prompt_models
+    krea2_abliterated_encoder = request.get(
+        "krea2_abliterated_encoder",
+        prompt_models.default_krea2_abliterated(checkpoint),
+    )
+    e.need(type(krea2_abliterated_encoder) is bool, "Invalid abliterated encoder setting")
     consistency_lora = request.get("consistency_lora", comfyui.config().get("consistency_lora", False))
     e.need(type(consistency_lora) is bool, "一致性 LoRA 选项无效")
     seed = request.get("seed")
@@ -242,8 +251,9 @@ def prepare_sample(repo, request):
                           "characters": selections,
                           "consistency_lora": consistency_lora,
                           "delta_matte_skin": delta_matte_skin,
+                          "krea2_abliterated_encoder": krea2_abliterated_encoder,
                           **({"seed": seed} if seed is not None else {})},
-         "provenance": "用户直接提示词出图；衣着按场景提示词优先，未指定时使用角色默认服装，不经过 Qwen",
+         "provenance": "直接提示词出图",
          "canon": {"characters": characters, "scenes": [{"id": "S001", "name": "用户指定的场景",
             "layout": "按用户描述", "landmarks": [], "lighting": "按用户描述", "axis_rule": "独立画面"}],
             "props": [], "world_rules": [], "initial_state": {}},
@@ -263,7 +273,7 @@ def prepare_sample(repo, request):
         "positive": positive, "negative": negative, "character_anchors": [], "composition_variants": [],
         "adaptation_notes": "场景提示词原样发送；角色默认服装仅在提示词未指定衣着时补入"}}}
     from .lora_binding import route
-    loras = route(loras, p, panel, comfyui.lora_labels())
+    loras = route(loras, p, panel, comfyui.lora_labels(), keep_unmatched=True)
     p["prompt_input"]["loras"] = loras
     return p
 
@@ -286,13 +296,19 @@ def draw_session(app, pid, request):
     sample["transient"] = True
     with app.jobs.lock, LOCK:
         previous = None
-        if pid is not None:
+        created_transient = False
+        if pid is None:
+            pid = PROMPT_WORKSPACE_ID
+        if pid == PROMPT_WORKSPACE_ID:
+            e.need(not any(c["job"].get("project") == pid for c in app.jobs.controls.values()),
+                   "请等待当前出图结束")
+            if app.repo.has_prompt_workspace():
+                previous = app.repo.get(pid)
+        else:
             e.need(pid in app.repo.transient_ids, "临时出图会话已结束，请重新打开提示词出图")
             e.need(not any(c["job"].get("project") == pid for c in app.jobs.controls.values()),
                    "请等待当前出图结束")
             previous = app.repo.get(pid)
-        else:
-            pid = app.repo.create_transient()
         path = app.repo.folder(pid) / "project.json"
         try:
             e.save(path, sample)
@@ -300,10 +316,12 @@ def draw_session(app, pid, request):
             job = app.jobs.submit("提示词出图", lambda update, jid:
                 run(app, pid, {"base_hash": snapshot["hash"]}, update, jid), pid)
         except Exception:
-            if previous is None:
+            if created_transient:
                 app.repo.release_transient(pid)
-            else:
+            elif previous is not None:
                 e.save(path, previous)
+            elif pid == PROMPT_WORKSPACE_ID and path.exists():
+                path.unlink(missing_ok=True)
             raise
     return {"project": pid, "snapshot": snapshot, "job": job}
 
@@ -335,12 +353,12 @@ def run(app, pid, request, update, jid):
         update(detail)
 
     try:
-        emit("准备绘图模型，不调用 Qwen")
+        emit("准备绘图模型")
         app.model.stop()
         app.comfy.start()
         if pending:
             from .comfy_recovery import recover_batch
-            emit("核对此任务上次提交的图片，避免重复生成")
+            emit("核对上次提交")
             for batch in pending:
                 recovered = recover_batch(app.repo, pid, batch)
                 e.need(recovered["status"] not in {"running", "uncertain"},
@@ -366,6 +384,8 @@ def run(app, pid, request, update, jid):
                                     "aspect_ratio": spec["aspect_ratio"], "resolution": spec.get("resolution", "default"),
                                     "consistency_lora": spec.get("consistency_lora", comfyui.config().get("consistency_lora", False)),
                                     "delta_matte_skin": spec.get("delta_matte_skin", comfyui.config().get("delta_matte_skin", True)),
+                                    **({"krea2_abliterated_encoder": spec["krea2_abliterated_encoder"]}
+                                       if "krea2_abliterated_encoder" in spec else {}),
                                     **({"seed": (spec["seed"] + i) % 2**53} if spec.get("seed") is not None else {}),
                                     "sample_job": jid, "queue_run": request.get("run_key")})
                 report["batches"].append(batch["id"])
@@ -377,7 +397,11 @@ def run(app, pid, request, update, jid):
             e.save(output, report)
             emit(f"已处理 {done}/{spec['count']} 张")
         report["status"] = "done_with_errors" if report["errors"] else "done"
-        report["completion_message"] = f"出图结束：成功 {len(report['batches'])} 张，失败 {len(report['errors'])} 张。"
+        report["completion_message"] = (
+            f"完成 {len(report['batches'])} 张，失败 {len(report['errors'])} 张"
+            if report["errors"]
+            else f"已完成 {len(report['batches'])} 张"
+        )
         return report
     except Exception:
         report["status"] = "interrupted"

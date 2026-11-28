@@ -35,7 +35,7 @@ def targets(item, project, panel):
     return [c for c in cast if c["name"] in owner["names"]]
 
 
-def route(loras, project, panel, labels=None, prefs=None):
+def route(loras, project, panel, labels=None, prefs=None, *, keep_unmatched=False):
     from .comfyui import lora_file_key
 
     result = []
@@ -50,12 +50,17 @@ def route(loras, project, panel, labels=None, prefs=None):
         if "character_id" not in owner and not owner.get("characters") and not owner.get("character"):
             owner = item
         matched = targets(owner, project, panel)
-        if matched == []:
+        explicitly_selected = bool(
+            keep_unmatched
+            or item.get("selected")
+            or settings.get(item["file"], {}).get("selected")
+        )
+        if matched == [] and not explicitly_selected:
             continue  # absent characters must never leak into this panel
         item.pop("target_character_ids", None)
         if "character_id" in owner:
             item.update(binding(owner))
-        if matched is not None:
+        if matched:
             e.need(len(matched) == 1, "一个角色 LoRA 只能关联一个角色，请重新指定：" + item["file"])
             item.update(binding(owner))
             item["target_character_ids"] = [matched[0]["id"]]

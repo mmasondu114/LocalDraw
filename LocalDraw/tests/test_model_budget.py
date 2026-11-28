@@ -13,7 +13,7 @@ from comic_workflow.model import (
     generate,
 )
 from comic_workflow.repository import Repository
-from comic_workflow.server import Application
+from comic_workflow.app_core import StudioApp as Application
 
 
 class ModelBudgetTests(unittest.TestCase):
@@ -225,7 +225,7 @@ class ModelBudgetTests(unittest.TestCase):
                 )
             with (
                 patch.object(app, "prepare_language"),
-                patch("comic_workflow.server.generate", return_value=(audit, {})),
+                patch("comic_workflow.app_core.generate", return_value=(audit, {})),
             ):
                 outcome = callbacks[0](lambda x: None, "test")
             revised = next(

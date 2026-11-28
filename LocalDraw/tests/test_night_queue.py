@@ -242,7 +242,7 @@ class NightQueueTests(unittest.TestCase):
         self.assertEqual(restored.state["items"][1]["status"],"waiting")
 
     def test_prompt_queue_can_resume_through_normal_job_controls_after_restart(self):
-        from comic_workflow.server import Application
+        from comic_workflow.app_core import StudioApp as Application
         request={"action":"prompt_batch","base_hash":"unchanged","run_key":"frozen-run"}
         self.app.jobs.save("saved",{"id":"saved","status":"paused","label":"prompt", "created":"1",
                                      "project":"work","request":request})
